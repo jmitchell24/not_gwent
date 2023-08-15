@@ -107,7 +107,6 @@ void Card::layout(vec2 const& size)
 
 #ifndef NDEBUG
     m_is_layout_ready = true;
-    m_outline_color = RANDOM.nextColor();
 #endif
 }
 
@@ -130,20 +129,6 @@ void Card::update()
     {
         m_opacity = m_tween_opacity.curScalar();
     }
-
-//    // use binary over logical OR to avoid short circuit
-//    if (m_tween_pos.update(dt) | m_tween_height.update(dt))
-//    {
-//        auto s = VIRT_PAD * m_tween_height.curScalar();
-//
-//        m_bounds_moved = m_bounds_original.withPos(m_tween_pos.curVec2());
-//        m_bounds_hovered = m_bounds_moved.expanded( s, s * 1.88f );
-//    }
-//
-//    if (m_tween_opacity.update(dt))
-//    {
-//        m_tint_color = colors::white.withNormalA(m_tween_opacity.curScalar());
-//    }
 }
 
 void Card::draw()
@@ -157,8 +142,14 @@ void Card::draw()
 
     VIRT.drawTexture(m_texture, r, c);
 
+
 #ifndef NDEBUG
-    VIRT.drawRectangleLines(r, 5.0f, m_outline_color);
+
+    auto outer = m_outline_color.toHSLUV();
+    auto inner = outer.withL(outer.l / 2).withA(0.75f);
+
+    VIRT.drawRectangle(r, inner.toColor());
+    VIRT.drawRectangleLines(r, 5.0f, outer.toColor());
 #endif
 }
 
@@ -172,7 +163,14 @@ Card Card::createTestCard()
         assert(IsTextureReady(texture_decoy));
     }
 
-    return Card{texture_decoy};
+    Card card{texture_decoy};
+
+#ifndef NDEBUG
+
+    card.m_outline_color = RANDOM.nextColor();
+#endif
+
+    return card;
 }
 
 cardlist_t Card::createTestCards(size_t n)
@@ -209,8 +207,8 @@ void CardList::layout(rect const& bounds)
     m_card_height   = m_bounds_pad.height();
     m_card_width    = m_card_height / 1.88f; // aspect ratio of card images from Witcher 3
 
-    m_ptoi_ghosted = PointToIndex::create(m_direction, m_card_width, m_bounds_pad, m_cards.size()+1);
-    m_ptoi_hovered = PointToIndex::create(m_direction, m_card_width, m_bounds_pad, m_cards.size());
+    m_calc_ghosted = CardCalc::create(m_direction, m_card_width, m_bounds_pad, m_cards.size() + 1);
+    m_calc_hovered = CardCalc::create(m_direction, m_card_width, m_bounds_pad, m_cards.size());
 
     m_idx_hovered   = -1;
     m_idx_ghosted   = -1;
@@ -219,119 +217,12 @@ void CardList::layout(rect const& bounds)
     m_is_layout_ready = true;
 #endif
 
-    size_t num_cards = m_cards.size();
-    for (size_t i = 0; i < num_cards; ++i)
+    for (size_t i = 0; i < m_cards.size(); ++i)
     {
         auto&& it = m_cards[i];
-        auto p = calcCardPos(i, num_cards);
-
         it.layout({m_card_width, m_card_height});
-        it.setPosition(p);
+        it.setPosition(m_calc_hovered.getPos(i));
     }
-}
-
-bool CardList::tryGetHoverIndex(vec2 const& mp, ssize_t& idx) const
-{
-    assert(m_is_layout_ready);
-
-    return m_ptoi_hovered.tryGetIndex(mp, idx);
-
-//    if (!m_cards.empty() && m_bounds_pad.contains(mp))
-//    {
-//        auto mp_min   = m_bounds_pad.min.x;
-//        auto mp_max   = m_bounds_pad.max.x;
-//        auto mp_width = mp_max - mp_min;
-//
-//        if (m_idx_ghosted >= 0)
-//        {
-//            size_t num_cards    = m_cards.size()+1;
-//            float  cards_width  = m_card_width * float(num_cards);
-//
-//            if (cards_width > mp_width)
-//            {
-//                if (auto i = ssize_t( ((mp.x - mp_min) / mp_width) * float(num_cards) ); i != m_idx_ghosted)
-//                {
-//                    if (i < m_idx_ghosted)
-//                    {
-//                        idx = i;
-//                        return true;
-//                    }
-//
-//                    if (i > m_idx_ghosted)
-//                    {
-//                        idx = i-1;
-//                        return true;
-//                    }
-//                }
-//            }
-//            else
-//                goto LABEL_SIMPLE_BOUNDS_CHECK;
-//        }
-//        else
-//        {
-//            size_t num_cards    = m_cards.size();
-//            float  cards_width  = m_card_width * float(num_cards);
-//
-//            if (cards_width > mp_width)
-//            {
-//                auto i = ssize_t( ((mp.x - mp_min) / (mp_width)) * float(num_cards) );
-//                idx = i;
-//                return true;
-//            }
-//            else
-//                goto LABEL_SIMPLE_BOUNDS_CHECK;
-//        }
-//    }
-//
-//    return false;
-//
-//    LABEL_SIMPLE_BOUNDS_CHECK:
-//    for (size_t i = 0; i < m_cards.size(); ++i)
-//    {
-//        if (m_cards[i].containsPoint(mp))
-//        {
-//            idx = (ssize_t)i;
-//            return true;
-//        }
-//    }
-//    return false;
-}
-
-bool CardList::tryGetGhostIndex (ut::vec2 const& mp, ssize_t& idx) const
-{
-    assert(m_is_layout_ready);
-
-    return m_ptoi_ghosted.tryGetIndex(mp, idx);
-}
-
-size_t CardList::add(size_t idx, Card const& card)
-{
-    assert(m_is_layout_ready);
-    assert(idx <= m_cards.size());
-
-    Card& it = *m_cards.insert(m_cards.begin() + idx, card);
-    it.layout({m_card_width, m_card_height});
-    it.setPosition(calcCardPos(idx, m_cards.size()));
-
-    moveAllCards();
-    return idx;
-}
-
-bool CardList::remove(size_t idx)
-{
-    assert(m_is_layout_ready);
-
-    if (idx < m_cards.size())
-    {
-        if (m_idx_hovered == idx)
-            m_idx_hovered = -1;
-
-        m_cards.erase(m_cards.begin()+idx);
-
-        moveAllCards();
-        return true;
-    }
-    return false;
 }
 
 void CardList::update()
@@ -347,8 +238,11 @@ void CardList::draw()
     assert(m_is_layout_ready);
 
     VIRT_DEBUG(CardList::m_bounds);
-    VIRT_DEBUG(CardList::m_ptoi_ghosted.bounds);
-    VIRT_DEBUG(CardList::m_ptoi_hovered.bounds);
+    VIRT_DEBUG(CardList::m_calc_ghosted.bounds);
+    VIRT_DEBUG(CardList::m_calc_hovered.bounds);
+
+    VIRT.drawRectangleLines(m_bounds, 2.0f, colors::white);
+    VIRT.drawRectangle(m_bounds, colors::darkslategrey);
 
     for (size_t i = 0; i < m_cards.size(); ++i)
     {
@@ -360,128 +254,223 @@ void CardList::draw()
     if (m_idx_hovered >= 0)
         m_cards[m_idx_hovered].draw();
 
-    VIRT.drawRectangleLines(m_bounds, 2.0f, colors::white);
-
     if (m_idx_ghosted >= 0)
     {
-        auto r = calcCardRect(m_idx_ghosted, m_cards.size()+1);
+        auto r = m_calc_ghosted.getRect(m_idx_ghosted);
         VIRT.drawRectangle(r, colors::greenyellow.withNormalA(0.5f));
     }
 }
 
-
-
-ut::vec2 CardList::calcCardPos(size_t idx, size_t num_cards) const
+void CardList::setGhost(size_t idx)
 {
-    assert(m_is_layout_ready);
-    assert(idx < num_cards);
-
-    float cards_width  = m_card_width * float(num_cards);
-    float bounds_width = m_bounds_pad.width();
-
-
-    if (cards_width > bounds_width)
+    assert(idx <= m_cards.size());
+    if (m_idx_ghosted != idx)
     {
-        auto card_origin    = m_bounds_pad.withSize(m_card_width, m_card_height);
-        auto card_increment = (bounds_width - m_card_width) / float(num_cards-1);
-        return card_origin.pos().withOffsetX(card_increment * float(idx));
+        m_idx_ghosted = (ssize_t)idx;
+
+        for (size_t i = 0; i < m_idx_ghosted; ++i)
+        {
+            m_cards[i].targetPosition(m_calc_ghosted.getPos(i));
+        }
+
+        for (size_t i = m_idx_ghosted; i < m_cards.size(); ++i)
+        {
+            m_cards[i].targetPosition(m_calc_ghosted.getPos(i+1));
+        }
     }
-
-    switch (m_direction)
-    {
-        case DIR_LEFT:
-        {
-            auto card_origin    = m_bounds_pad.withSize(m_card_width, m_card_height);
-            auto card_increment = m_card_width;
-            return card_origin.pos().withOffsetX(card_increment * float(idx));
-        }
-
-        case DIR_RIGHT:
-        {
-            auto card_origin    = m_bounds_pad.withOffsetX(-cards_width).withSize(m_card_width, m_card_height);
-            auto card_increment = m_card_width;
-            return card_origin.pos().withOffsetX(card_increment * float(idx));
-        }
-
-        case DIR_CENTER:
-        {
-            auto card_origin    = m_bounds_pad.withOffsetX( (bounds_width - cards_width) / 2 ).withSize(m_card_width, m_card_height);
-            auto card_increment = m_card_width;
-            return card_origin.pos().withOffsetX(card_increment * float(idx));
-        }
-
-        default: assert_case(Direction); break;
-    }
-
-    return {0,0};
 }
 
-//void CardList::refreshAllCards(rect const& origin, float increment, CareRefreshType refresh)
-//{
-//    auto sz = m_cards.size();
-//
-//    switch (refresh)
-//    {
-//        case CARD_REFRESH_MOVE:
-//            for (size_t i = 0; i < sz; ++i)
-//                m_cards[i].targetPosition(origin.pos().withOffsetX(increment * float(i)));
-//        break;
-//
-//        case CARD_REFRESH_LAYOUT:
-//            for (size_t i = 0; i < sz; ++i)
-//                m_cards[i].layout(origin.withOffsetX(increment * float(i)));
-//        break;
-//
-//        default: assert_case(CareRefreshType); break;
-//    }
-//}
+void CardList::clearGhost()
+{
+    if (m_idx_ghosted >= 0)
+    {
+        for (size_t i = 0; i < m_cards.size(); ++i)
+        {
+            m_cards[i].targetPosition(m_calc_hovered.getPos(i));
+        }
+        m_idx_ghosted = -1;
+    }
+}
 
-//void CardList::refresh(CareRefreshType refresh)
+void CardList::setHover(size_t idx)
+{
+    assert(idx < m_cards.size());
+    hover((ssize_t)idx);
+}
+
+void CardList::clearHover()
+{
+    hover(-1);
+}
+
+bool CardList::tryGetHoverIndex(vec2 const& mp, size_t& idx) const
+{
+    assert(m_is_layout_ready);
+    return m_calc_hovered.tryGetIndex(mp, idx);
+}
+
+bool CardList::tryGetGhostIndex(vec2 const& mp, size_t& idx) const
+{
+    assert(m_is_layout_ready);
+    return m_calc_ghosted.tryGetIndex(mp, idx);
+}
+
+void CardList::addCard(size_t idx, Card const& card, AddAnim anim)
+{
+    assert(m_is_layout_ready);
+    assert(idx <= m_cards.size());
+
+    clearHover();
+    clearGhost();
+
+    Card& it = *m_cards.insert(m_cards.begin() + idx, card);
+    it.layout({m_card_width, m_card_height});
+
+    m_calc_ghosted = CardCalc::create(m_direction, m_card_width, m_bounds_pad, m_cards.size() + 1);
+    m_calc_hovered = CardCalc::create(m_direction, m_card_width, m_bounds_pad, m_cards.size());
+
+    switch (anim)
+    {
+        case ANIM_NONE:
+            it.setElevation(0.0f);
+            it.setOpacity(1.0f);
+            //it.setPosition(calcCardPos(idx, m_cards.size()));
+            it.setPosition(m_calc_hovered.getPos(idx));
+            break;
+
+        case ANIM_MOVE:
+            it.setElevation(0.0f);
+            it.setOpacity(1.0f);
+            //it.targetPosition(calcCardPos(idx, m_cards.size()));
+            //it.targetPosition(m_calc_hovered.getPos(idx));
+            break;
+
+        case ANIM_CREATE:
+            it.setElevation(3.0f);
+            it.targetElevation(0.0f);
+            it.setOpacity(0.5f);
+            it.targetOpacity(1.0f);
+
+            //it.setPosition(calcCardPos(idx, m_cards.size()));
+            it.setPosition(m_calc_hovered.getPos(idx));
+            break;
+
+        default:
+            assert_case(AddAnim);
+            break;
+    }
+
+    moveAllCards();
+}
+
+Card CardList::removeCard(size_t idx)
+{
+    assert(m_is_layout_ready);
+    assert(idx < m_cards.size());
+
+    clearHover();
+    clearGhost();
+
+    Card card = m_cards[idx];
+
+    m_cards.erase(m_cards.begin()+idx);
+    m_calc_ghosted = CardCalc::create(m_direction, m_card_width, m_bounds_pad, m_cards.size() + 1);
+    m_calc_hovered = CardCalc::create(m_direction, m_card_width, m_bounds_pad, m_cards.size());
+
+    moveAllCards();
+
+    return card;
+}
+
+
+
+
+
+
+
+//vec2 CardList::calcCardPos(size_t idx, size_t num_cards) const
 //{
 //    assert(m_is_layout_ready);
+//    assert(idx < num_cards);
 //
-//    size_t num_cards    = m_cards.size();
-//    float  cards_width  = m_card_width * float(num_cards);
-//    float  bounds_width = m_bounds_pad.width();
+//    float cards_width  = m_card_width * float(num_cards);
+//    float bounds_width = m_bounds_pad.width();
 //
-//    if (num_cards > 0)
+//
+//    if (cards_width > bounds_width)
 //    {
-//        if (cards_width > bounds_width)
-//        {
-//            auto card_origin = m_bounds_pad.withSize(m_card_width, m_card_height);
-//            auto card_increment = (bounds_width - m_card_width) / float(num_cards-1);
-//            refreshAllCards(card_origin, card_increment, refresh);
-//        }
-//        else
-//        {
-//            switch (m_direction)
-//            {
-//                case DIR_LEFT:
-//                {
-//                    auto card_origin = m_bounds_pad.withSize(m_card_width, m_card_height);
-//                    refreshAllCards(card_origin, m_card_width, refresh);
-//                    break;
-//                }
-//
-//                case DIR_RIGHT:
-//                {
-//                    auto card_origin = m_bounds_pad.withOffsetX(-cards_width).withSize(m_card_width, m_card_height);
-//                    refreshAllCards(card_origin, m_card_width, refresh);
-//                    break;
-//                }
-//
-//                case DIR_CENTER:
-//                {
-//                    auto card_origin = m_bounds_pad.withOffsetX( (bounds_width - cards_width) / 2 ).withSize(m_card_width, m_card_height);
-//                    refreshAllCards(card_origin, m_card_width, refresh);
-//                    break;
-//                }
-//
-//                default: assert_case(Direction); break;
-//            }
-//        }
+//        auto card_origin    = m_bounds_pad.withSize(m_card_width, m_card_height);
+//        auto card_increment = (bounds_width - m_card_width) / float(num_cards-1);
+//        return card_origin.pos().withOffsetX(card_increment * float(idx));
 //    }
+//
+//    switch (m_direction)
+//    {
+//        case DIR_LEFT:
+//        {
+//            auto card_origin    = m_bounds_pad.withSize(m_card_width, m_card_height);
+//            auto card_increment = m_card_width;
+//            return card_origin.pos().withOffsetX(card_increment * float(idx));
+//        }
+//
+//        case DIR_CENTER:
+//        {
+//            auto card_origin    = m_bounds_pad.withOffsetX( (bounds_width - cards_width) / 2 ).withSize(m_card_width, m_card_height);
+//            auto card_increment = m_card_width;
+//            return card_origin.pos().withOffsetX(card_increment * float(idx));
+//        }
+//
+//        default: assert_case(Direction); break;
+//    }
+//
+//    return {0,0};
 //}
+
+//
+// CardList::CardCalc -> Implementation
+//
+
+CardList::CardCalc CardList::CardCalc::create(Direction direction, float card_width, rect const& bounds, size_t card_count)
+{
+    if (float w = card_width * float(card_count); w < bounds.width())
+    {
+        switch (direction)
+        {
+            case DIR_LEFT  : return { bounds.anchorTLtoTL(w, bounds.height()), card_count, card_width, card_width };
+            case DIR_CENTER: return { bounds.anchorCCtoCC(w, bounds.height()), card_count, card_width, card_width };
+
+            default: assert_case(Direction);
+        }
+
+        return { {}, 0, 0.0f, 0.0f };
+    }
+
+    return { bounds, card_count, card_width, (bounds.width() - card_width) / float(card_count-1) };
+}
+
+bool CardList::CardCalc::tryGetIndex(ut::vec2 const& mp, size_t& idx) const
+{
+    if (bounds.contains(mp))
+    {
+        auto mp_min   = bounds.min.x;
+        auto mp_max   = bounds.max.x;
+        auto mp_width = mp_max - mp_min;
+
+        idx = size_t( ((mp.x - mp_min) / (mp_width)) * float(card_count) );
+        return true;
+    }
+    return false;
+}
+
+vec2 CardList::CardCalc::getPos(size_t idx) const
+{
+    return bounds.pos().withOffsetX(card_gap * float(idx));
+}
+
+rect CardList::CardCalc::getRect(size_t idx) const
+{
+    return bounds.withWidth(card_width).withOffsetX(card_gap * float(idx));
+}
 
 //
 // StatDisplay -> Implementation

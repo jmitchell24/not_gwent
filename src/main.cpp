@@ -35,15 +35,134 @@ size_t constexpr static VIRT_WIDTH  = 720;
 size_t constexpr static VIRT_HEIGHT = 1280;
 size_t constexpr static VIRT_PAD    = 10;
 
-void updateCardListInputs(CardList& card_list)
+class CardHoldDemo
 {
-    auto mp = tout(GetMousePosition());
+public:
 
-    if (card_list.containsPoint(mp))
+private:
+};
+
+class CardListDemo
+{
+public:
+    CardListDemo() :
+        m_cl1(DIR_CENTER, Card::createTestCards(3)),
+        m_cl2(DIR_CENTER, Card::createTestCards(3)),
+        m_cl3(DIR_CENTER, Card::createTestCards(3))
+    {}
+
+    void layout(rect const& bounds)
     {
-        card_list.tryHoverCard(mp);
+        auto split = bounds.splitNV<5>(VIRT_PAD);
+
+        m_cl1.layout(split[1]);
+        m_cl2.layout(split[2]);
+        m_cl3.layout(split[3]);
     }
-}
+
+    void update()
+    {
+        auto mp = tout(GetMousePosition());
+
+        updateCL(mp, m_cl1);
+        updateCL(mp, m_cl2);
+        updateCL(mp, m_cl3);
+
+        m_cl1.update();
+        m_cl2.update();
+        m_cl3.update();
+
+        if (m_held)
+        {
+            auto sz2 = m_held->card.size()/2;
+            m_held->card.targetPosition(mp-sz2);
+            m_held->card.update();
+        }
+    }
+
+    void draw()
+    {
+        m_cl1.draw();
+        m_cl2.draw();
+        m_cl3.draw();
+
+        if (m_held)
+            m_held->card.draw();
+    }
+private:
+    struct Held
+    {
+        Card card;
+    };
+
+
+    CardList m_cl1, m_cl2, m_cl3;
+
+    optional<Held> m_held;
+
+
+    void updateCL(vec2 const& mp, CardList& cl)
+    {
+        if (m_held)
+        {
+            if (size_t idx; cl.tryGetGhostIndex(mp, idx))
+            {
+
+
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    cl.addCard(idx, m_held->card, CardList::ANIM_MOVE);
+                    m_held.reset();
+                }
+                else
+                {
+                    cl.setGhost(idx);
+                }
+            }
+            else
+            {
+                cl.clearGhost();
+            }
+        }
+        else
+        {
+            if (size_t idx; cl.tryGetHoverIndex(mp, idx))
+            {
+
+
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    m_held = { cl.removeCard(idx)};
+                    m_held->card.targetElevation(2.0f);
+                    m_held->card.targetOpacity(0.5f);
+                    cl.setGhost(idx);
+                }
+                else
+                {
+                    cl.setHover(idx);
+                }
+            }
+            else
+            {
+                cl.clearHover();
+            }
+        }
+    }
+};
+
+//void updateCardListInputs(CardList& card_list)
+//{
+//    auto mp = tout(GetMousePosition());
+//
+//    if (size_t idx; card_list.tryGetHoverIndex(mp, idx))
+//    {
+//        card_list.setHover(idx);
+//    }
+//    else
+//    {
+//        card_list.clearHover();
+//    }
+//}
 
 int main()
 {
@@ -61,23 +180,9 @@ int main()
 
     auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
 
-    CardList card_list(DIR_CENTER,  Card::createTestCards(1));
-    //CardList card_list_alt(DIR_CENTER,  Card::createTestCards(4));
+    CardListDemo cld;
 
-
-    //optional<Card> card_held;
-
-
-    auto split = window_bounds.splitNV<4>(30);
-
-    card_list.layout(split[1]);
-
-    //card_list_alt.layout(split[2]);
-
-    //Game game;
-    //auto bounds = rectf(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
-
-    //game.layout(bounds);
+    cld.layout(window_bounds);
 
 
 //    lua_State* L = luaL_newstate();
@@ -90,53 +195,8 @@ int main()
 //
 //    lua_close(L);
 
-    size_t ghost = 0;
-    vec2 mp;
-
     while (!WindowShouldClose())
     {
-        if (IsKeyPressed(KEY_SPACE))
-        {
-            if (!card_list.hasGhost())
-                card_list.setGhost(ghost);
-            else
-                card_list.clearGhost();
-        }
-
-        if (card_list.hasGhost())
-        {
-
-            if (ssize_t idx; card_list.tryGetGhostIndex(mp,idx))
-            {
-                card_list.setGhost(idx);
-            }
-
-//            if (IsKeyPressed(KEY_LEFT))
-//            {
-//                if (ghost > 0)
-//                    card_list.setGhost(--ghost);
-//            }
-//
-//            if (IsKeyPressed(KEY_RIGHT))
-//            {
-//                if (ghost < card_list.count())
-//                    card_list.setGhost(++ghost);
-//            }
-
-            if (IsKeyPressed(KEY_F))
-            {
-                card_list.ghostToCard(Card::createTestCard());
-            }
-        }
-
-        if (card_list.hasHoveredCard())
-        {
-
-        }
-
-
-
-
         BeginDrawing();
 
         ClearBackground(BLACK);
@@ -144,61 +204,10 @@ int main()
         VIRT.layout(ImGui::GetDockspaceViewport(), VIRT_WIDTH, VIRT_HEIGHT);
         VIRT.begin();
 
-        mp = tout(GetMousePosition());
-
-//        if (card_held.has_value())
-//        {
-//            if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-//            {
-//                auto mp = tout(GetMousePosition());
-//
-//                if (card_list.containsPoint(mp))
-//                {
-//                    card_list.add(0, card_held.value());
-//                }
-//
-//                if (card_list_alt.containsPoint(mp))
-//                {
-//                    card_list_alt.add(0, card_held.value());
-//                }
-//
-//
-//                card_held.reset();
-//            }
-//        }
-//        else
-//        {
-//            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-//            {
-//                auto mp = tout(GetMousePosition());
-//                if (Card card; card_list.tryGrabCard(mp, card))
-//                    card_held = card;
-//
-//                if (Card card; card_list_alt.tryGrabCard(mp, card))
-//                    card_held = card;
-//            }
-//        }
-
-        //game.draw();
 
 
-
-        updateCardListInputs(card_list);
-
-        card_list.update();
-        card_list.draw();
-
-//        card_list_alt.update();
-//        card_list_alt.draw();
-//
-//        if (card_held.has_value())
-//        {
-//            auto mp = tout(GetMousePosition());
-//
-//            card_held->targetPosition(mp - card_held->size()/2);
-//            card_held->update();
-//            card_held->draw();
-//        }
+        cld.update();
+        cld.draw();
 
 
         VIRT.end();

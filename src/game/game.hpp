@@ -42,7 +42,7 @@ namespace game
 
     enum Direction
     {
-        DIR_LEFT, DIR_CENTER, DIR_RIGHT
+        DIR_LEFT, DIR_CENTER
     };
 
     enum PlayerType
@@ -163,16 +163,15 @@ namespace game
     class CardList
     {
     public:
+        enum AddAnim { ANIM_NONE, ANIM_CREATE, ANIM_MOVE };
+
         static constexpr float ELEVATION_HOVERED        = 1.0f;
         static constexpr float ELEVATION_NOT_HOVERED    = 0.0f;
 
         static constexpr float OPACITY_GRABBED = 0.5f;
         static constexpr float OPACITY_NOT_GRABBED = 1.0f;
 
-
-
         CardList(Direction direction, cardlist_t cards);
-
 
         inline size_t       count       () const { return m_cards.size(); }
         inline Direction    direction   () const { return m_direction; }
@@ -180,204 +179,66 @@ namespace game
         inline bool hasGhostedCard() const { return m_idx_ghosted >= 0; }
         inline bool hasHoveredCard() const { return m_idx_hovered >= 0; }
 
+        inline bool containsPoint(ut::vec2 const& mp) const { return m_bounds_pad.contains(mp); }
 
+        inline ssize_t hoveredIndex() const { return m_idx_hovered; }
+        inline ssize_t ghostedIndex() const { return m_idx_ghosted; }
 
-        inline bool containsPoint(ut::vec2 const& mp) const
-        {
-            return m_bounds.contains(mp);
-        }
-
-        bool hasGhost() const { return m_idx_ghosted >= 0; }
-
-        Card cardToGhost(size_t idx)
-        {
-            assert(idx < m_cards.size());
-
-            Card card = m_cards[idx];
-            m_cards.erase(m_cards.begin()+idx);
-            m_idx_ghosted = (ssize_t)idx;
-            return card;
-        }
-
-        void ghostToCard(Card const& new_card)
-        {
-            assert(m_idx_ghosted >= 0);
-            assert(m_idx_ghosted <= m_cards.size());
-
-            size_t idx = m_idx_ghosted;
-
-            Card& card = *m_cards.insert(m_cards.begin()+idx, new_card);
-            card.layout({m_card_width, m_card_height});
-            card.setPosition(calcCardPos(idx, m_cards.size()));
-
-            card.setElevation(3.0f);
-            card.targetElevation(0.0f);
-
-            card.setOpacity(0.5f);
-            card.targetOpacity(1.0f);
-
-            m_ptoi_ghosted = PointToIndex::create(m_direction, m_card_width, m_bounds_pad, m_cards.size()+1);
-            m_ptoi_hovered = PointToIndex::create(m_direction, m_card_width, m_bounds_pad, m_cards.size());
-
-            m_idx_ghosted = -1;
-            m_idx_hovered = -1;
-        }
-
-        void setGhost(size_t idx)
-        {
-            assert(idx <= m_cards.size());
-            if (m_idx_ghosted != idx)
-            {
-                m_idx_ghosted = (ssize_t)idx;
-
-                auto total_cards = m_cards.size() + 1;
-
-                for (size_t i = 0; i < m_idx_ghosted; ++i)
-                {
-                    m_cards[i].targetPosition(calcCardPos(i, total_cards));
-                }
-
-                for (size_t i = m_idx_ghosted; i < m_cards.size(); ++i)
-                {
-                    m_cards[i].targetPosition(calcCardPos(i+1, total_cards));
-                }
-            }
-        }
-
-        void clearGhost()
-        {
-            if (m_idx_ghosted >= 0)
-            {
-                auto num_cards = m_cards.size();
-                for (size_t i = 0; i < num_cards; ++i)
-                    m_cards[i].targetPosition(calcCardPos(i, num_cards));
-                m_idx_ghosted = -1;
-            }
-        }
-
-        void setHover(size_t idx)
-        {
-            assert(idx < m_cards.size());
-            hover(idx);
-        }
-
-        void clearHover()
-        {
-            hover(-1);
-        }
-
-        bool tryGetHoverIndex(ut::vec2 const& mp, ssize_t& idx) const;
-        bool tryGetGhostIndex(ut::vec2 const& mp, ssize_t& idx) const;
-
-
-        size_t  add     (size_t idx, Card const& card);
-        bool    remove  (size_t idx);
+        bool tryGetHoverIndex(ut::vec2 const& mp, size_t& idx) const;
+        bool tryGetGhostIndex(ut::vec2 const& mp, size_t& idx) const;
 
         void layout(ut::rect const& bounds);
         void update();
         void draw();
 
+        void setGhost(size_t idx);
+        void clearGhost();
+
+        void setHover(size_t idx);
+        void clearHover();
+
+        void addCard(size_t idx, Card const& card, AddAnim anim = ANIM_CREATE);
+        Card removeCard(size_t idx);
+
     private:
-        struct PointToIndex
+        struct CardCalc
         {
             ut::rect    bounds;
-            size_t      count;
 
-            static PointToIndex create(Direction direction, float card_width, ut::rect const& bounds, size_t card_count)
-            {
-                if (float w = card_width * float(card_count); w < bounds.width())
-                {
-                    switch (direction)
-                    {
-                        case DIR_LEFT  : return { bounds.anchorTLtoTL(w, bounds.height()), card_count };
-                        case DIR_RIGHT : return { bounds.anchorTRtoTR(w, bounds.height()), card_count };
-                        case DIR_CENTER: return { bounds.anchorCCtoCC(w, bounds.height()), card_count };
+            size_t      card_count;
+            float       card_width;
+            float       card_gap;
 
-                        default: assert_case(Direction);
-                    }
+            static CardCalc create(Direction direction, float card_width, ut::rect const& bounds, size_t card_count);
+            bool tryGetIndex(ut::vec2 const& mp, size_t& idx) const;
 
-                    return { {}, 0 };
-                }
-
-                return { bounds, card_count };
-            }
-
-            bool tryGetIndex(ut::vec2 const& mp, ssize_t& idx) const
-            {
-                if (bounds.contains(mp))
-                {
-                    auto mp_min   = bounds.min.x;
-                    auto mp_max   = bounds.max.x;
-                    auto mp_width = mp_max - mp_min;
-
-                    auto i = ssize_t( ((mp.x - mp_min) / (mp_width)) * float(count) );
-                    idx = i;
-                    return true;
-                }
-                return false;
-            }
+            ut::vec2 getPos(size_t idx) const;
+            ut::rect getRect(size_t idx) const;
         };
-        //enum CareRefreshType { CARD_REFRESH_MOVE, CARD_REFRESH_LAYOUT };
 
-        ssize_t     m_idx_hovered = -1;
-        ssize_t     m_idx_ghosted = -1;
+        ssize_t         m_idx_hovered = -1;
+        ssize_t         m_idx_ghosted = -1;
 
-        ut::rect    m_bounds;
-        ut::rect    m_bounds_pad;
-        float       m_card_width;
-        float       m_card_height;
+        CardCalc        m_calc_hovered;
+        CardCalc        m_calc_ghosted;
 
-        PointToIndex m_ptoi_hovered;
-        PointToIndex m_ptoi_ghosted;
+        ut::rect        m_bounds;
+        ut::rect        m_bounds_pad;
+        float           m_card_width;
+        float           m_card_height;
 
-        Direction   m_direction;
-        cardlist_t  m_cards;
-
-        //void refresh(CareRefreshType refresh);
-        //void refreshAllCards(ut::rect const& origin, float increment, CareRefreshType refresh);
-
-        inline bool isHoverValid() { return m_idx_hovered >= 0 && m_idx_hovered < m_cards.size(); }
-        inline bool isGhostValid() { return m_idx_ghosted >= 0 && m_idx_ghosted <= m_cards.size(); }
-
-        ut::vec2 calcCardPos(size_t idx, size_t num_cards) const;
-        ut::rect calcCardRect(size_t idx, size_t num_cards) const
-        {
-            return ut::rect(ut::psize({m_card_width, m_card_height}, calcCardPos(idx, num_cards)));
-        }
-
-
-
-//        void layoutCard(size_t idx)
-//        {
-//            assert(m_is_layout_ready);
-//            assert(idx < m_cards.size());
-//
-//
-//            auto&& it = m_cards[idx];
-//            it.layout({m_card_width, m_card_height});
-//            it.setPosition(calcCardPos(idx));
-//        }
-//
-//        void moveCard(size_t idx)
-//        {
-//            assert(m_is_layout_ready);
-//            assert(idx < m_cards.size());
-//
-//            m_cards[idx].targetPosition(calcCardPos(idx));
-//        }
+        Direction       m_direction;
+        cardlist_t      m_cards;
 
         void moveAllCards()
         {
             assert(m_is_layout_ready);
 
-            size_t num_cards = m_cards.size();
-            for (size_t i = 0; i < num_cards; ++i)
+            for (size_t i = 0; i < m_cards.size(); ++i)
             {
-                m_cards[i].targetPosition(calcCardPos(i, num_cards));
+                m_cards[i].targetPosition(m_calc_hovered.getPos(i));
             }
         }
-
-
 
         void hover(ssize_t idx)
         {
