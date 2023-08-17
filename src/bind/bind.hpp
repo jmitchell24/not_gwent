@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game/types.hpp"
+#include "game/conv.hpp"
 
 #include <string>
 #include <array>
