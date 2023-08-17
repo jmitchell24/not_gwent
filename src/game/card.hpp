@@ -60,6 +60,9 @@ namespace game
         float           m_elevation;
         float           m_opacity;
 
+        float           m_fuzz_rotation;
+        ut::vec2        m_fuzz_position;
+
         gfx::Tween2     m_tween_pos;
         gfx::Tween1     m_tween_elevation;
         gfx::Tween1     m_tween_opacity;

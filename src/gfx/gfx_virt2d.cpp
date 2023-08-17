@@ -10,6 +10,10 @@ using namespace game;
 #include <raylib.h>
 #include <rlgl.h>
 
+//
+// ut
+//
+#include <ut/random.hpp>
 using namespace ut;
 
 #include <vector>
@@ -266,6 +270,7 @@ void Virt2DManager::drawTexture(Texture2D const& texture, rect const& dst, color
     assert(IsTextureReady(texture));
 
     auto src = Rectangle{0.0f,0.0f,(float)texture.width,(float)texture.height};
+
 
     DrawTexturePro(texture, src, torl(dst), {0,0}, 0, torl(c));
 }

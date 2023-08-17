@@ -127,7 +127,7 @@ namespace game
     class CombatRow
     {
     public:
-        CardList units {CardList::DIR_CENTER, Card::createTestCards(3) };
+        CardList units { CardList::DIR_CENTER, Card::createTestCards(3) };
         CardList special { CardList::DIR_CENTER, Card::createTestCards(1) };
 
         void layout(ut::rect const& bounds);
@@ -135,8 +135,9 @@ namespace game
         void draw();
 
     private:
-
+        unsigned m_score;
         ut::rect m_bounds;
+        ut::rect m_bounds_score;
 
 
 #ifndef NDEBUG
@@ -146,32 +147,39 @@ namespace game
 
 
 
-    class StatDisplay : public Layout
+    class PlayerStats
     {
     public:
-        StatDisplay(ut::cstrparam player_name);
+        enum Gems { NONE, ONE, TWO };
 
-        ut::cstrview playerName() const { return m_player_name; }
+        ut::cstrview    m_name         = "Geralt";
+        ut::cstrview    m_deckname     = "Northern Realms";
 
-        unsigned gems           () const { return 0; }
-        unsigned score          () const { return 0; }
-        unsigned handSize       () const { return 0; }
-        unsigned librarySize    () const { return 0; }
-        unsigned graveyardSize  () const { return 0; }
+        Gems            m_gems         = NONE;
+        unsigned        m_handcount    = 3;
+        unsigned        m_score        = 32;
 
-        void load();
-        void unload();
+        void layout(ut::rect const& bounds);
         void update();
         void draw();
 
-    protected:
-        void onLayout(ut::rect const& bounds) override;
-
     private:
-        std::array<ut::rect, 5> m_bounds_stats;
+        ut::rect m_bounds;
+        ut::rect m_bounds_name;
+        ut::rect m_bounds_deckname;
+        ut::rect m_bounds_gems;
+        ut::rect m_bounds_gems_name;
+        ut::rect m_bounds_handcount;
+        ut::rect m_bounds_handcount_name;
+        ut::rect m_bounds_score;
+        ut::rect m_bounds_score_name;
 
-        ut::cstrview    m_player_name;
+        ut::rect m_bounds_avatar;
+        ut::rect m_bounds_leader;
 
+#ifndef NDEBUG
+        bool m_is_layout_ready = false;
+#endif
     };
 
     class GameBoard
@@ -194,6 +202,11 @@ namespace game
         CombatRow m_combat_usr_siege;
         CombatRow m_combat_usr_ranged;
         CombatRow m_combat_usr_melee;
+
+        CardList m_hand { CardList::DIR_LEFT, Card::createTestCards(3) };
+
+        PlayerStats m_stats_cpu;
+        PlayerStats m_stats_usr;
 
         CardMover m_card_mover;
 

@@ -40,7 +40,7 @@ void CardList::layout(rect const& bounds)
 
     m_card_height   = m_bounds.height();
     //m_card_width    = m_card_height / 1.88f; // aspect ratio of card images from Witcher 3
-    m_card_width    = m_card_height / 1.25f;
+    m_card_width    = m_card_height / 1.43f;
 
     m_calc_ghosted = CardCalc::create(m_direction, m_bounds, m_card_width, m_cards.size() + 1);
     m_calc_hovered = CardCalc::create(m_direction, m_bounds, m_card_width, m_cards.size());
