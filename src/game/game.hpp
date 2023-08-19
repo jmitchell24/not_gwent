@@ -203,7 +203,8 @@ namespace game
         CombatRow m_combat_usr_ranged;
         CombatRow m_combat_usr_melee;
 
-        CardList m_hand { CardList::DIR_LEFT, Card::createTestCards(3) };
+        CardList m_hand_usr { CardList::DIR_LEFT, Card::createTestCards(3) };
+        CardList m_hand_cpu { CardList::DIR_LEFT, Card::createTestCards(3) };
 
         PlayerStats m_stats_cpu;
         PlayerStats m_stats_usr;

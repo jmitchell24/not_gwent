@@ -47,7 +47,7 @@ namespace gfx
         void drawText##x_(rect const& r, ut::cstrparam s, color const& c) const; \
         void drawText##x_(rect const& r, float font_size, ut::cstrparam s, color const& c) const;
 UT_ENUM_RECT_ALIGNMENTS
-#undef REGION_ALIGN
+#undef CASE
 
         void drawThinLine(vec2 const& a, vec2 const& b, color const& c);
         void drawRectThinLines(rect const& r, color const& c);
@@ -57,9 +57,15 @@ UT_ENUM_RECT_ALIGNMENTS
 
         void drawRectangle(rect const& r, color const& c) const;
 
-        void drawTexture(Texture2D const& texture, rect const& dst) const;
-        void drawTexture(Texture2D const& texture, rect const& dst, color const& c) const;
-        void drawTexture(Texture2D const& texture, rect const& src, rect const& dst) const;
+        void drawTextureV  (Texture2D texture, vec2 const& position, color const& c);                                                       // Draw a Texture2D with position defined as Vector2
+        void drawTextureEx (Texture2D texture, vec2 const& position, float rotation, float scale, color const& c);                          // Draw a Texture2D with extended parameters
+
+        void drawTextureRec(Texture2D texture, vec2 const& position, color const& c);
+        void drawTextureRec(Texture2D texture, rect const& source, vec2 const& position, color const& c);                                   // Draw a part of a texture defined by a rectangle
+
+        void drawTexturePro(Texture2D texture, rect const& dest, color const& c);
+        void drawTexturePro(Texture2D texture, rect const& source, rect const& dest, vec2 const& origin, float rotation, color const& c);   // Draw a part of a texture defined by a rectangle with 'pro' parameters
+
 
         //
         // debug

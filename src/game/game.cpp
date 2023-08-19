@@ -48,25 +48,21 @@ void PlayerStats::layout(rect const& bounds)
 {
     m_bounds = bounds;
 
-    auto [b_va1, b_va2] = bounds.splitBottom(75, VIRT_PAD);
+#define CELL(x_, y_, w_, h_) ( bounds.cell(3,6, x_,y_,  { .w=w_, .h=h_, .inner_pad=VIRT_PAD, .outer_pad=VIRT_PAD}) )
+    m_bounds_name           = CELL(0,0, 3,1);
+    m_bounds_deckname       = CELL(0,1, 3,1);
 
-    auto [b_name, b_deckname, b_number_names, b_numbers] = b_va1.shrunk(VIRT_PAD).splitNV<4>(VIRT_PAD);
-    m_bounds_name = b_name;
-    m_bounds_deckname = b_deckname;
+    m_bounds_gems_name      = CELL(0,2, 1,1);
+    m_bounds_handcount_name = CELL(1,2, 1,1);
+    m_bounds_score_name     = CELL(2,2, 1,1);
 
-    auto [b_gems, b_handcount, b_score] = b_numbers.splitNH<3>(VIRT_PAD);
-    m_bounds_gems      = b_gems;
-    m_bounds_handcount = b_handcount;
-    m_bounds_score     = b_score;
+    m_bounds_gems           = CELL(0,3, 1,1);
+    m_bounds_handcount      = CELL(1,3, 1,1);
+    m_bounds_score          = CELL(2,3, 1,1);
 
-    auto [b_gems_name, b_handcount_name, b_score_name] = b_number_names.splitNH<3>(VIRT_PAD);
-    m_bounds_gems_name      = b_gems_name;
-    m_bounds_handcount_name = b_handcount_name;
-    m_bounds_score_name     = b_score_name;
-
-    auto [b_leader, b_avatar] = b_va2.splitNH<2>(VIRT_PAD);
-    m_bounds_avatar = b_avatar;
-    m_bounds_leader = b_leader;
+    m_bounds_avatar         = CELL(0,4, 1,2);
+    m_bounds_leader         = CELL(2,4, 1,2);
+#undef CELL
 
 #ifndef NDEBUG
     m_is_layout_ready = true;
@@ -83,19 +79,10 @@ void PlayerStats::draw()
     assert(m_is_layout_ready);
 
     VIRT.drawTextLCtoLC(m_bounds_name, m_name, colors::white);
-    VIRT_DEBUG(m_bounds_name);
-
     VIRT.drawTextLCtoLC(m_bounds_deckname, m_deckname, colors::white);
-    VIRT_DEBUG(m_bounds_deckname);
-
-    VIRT_DEBUG(m_bounds_gems);
-    VIRT_DEBUG(m_bounds_handcount);
-    VIRT_DEBUG(m_bounds_score);
-
     VIRT.drawTextLCtoLC(m_bounds_gems_name, "gems", colors::white);
     VIRT.drawTextCCtoCC(m_bounds_handcount_name, "hand", colors::white);
     VIRT.drawTextRCtoRC(m_bounds_score_name, "score", colors::white);
-
 
     switch (m_gems)
     {
@@ -104,14 +91,23 @@ void PlayerStats::draw()
         case TWO : VIRT.drawTextLCtoLC(m_bounds_gems, "o o", colors::white); break;
     }
 
-
     VIRT.drawTextCCtoCC(m_bounds_handcount, PRINTER("%02d", m_handcount), colors::white);
     VIRT.drawTextRCtoRC(m_bounds_score, PRINTER("%02d", m_score), colors::white);
+    VIRT.drawRectangleLines(m_bounds_avatar, 2.0f, colors::white);
+    VIRT.drawRectangleLines(m_bounds_leader, 2.0f, colors::white);
 
     VIRT.drawRectangleLines(m_bounds, 2.0f, colors::white);
 
-    VIRT.drawRectangleLines(m_bounds_avatar, 2.0f, colors::white);
-    VIRT.drawRectangleLines(m_bounds_leader, 2.0f, colors::white);
+    VIRT_DEBUG(m_bounds_name           );
+    VIRT_DEBUG(m_bounds_deckname       );
+    VIRT_DEBUG(m_bounds_gems_name      );
+    VIRT_DEBUG(m_bounds_handcount_name );
+    VIRT_DEBUG(m_bounds_score_name     );
+    VIRT_DEBUG(m_bounds_gems           );
+    VIRT_DEBUG(m_bounds_handcount      );
+    VIRT_DEBUG(m_bounds_score          );
+    VIRT_DEBUG(m_bounds_avatar         );
+    VIRT_DEBUG(m_bounds_leader         );
 }
 
 //
@@ -147,8 +143,16 @@ void CombatRow::draw()
     units.draw();
     special.draw();
 
-    VIRT.drawRectangle(m_bounds_score, colors::darkgoldenrod);
-    VIRT.drawTextCCtoCC(m_bounds_score.anchorCCtoCC(25, 25), PRINTER("%02d", m_score), colors::ivory);
+    {
+        auto c = colors::hsluv::orchid();
+        auto fg = c.withL(85).toColor();
+        auto bg = c.withL(15).toColor();
+
+        VIRT.drawRectangle(m_bounds_score, bg);
+        VIRT.drawTextCCtoCC(m_bounds_score.anchorCCtoCC(25, 25), PRINTER("%02d", m_score), fg);
+    }
+
+
 }
 
 
@@ -164,21 +168,21 @@ void GameBoard::layout(ut::rect const &bounds)
 {
     m_bounds = bounds;
 
-    auto [b_stats, b_cards_decks] = bounds.splitLeft(bounds.width() / 4);
-    auto [b_cards, b_decks] = b_cards_decks.splitRight(bounds.width() / 4);
+    auto [b_stats, b_cards_decks] = bounds.shrunk(0, 0, 0, 30).splitLeft(bounds.width() / 4, VIRT_PAD);
+    auto [b_cards, b_decks] = b_cards_decks.splitRight(bounds.width() / 4, VIRT_PAD);
 
-    auto [b_cards_combat, b_cards_hand] = b_cards.splitBottom(b_cards.height() / 5);
-    m_hand.layout(b_cards_hand.shrunk(VIRT_PAD));
+    auto b_cards_rows = b_cards.splitNV<8>(VIRT_PAD);
 
-    auto b_cards_combat_rows = b_cards_combat.splitNV<6>(VIRT_PAD);
-    m_combat_cpu_siege.layout(b_cards_combat_rows[0]);
-    m_combat_cpu_ranged.layout(b_cards_combat_rows[1]);
-    m_combat_cpu_melee.layout(b_cards_combat_rows[2]);
-    m_combat_usr_siege.layout(b_cards_combat_rows[3]);
-    m_combat_usr_ranged.layout(b_cards_combat_rows[4]);
-    m_combat_usr_melee.layout(b_cards_combat_rows[5]);
+    m_hand_cpu         .layout(b_cards_rows[0]);
+    m_combat_cpu_siege .layout(b_cards_rows[1]);
+    m_combat_cpu_ranged.layout(b_cards_rows[2]);
+    m_combat_cpu_melee .layout(b_cards_rows[3]);
+    m_combat_usr_siege .layout(b_cards_rows[4]);
+    m_combat_usr_ranged.layout(b_cards_rows[5]);
+    m_combat_usr_melee .layout(b_cards_rows[6]);
+    m_hand_usr         .layout(b_cards_rows[7]);
 
-    auto [b_stats_cpu, b_dummy, b_stats_usr] = b_stats.shrunk(VIRT_PAD).splitNV<3>(VIRT_PAD);
+    auto [b_stats_cpu, b_dummy, b_stats_usr] = b_stats.splitNV<3>(VIRT_PAD);
     m_stats_cpu.layout(b_stats_cpu);
     m_stats_usr.layout(b_stats_usr);
 
@@ -195,7 +199,8 @@ void GameBoard::layout(ut::rect const &bounds)
         &m_combat_usr_ranged.special,
         &m_combat_usr_melee.units,
         &m_combat_usr_melee.special,
-        &m_hand
+        &m_hand_usr,
+        &m_hand_cpu
     });
 
 
@@ -217,7 +222,8 @@ void GameBoard::update()
     m_combat_usr_ranged.update();
     m_combat_usr_melee.update();
 
-    m_hand.update();
+    m_hand_usr.update();
+    m_hand_cpu.update();
 
     m_stats_cpu.update();
     m_stats_usr.update();
@@ -234,7 +240,8 @@ void GameBoard::draw()
     m_combat_usr_ranged.draw();
     m_combat_usr_melee.draw();
 
-    m_hand.draw();
+    m_hand_usr.draw();
+    m_hand_cpu.draw();
 
     m_stats_cpu.draw();
     m_stats_usr.draw();

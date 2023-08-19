@@ -1,7 +1,5 @@
 - [x] define a card
 - [x] define a list of cards
 - [x] add and remove from list of cards 
-- [ ] pick up and move card between lists
-  - [ ] mark card in list A as being held
-  - [ ] 
-  - [ ] 
+- [x] pick up and move card between lists
+- []

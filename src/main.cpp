@@ -39,6 +39,8 @@ size_t constexpr static VIRT_PAD    = 10;
 int main()
 {
 
+
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "not gwent");
 
@@ -66,6 +68,8 @@ int main()
 //
 //    lua_close(L);
 
+
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -75,13 +79,47 @@ int main()
         VIRT.layout(ImGui::GetDockspaceViewport(), VIRT_WIDTH, VIRT_HEIGHT);
         VIRT.begin();
 
+        if (false)
+        {
+            auto outer_bounds = window_bounds;
 
+            VIRT_DEBUG(outer_bounds);
+            for (size_t i = 0; i < 5; ++i)
+            {
+                for (size_t j = 0; j < 5; ++j)
+                {
+                    auto r = outer_bounds.cell(5,5, i,j, {.inner_pad=10.0f, .outer_pad=10.0f});
+                    VIRT_DEBUG(r);
+                }
+            }
+
+            auto ralt = outer_bounds.cell(5,5, 1,1, {.w=2, .h=2, .inner_pad=10.0f, .outer_pad=10.0f});
+            VIRT_DEBUG(ralt);
+        }
+
+        if (false)
+        {
+            auto outer_bounds = window_bounds;
+            VIRT_DEBUG(outer_bounds);
+
+            rect a,b,c,d,e,f;
+
+            outer_bounds.colTie({.h=2, .inner_pad=10, .outer_pad=10}, a,b,c,d,e,f);
+
+            VIRT_DEBUG(a);
+            VIRT_DEBUG(b);
+            VIRT_DEBUG(c);
+            VIRT_DEBUG(d);
+            VIRT_DEBUG(e);
+            VIRT_DEBUG(f);
+
+
+
+        }
 
 
         gb.update();
         gb.draw();
-
-        VIRT.drawRectangleLines(window_bounds, 2.0f, colors::white);
 
 
         VIRT.end();

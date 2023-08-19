@@ -12,7 +12,8 @@
 #define STRUCT_FIELD(__x__) ImGui::StructFieldFmt(#__x__, "{}", __y__.__x__);
 #define STRUCT_END          ImGui::EndStruct(); }
 
-#define IM_DEBUG_RECTANGLE_FORMAT "\"%s\" %.0f,%.0f [%.0fx%.0f]"
+//#define IM_DEBUG_RECTANGLE_FORMAT "\"%s\" %.0f,%.0f [%.0fx%.0f]"
+#define IM_DEBUG_RECTANGLE_FORMAT "%s"
 
 //
 // enums
@@ -21,7 +22,8 @@
 enum ImGuiDebugRectangleStyle_
 {
     ImGuiDebugRectangleStyle_Default,
-    ImGuiDebugRectangleStyle_Full
+    ImGuiDebugRectangleStyle_Full,
+    ImGuiDebugRectangleStyle_Simple
 };
 
 using ImGuiDebugRectangleStyle = int;

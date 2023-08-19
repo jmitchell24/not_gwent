@@ -141,7 +141,7 @@ void Card::draw()
     auto r = rect();
     auto c = tint();
 
-    VIRT.drawTexture(m_texture, r, c);
+    VIRT.drawTexturePro(m_texture, r, c);
 
 
 #ifndef NDEBUG

@@ -181,7 +181,7 @@ void Virt2DManager::drawText##x_(rectf const& r, cstrparam s, color const& c) co
 { drawText##x_(r, r.height(), s, c); }
 
     UT_ENUM_RECT_ALIGNMENTS
-#undef REGION_ALIGN
+#undef CASE
 
 void Virt2DManager::pushMatrix()
 {
@@ -245,33 +245,75 @@ void Virt2DManager::drawRectangle(rectf const& r, color const& c) const
     DrawRectanglePro(torl(r), {0,0}, 0, torl(c));
 }
 
-void Virt2DManager::drawTexture(Texture2D const& texture, rect const& src, rect const& dst) const
-{
-    ASSERT_BEGIN_FLAG;
-    assert(IsTextureReady(texture));
+//void Virt2DManager::drawTexture(Texture2D const& texture, rect const& src, rect const& dst) const
+//{
+//    ASSERT_BEGIN_FLAG;
+//    assert(IsTextureReady(texture));
+//
+//    DrawTexturePro(texture, torl(src), torl(dst), Vector2(), 0.0f, WHITE);
+//}
+//
+//
+//void Virt2DManager::drawTexture(Texture2D const& texture, rectf const& dst) const
+//{
+//    ASSERT_BEGIN_FLAG;
+//    assert(IsTextureReady(texture));
+//
+//    auto src = Rectangle{0.0f,0.0f,(float)texture.width,(float)texture.height};
+//
+//    DrawTexturePro(texture, src, torl(dst), {0,0}, 0, WHITE);
+//}
+//
+//void Virt2DManager::drawTexture(Texture2D const& texture, rect const& dst, color const& c) const
+//{
+//    ASSERT_BEGIN_FLAG;
+//    assert(IsTextureReady(texture));
+//
+//    auto src = Rectangle{0.0f,0.0f,(float)texture.width,(float)texture.height};
+//
+//    auto org = dst.size()/2;
+//
+//
+//    DrawTexturePro(texture, src, torl(dst.withOffset(org)), torl(org), 45, torl(c));
+//}
 
-    DrawTexturePro(texture, torl(src), torl(dst), Vector2(), 0.0f, WHITE);
+void Virt2DManager::drawTextureV(Texture2D texture, vec2 const& position, color const& c)
+{
+    ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
+    DrawTextureV(texture, torl(position), torl(c));
 }
 
-
-void Virt2DManager::drawTexture(Texture2D const& texture, rectf const& dst) const
+void Virt2DManager::drawTextureEx(Texture2D texture, vec2 const& position, float rotation, float scale, color const& c)
 {
-    ASSERT_BEGIN_FLAG;
-    assert(IsTextureReady(texture));
-
-    auto src = Rectangle{0.0f,0.0f,(float)texture.width,(float)texture.height};
-
-    DrawTexturePro(texture, src, torl(dst), {0,0}, 0, WHITE);
+    ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
+    DrawTextureEx(texture, torl(position), rotation, scale, torl(c));
 }
 
-void Virt2DManager::drawTexture(Texture2D const& texture, rect const& dst, color const& c) const
+void Virt2DManager::drawTextureRec(Texture2D texture, rect const& source, vec2 const& position, color const& c)
 {
-    ASSERT_BEGIN_FLAG;
-    assert(IsTextureReady(texture));
-
-    auto src = Rectangle{0.0f,0.0f,(float)texture.width,(float)texture.height};
-
-
-    DrawTexturePro(texture, src, torl(dst), {0,0}, 0, torl(c));
+    ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
+    DrawTextureRec(texture, torl(source), torl(position), torl(c));
 }
 
+void Virt2DManager::drawTextureRec(Texture2D texture, vec2 const& position, color const& c)
+{
+    ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
+    DrawTextureRec(texture, torl(psize((float)texture.width, (float)texture.height)), torl(position), torl(c));
+}
+
+void Virt2DManager::drawTexturePro(Texture2D texture, rect const& dest, color const& c)
+{
+    ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
+
+    auto source   = psizef((float)texture.width, (float)texture.height);
+    auto origin   = vec2();
+    auto rotation = 0.0f;
+
+    DrawTexturePro(texture, torl(source), torl(dest), torl(origin), rotation, torl(c));
+}
+
+void Virt2DManager::drawTexturePro(Texture2D texture, rect const& source, rect const& dest, vec2 const& origin, float rotation, color const& c)
+{
+    ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
+    DrawTexturePro(texture, torl(source), torl(dest), torl(origin), rotation, torl(c));
+}

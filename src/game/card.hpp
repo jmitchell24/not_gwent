@@ -67,6 +67,9 @@ namespace game
         gfx::Tween1     m_tween_elevation;
         gfx::Tween1     m_tween_opacity;
 
+        gfx::Tween2     m_tween_fuzz_pos;
+        gfx::Tween1     m_tween_fuzz_rot;
+
 #ifndef NDEBUG
         ut::color   m_outline_color;
         bool        m_is_layout_ready = false;
