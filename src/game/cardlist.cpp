@@ -27,11 +27,11 @@ size_t constexpr static VIRT_PAD    = 10;
 //
 
 CardList::CardList(Direction direction, cardlist_t cards) :
-        m_bounds        {},
-        m_card_width    {},
-        m_card_height   {},
-        m_direction     {direction},
-        m_cards         {std::move(cards)}
+    m_bounds        {},
+    m_card_width    {},
+    m_card_height   {},
+    m_direction     {direction},
+    m_cards         {std::move(cards)}
 { }
 
 void CardList::layout(rect const& bounds)
@@ -105,12 +105,12 @@ void CardList::setGhost(size_t idx)
 
         for (size_t i = 0; i < m_idx_ghosted; ++i)
         {
-            m_cards[i].targetPosition(m_calc_ghosted.getPos(i));
+            m_cards[i].animNudge(m_calc_ghosted.getPos(i));
         }
 
         for (size_t i = m_idx_ghosted; i < m_cards.size(); ++i)
         {
-            m_cards[i].targetPosition(m_calc_ghosted.getPos(i+1));
+            m_cards[i].animNudge(m_calc_ghosted.getPos(i+1));
         }
     }
 }
@@ -119,11 +119,12 @@ void CardList::clearGhost()
 {
     if (m_idx_ghosted >= 0)
     {
+        m_idx_ghosted = -1;
+
         for (size_t i = 0; i < m_cards.size(); ++i)
         {
-            m_cards[i].targetPosition(m_calc_hovered.getPos(i));
+            m_cards[i].animNudge(m_calc_hovered.getPos(i));
         }
-        m_idx_ghosted = -1;
     }
 }
 
@@ -159,40 +160,41 @@ void CardList::addCard(size_t idx, Card const& card, AddAnim anim)
     clearGhost();
 
     Card& it = *m_cards.insert(m_cards.begin() + idx, card);
-    it.layout({m_card_width, m_card_height});
+    //it.layout({m_card_width, m_card_height});
+    it.animLower();
 
     updateCardPositions();
 
-    switch (anim)
-    {
-        case ANIM_NONE:
-            it.setElevation(0.0f);
-            it.setOpacity(1.0f);
-            //it.setPosition(calcCardPos(idx, m_cards.size()));
-            it.setPosition(m_calc_hovered.getPos(idx));
-            break;
-
-        case ANIM_MOVE:
-            it.setElevation(0.0f);
-            it.setOpacity(1.0f);
-            //it.targetPosition(calcCardPos(idx, m_cards.size()));
-            //it.targetPosition(m_calc_hovered.getPos(idx));
-            break;
-
-        case ANIM_CREATE:
-            it.setElevation(3.0f);
-            it.targetElevation(0.0f);
-            it.setOpacity(0.5f);
-            it.targetOpacity(1.0f);
-
-            //it.setPosition(calcCardPos(idx, m_cards.size()));
-            it.setPosition(m_calc_hovered.getPos(idx));
-            break;
-
-        default:
-            assert_case(AddAnim);
-            break;
-    }
+//    switch (anim)
+//    {
+//        case ANIM_NONE:
+//            it.setElevation(0.0f);
+//            it.setOpacity(1.0f);
+//            //it.setPosition(calcCardPos(idx, m_cards.size()));
+//            it.setPosition(m_calc_hovered.getPos(idx));
+//            break;
+//
+//        case ANIM_MOVE:
+//            it.setElevation(0.0f);
+//            it.setOpacity(1.0f);
+//            //it.targetPosition(calcCardPos(idx, m_cards.size()));
+//            //it.targetPosition(m_calc_hovered.getPos(idx));
+//            break;
+//
+//        case ANIM_CREATE:
+//            it.setElevation(3.0f);
+//            it.targetElevation(0.0f);
+//            it.setOpacity(0.5f);
+//            it.targetOpacity(1.0f);
+//
+//            //it.setPosition(calcCardPos(idx, m_cards.size()));
+//            it.setPosition(m_calc_hovered.getPos(idx));
+//            break;
+//
+//        default:
+//            assert_case(AddAnim);
+//            break;
+//    }
 
 
 }
@@ -221,7 +223,7 @@ void CardList::updateCardPositions()
 
     for (size_t i = 0; i < m_cards.size(); ++i)
     {
-        m_cards[i].targetPosition(m_calc_hovered.getPos(i));
+        m_cards[i].animNudge(m_calc_hovered.getPos(i));
     }
 }
 
@@ -231,12 +233,12 @@ void CardList::hover(ssize_t idx)
     if (m_idx_hovered != idx)
     {
         if (m_idx_hovered >= 0)
-            m_cards[m_idx_hovered].targetElevation(ELEVATION_NOT_HOVERED);
+            m_cards[m_idx_hovered].animLower();
 
         m_idx_hovered = (ssize_t)idx;
 
         if (m_idx_hovered >= 0)
-            m_cards[m_idx_hovered].targetElevation(ELEVATION_HOVERED);
+            m_cards[m_idx_hovered].animRaise();
     }
 }
 

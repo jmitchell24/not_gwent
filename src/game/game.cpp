@@ -86,9 +86,9 @@ void PlayerStats::draw()
 
     switch (m_gems)
     {
-        case NONE: VIRT.drawTextLCtoLC(m_bounds_gems, "x x", colors::white); break;
-        case ONE : VIRT.drawTextLCtoLC(m_bounds_gems, "o x", colors::white); break;
-        case TWO : VIRT.drawTextLCtoLC(m_bounds_gems, "o o", colors::white); break;
+        case GEMS_NONE: VIRT.drawTextLCtoLC(m_bounds_gems, "x x", colors::white); break;
+        case GEMS_ONE : VIRT.drawTextLCtoLC(m_bounds_gems, "o x", colors::white); break;
+        case GEMS_TWO : VIRT.drawTextLCtoLC(m_bounds_gems, "o o", colors::white); break;
     }
 
     VIRT.drawTextCCtoCC(m_bounds_handcount, PRINTER("%02d", m_handcount), colors::white);
@@ -118,7 +118,7 @@ void CombatRow::layout(rect const &bounds)
 {
     m_bounds = bounds;
 
-    auto [b_score, b_special_unit] = bounds.splitLeft(45, VIRT_PAD);
+    auto [b_score, b_special_unit] = bounds.splitLeft(50, VIRT_PAD);
     auto [b_special, b_unit] = b_special_unit.splitLeft(80, VIRT_PAD);
 
     units.layout(b_unit);
@@ -140,19 +140,22 @@ void CombatRow::update()
 
 void CombatRow::draw()
 {
-    units.draw();
-    special.draw();
+
 
     {
-        auto c = colors::hsluv::orchid();
-        auto fg = c.withL(85).toColor();
-        auto bg = c.withL(15).toColor();
+        auto c = colors::hsluv::orchid().scheme<3>();
+        auto fg = c[0].withL(85).toColor();
+        auto bg = c[0].withL(15).toColor();
 
         VIRT.drawRectangle(m_bounds_score, bg);
         VIRT.drawTextCCtoCC(m_bounds_score.anchorCCtoCC(25, 25), PRINTER("%02d", m_score), fg);
+
+        VIRT.drawRectangle(units.bounds(), c[1].withL(15).toColor());
+        VIRT.drawRectangle(special.bounds(), c[2].withL(15).toColor());
     }
 
-
+    units.draw();
+    special.draw();
 }
 
 
@@ -171,16 +174,16 @@ void GameBoard::layout(ut::rect const &bounds)
     auto [b_stats, b_cards_decks] = bounds.shrunk(0, 0, 0, 30).splitLeft(bounds.width() / 4, VIRT_PAD);
     auto [b_cards, b_decks] = b_cards_decks.splitRight(bounds.width() / 4, VIRT_PAD);
 
-    auto b_cards_rows = b_cards.splitNV<8>(VIRT_PAD);
+    //auto b_cards_rows = b_cards.splitNV<8>(VIRT_PAD);
 
-    m_hand_cpu         .layout(b_cards_rows[0]);
-    m_combat_cpu_siege .layout(b_cards_rows[1]);
-    m_combat_cpu_ranged.layout(b_cards_rows[2]);
-    m_combat_cpu_melee .layout(b_cards_rows[3]);
-    m_combat_usr_siege .layout(b_cards_rows[4]);
-    m_combat_usr_ranged.layout(b_cards_rows[5]);
-    m_combat_usr_melee .layout(b_cards_rows[6]);
-    m_hand_usr         .layout(b_cards_rows[7]);
+    m_hand_cpu         .layout(b_cards.col(8, 0, {.inner_pad=VIRT_PAD}));
+    m_combat_cpu_siege .layout(b_cards.col(8, 1, {.inner_pad=VIRT_PAD}));
+    m_combat_cpu_ranged.layout(b_cards.col(8, 2, {.inner_pad=VIRT_PAD}));
+    m_combat_cpu_melee .layout(b_cards.col(8, 3, {.inner_pad=VIRT_PAD}));
+    m_combat_usr_siege .layout(b_cards.col(8, 4, {.inner_pad=VIRT_PAD}));
+    m_combat_usr_ranged.layout(b_cards.col(8, 5, {.inner_pad=VIRT_PAD}));
+    m_combat_usr_melee .layout(b_cards.col(8, 6, {.inner_pad=VIRT_PAD}));
+    m_hand_usr         .layout(b_cards.col(8, 7, {.inner_pad=VIRT_PAD}));
 
     auto [b_stats_cpu, b_dummy, b_stats_usr] = b_stats.splitNV<3>(VIRT_PAD);
     m_stats_cpu.layout(b_stats_cpu);

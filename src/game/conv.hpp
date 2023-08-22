@@ -15,7 +15,10 @@ namespace game
     // Conversion
     //
 
-    inline Color        torl(ut::color const& c) { return {c.r, c.g, c.b, c.a }; }
+    inline Color        torl(ut::color         const& c) { return {c.r, c.g, c.b, c.a }; }
+    inline Color        torl(ut::color::normal const& c) { return torl(c.toColor()); }
+    inline Color        torl(ut::color::hsluv  const& c) { return torl(c.toColor()); }
+    inline Color        torl(ut::color::hsv    const& c) { return torl(c.toColor()); }
 
     inline Vector2      torl(ut::vec2i const& v) { return { (float)v.x, (float)v.y }; }
     inline Vector2      torl(ut::vec2f const& v) { return { v.x, v.y }; }

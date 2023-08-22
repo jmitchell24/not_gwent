@@ -24,7 +24,7 @@ using namespace std;
 // gfx
 //
 #include "gfx/gfx_virt2d.hpp"
-#include "gfx/gfx_animation.hpp"
+#include "gfx/gfx_easings.hpp"
 using namespace gfx;
 
 
@@ -34,14 +34,46 @@ using namespace gfx;
 //
 
 Card::Card()
-        : Card(createTestCard())
+    : Card(createTestCard())
 {}
 
-Card::Card(Texture2D const& texture) :
-        m_texture {texture}
+Card::Card(color const& tint, Texture2D const& texture)
+    : m_tint{tint}, m_texture {texture}
 {
     assert(IsTextureReady(texture));
 }
+
+//
+// Card -> target
+//
+
+void Card::targetPosition(vec2 const& p)
+{
+    assert(m_is_layout_ready);
+
+    m_tween_pos.animTo(p);
+}
+
+void Card::targetElevation(float f)
+{
+    assert(m_is_layout_ready);
+    assert(f >= 0.0f);
+
+    m_tween_elevation.animTo(f);
+}
+
+void Card::targetOpacity(float f)
+{
+    assert(m_is_layout_ready);
+    assert(f >= 0.0f);
+    assert(f <= 1.0f);
+
+    m_tween_opacity.animTo(f);
+}
+
+//
+// Card -> set
+//
 
 void Card::setPosition(vec2 const& p)
 {
@@ -70,36 +102,37 @@ void Card::setOpacity(float f)
     m_tween_opacity.setToDst(f);
 }
 
+//
+// Card -> anim
+//
 
-void Card::targetPosition(vec2 const& p)
+void Card::animRaise()
 {
-    assert(m_is_layout_ready);
-
-    m_tween_pos.animTo(p);
+    //setElevation(ELEVATION_LO);
+    targetElevation(ELEVATION_HI);
 }
 
-void Card::targetElevation(float f)
+void Card::animLower()
 {
-    assert(m_is_layout_ready);
-    assert(f >= 0.0f);
-
-    m_tween_elevation.animTo(f);
+    //setElevation(ELEVATION_HI);
+    targetElevation(ELEVATION_LO);
 }
 
-void Card::targetOpacity(float f)
+void Card::animMove(ut::vec2 const& p)
 {
-    assert(m_is_layout_ready);
-    assert(f >= 0.0f);
-    assert(f <= 1.0f);
 
-    m_tween_opacity.animTo(f);
+}
+
+void Card::animNudge(ut::vec2 const& p)
+{
+    targetPosition(p);
 }
 
 void Card::layout(vec2 const& size)
 {
     m_psize.size = size;
 
-    m_elevation = 0.0f;
+    m_elevation = ELEVATION_LO;
     m_opacity   = 1.0f;
 
     m_tween_pos         = Tween2::make(&easings::elasticOut , 1.0f, m_psize.pos);
@@ -143,15 +176,11 @@ void Card::draw()
 
     VIRT.drawTexturePro(m_texture, r, c);
 
-
-#ifndef NDEBUG
-
-    auto outer = m_outline_color.toHSLUV();
+    auto outer = m_tint.toHSLUV();
     auto inner = outer.withL(outer.l / 2).withA(0.25f);
 
     VIRT.drawRectangle(r, inner.toColor());
     VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
-#endif
 }
 
 Card Card::createTestCard()
@@ -399,11 +428,7 @@ Card Card::createTestCard()
     Texture2D tex = LoadTexture(filename);
     assert(IsTextureReady(tex));
 
-    Card card{tex};
-#ifndef NDEBUG
-    card.m_outline_color = RANDOM.nextColor();
-#endif
-
+    Card card{RANDOM.nextColor(), tex};
     cards.insert({idx, card});
 
     return card;

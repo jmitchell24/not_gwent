@@ -4,7 +4,7 @@
 // Created by james on 8/16/23.
 //
 
-#include "gfx/gfx_animation.hpp"
+#include "gfx/gfx_easings.hpp"
 
 //
 // raylib
@@ -19,15 +19,18 @@ namespace game
     class Card
     {
     public:
-        static constexpr float ASPECT_RATIO = 1.88f;
+        //static constexpr float ASPECT_RATIO = 1.88f;
+        static constexpr float ELEVATION_HI    = 1.25f;
+        static constexpr float ELEVATION_LO    = 1.00f;
+
 
         Card();
-        Card(Texture2D const& texture_back);
+        Card(ut::color const& tint, Texture2D const& texture_back);
 
         inline Texture2D const& texture() const { return m_texture; }
 
         inline ut::color tint       () const { return ut::colors::white.withNormalA(m_opacity); }
-        inline ut::rect  rect       () const { return ut::rect(m_psize).anchorCCtoCC_W(m_psize.width * (m_elevation/4 + 1)); }
+        inline ut::rect  rect       () const { return ut::rect(m_psize).anchorCCtoCC_W(m_psize.width * m_elevation); }
         inline ut::vec2  position   () const { return m_psize.pos; }
         inline ut::vec2  size       () const { return m_psize.size; }
         inline float     elevation  () const { return m_elevation; }
@@ -38,13 +41,31 @@ namespace game
             return rect().contains(p);
         }
 
+        //
+        // target
+        //
+
         void targetPosition (ut::vec2 const& p);
         void targetElevation(float f);
         void targetOpacity  (float f);
 
+        //
+        // set
+        //
+
         void setPosition    (ut::vec2 const& p);
         void setElevation   (float f);
         void setOpacity     (float f);
+
+        //
+        // anim
+        //
+
+        void animRaise();
+        void animLower();
+        void animMove(ut::vec2 const& p);
+        void animNudge(ut::vec2 const& p);
+
 
         void layout(ut::vec2 const& size);
         void update();
@@ -55,6 +76,8 @@ namespace game
 
     private:
         Texture2D       m_texture;
+
+        ut::color       m_tint;
 
         ut::psize       m_psize;
         float           m_elevation;
@@ -67,11 +90,10 @@ namespace game
         gfx::Tween1     m_tween_elevation;
         gfx::Tween1     m_tween_opacity;
 
-        gfx::Tween2     m_tween_fuzz_pos;
+        gfx::Tween2     m_tween_fuzz_position;
         gfx::Tween1     m_tween_fuzz_rot;
 
 #ifndef NDEBUG
-        ut::color   m_outline_color;
         bool        m_is_layout_ready = false;
 #endif
     };

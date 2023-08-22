@@ -238,9 +238,9 @@ namespace easings
         values_type value_dst;
         values_type value_cur;
 
-        M_DECL easings::real_t progress() const { return time_cur / time_dur; }
-        M_DECL bool isAtSrc() const { return time_cur == 0.0f; }
-        M_DECL bool isAtDst() const { return time_cur >= time_dur; }
+        M_DECL_PURE easings::real_t progress() const { return time_cur / time_dur; }
+        M_DECL_PURE bool isAtSrc() const { return time_cur == 0.0f; }
+        M_DECL_PURE bool isAtDst() const { return time_cur >= time_dur; }
 
         //
         // value convert
@@ -361,11 +361,12 @@ namespace easings
         }
 
         ENABLE_IF_1 M_DECL void setToDst(easings::real_t x)  { setToDstValues({x});}
-        ENABLE_IF_2 M_DECL void setToDst(ut::vec2  const& v) { setToDstValues(v.pack); }
-        ENABLE_IF_3 M_DECL void setToDst(ut::vec3  const& v) { setToDstValues(v.pack); }
-        ENABLE_IF_4 M_DECL void setToDst(ut::vec4  const& v) { setToDstValues(v.pack); }
-        ENABLE_IF_4 M_DECL void setToDst(ut::rect  const& r) { setToDstValues({r.min.x, r.min.y, r.max.x, r.max.y}); }
-        ENABLE_IF_4 M_DECL void setToDst(ut::color const& c) { setToDstValues({c.r, c.g, c.b, c.a}); }
+        ENABLE_IF_2 M_DECL void setToDst(ut::vec2           const& v) { setToDstValues(v.pack); }
+        ENABLE_IF_3 M_DECL void setToDst(ut::vec3           const& v) { setToDstValues(v.pack); }
+        ENABLE_IF_4 M_DECL void setToDst(ut::vec4           const& v) { setToDstValues(v.pack); }
+        ENABLE_IF_4 M_DECL void setToDst(ut::rect           const& r) { setToDstValues({r.min.x, r.min.y, r.max.x, r.max.y}); }
+        ENABLE_IF_4 M_DECL void setToDst(ut::color          const& c) { setToDst(c.toNormal()); }
+        ENABLE_IF_4 M_DECL void setToDst(ut::color::normal  const& c) { setToDstValues({c.r, c.g, c.b, c.a}); }
 
         //
         // update

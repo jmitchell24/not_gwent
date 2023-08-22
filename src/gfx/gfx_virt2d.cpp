@@ -245,6 +245,64 @@ void Virt2DManager::drawRectangle(rectf const& r, color const& c) const
     DrawRectanglePro(torl(r), {0,0}, 0, torl(c));
 }
 
+struct line_of_verts
+{
+
+    struct tris { vec2 a,b,c,d; };
+    std::vector<tris> strips;
+
+    void layout(std::vector<vec2> const& points, float width)
+    {
+        if (points.size() <= 2)
+            return;
+
+        strips.clear();
+        for (size_t i = 2; i < points.size(); i+=2)
+        {
+            auto p1 = points[i-2];
+            auto p2 = points[i-1];
+            auto p3 = points[i];
+
+            auto n1 = (p2 - p1).normal();
+            auto n2 = (p3 - p2).normal();
+
+            auto tan = (n2 - n1).normal();
+
+            auto w2 = width / 2.0f;
+
+            auto v1 = p1 + tan * w2;
+            auto v2 = p1 - tan * w2;
+
+            auto v3 = p2 + tan * w2;
+            auto v4 = p2 - tan * w2;
+
+            auto v5 = p3 + tan * w2;
+            auto v6 = p3 - tan * w2;
+
+            strips.push_back({v1,v2,v3,v4});
+            strips.push_back({v3,v4,v5,v6});
+        }
+    }
+
+    void draw(Color color) const
+    {
+        rlBegin(RL_TRIANGLES);
+        rlColor4ub(color.r, color.g, color.b, color.a/2);
+        for (auto&& it: strips)
+        {
+            rlVertex2f(it.c.x, it.c.y);
+            rlVertex2f(it.b.x, it.b.y);
+            rlVertex2f(it.a.x, it.a.y);
+
+            rlVertex2f(it.b.x, it.b.y);
+            rlVertex2f(it.c.x, it.c.y);
+            rlVertex2f(it.d.x, it.d.y);
+        }
+        rlEnd();
+    }
+
+};
+
 //void Virt2DManager::drawTexture(Texture2D const& texture, rect const& src, rect const& dst) const
 //{
 //    ASSERT_BEGIN_FLAG;

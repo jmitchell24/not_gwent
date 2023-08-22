@@ -8,7 +8,7 @@
 #include "game/cardlist.hpp"
 
 #include "game/object.hpp"
-#include "gfx/gfx_animation.hpp"
+#include "gfx/gfx_easings.hpp"
 
 //
 // raylib
@@ -35,8 +35,8 @@ namespace game
     class CardMover
     {
     public:
-        using cardlists_type = std::vector<CardList*>;
-        using movingcard_type = std::optional<Card>;
+        using cardlists_type    = std::vector<CardList*>;
+        using movingcard_type   = std::optional<Card>;
 
 
 
@@ -70,21 +70,30 @@ namespace game
 
 
     private:
-        std::vector<CardList*>  m_cardlists;
-        std::optional<Card>     m_moving_card;
+        cardlists_type      m_cardlists;
+        movingcard_type     m_moving_card;
+
+        std::optional<ut::vec2> m_dead_mp;
 
         void updateCL(ut::vec2 const& mp, CardList& cl)
         {
+            if (m_dead_mp)
+            {
+                auto radius = (mp - *m_dead_mp).length();
+                if (radius < 10)
+                    return;
+                m_dead_mp.reset();
+            }
+
             if (m_moving_card)
             {
                 if (size_t idx; cl.tryGetGhostIndex(mp, idx))
                 {
-
-
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
                         cl.addCard(idx, *m_moving_card, CardList::ANIM_MOVE);
                         m_moving_card.reset();
+                        m_dead_mp = mp;
                     }
                     else
                     {
@@ -100,13 +109,10 @@ namespace game
             {
                 if (size_t idx; cl.tryGetHoverIndex(mp, idx))
                 {
-
-
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        m_moving_card =  cl.removeCard(idx);
-                        m_moving_card->targetElevation(2.0f);
-                        m_moving_card->targetOpacity(0.5f);
+                        m_moving_card = cl.removeCard(idx);
+                        m_moving_card->animRaise();
                         cl.setGhost(idx);
                     }
                     else
@@ -150,12 +156,12 @@ namespace game
     class PlayerStats
     {
     public:
-        enum Gems { NONE, ONE, TWO };
+        enum Gems { GEMS_NONE, GEMS_ONE, GEMS_TWO };
 
         ut::cstrview    m_name         = "Geralt";
         ut::cstrview    m_deckname     = "Northern Realms";
 
-        Gems            m_gems         = NONE;
+        Gems            m_gems         = GEMS_NONE;
         unsigned        m_handcount    = 3;
         unsigned        m_score        = 32;
 

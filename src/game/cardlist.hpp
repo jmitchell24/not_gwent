@@ -22,6 +22,8 @@ namespace game
 
         CardList(Direction direction, cardlist_t cards);
 
+        inline ut::rect const& bounds() const { return m_bounds; }
+
         inline size_t       count       () const { return m_cards.size(); }
         inline Direction    direction   () const { return m_direction; }
 
