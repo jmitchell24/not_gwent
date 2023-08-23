@@ -23,9 +23,12 @@ namespace game
         static constexpr float ELEVATION_HI    = 1.25f;
         static constexpr float ELEVATION_LO    = 1.00f;
 
+        static constexpr float ASPECT_RATIO     = 1.43f;
+        static constexpr float ASPECT_RATIO_INV = 0.70f;
+
 
         Card();
-        Card(ut::color const& tint, Texture2D const& texture_back);
+        Card(ut::color const& tint, Font const& font, Texture2D const& texture_back);
 
         inline Texture2D const& texture() const { return m_texture; }
 
@@ -67,6 +70,7 @@ namespace game
         void animNudge(ut::vec2 const& p);
 
 
+        void layout(ut::rect const& bounds);
         void layout(ut::vec2 const& size);
         void update();
         void draw();
@@ -75,6 +79,7 @@ namespace game
         static cardlist_t   createTestCards(size_t n);
 
     private:
+        Font            m_font;
         Texture2D       m_texture;
 
         ut::color       m_tint;

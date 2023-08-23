@@ -10,68 +10,66 @@
 
 namespace gfx
 {
-    using rect = ut::rectf;
-    using vec2 = ut::vec2f;
-    using color = ut::color;
-
     ///
     /// Provides additional drawing functionality, namely a fixed size viewport / screen space for 2d drawing.
     ///
     class Virt2DManager
     {
     public:
-        inline rect realViewport() const { return m_real_viewport; }
-        inline rect virtViewport() const { return m_virt_viewport; }
+        inline ut::rectf realViewport() const { return m_real_viewport; }
+        inline ut::rectf virtViewport() const { return m_virt_viewport; }
 
-        vec2 realPoint(vec2 const& p) const;
-        rect realRect(rect const& r) const;
+        ut::vec2f realPoint(ut::vec2f const& p) const;
+        ut::rectf realRect(ut::rectf const& r) const;
 
-        void layout(rect const& real_viewport, float virt_width, float virt_height);
+        void layout(ut::rectf const& real_viewport, float virt_width, float virt_height);
 
-        color nextDebugColor(size_t seed);
+        ut::color nextDebugColor(size_t seed);
 
         void begin();
         void end();
 
-        void beginScissor(rect const& r);
+        void beginScissor(ut::rectf const& r);
         void endScissor();
 
         //void drawText(rect const& r, float font_size, cstrview const& s, color const& c);
 
-        float   measureTextWidth (ut::cstrparam s, float font_size) const;
-        vec2    measureTextSize  (ut::cstrparam s, float font_size) const;
-        rect    measureTextRect  (ut::cstrparam s, vec2 const& p, float font_size) const;
+        float       measureTextWidth (ut::cstrparam s, float font_size) const;
+        ut::vec2f   measureTextSize  (ut::cstrparam s, float font_size) const;
+        ut::rectf   measureTextRect  (ut::cstrparam s, ut::vec2f const& p, float font_size) const;
 
         // TODO: these methods calculate a rect for text alignment, consider returning it
 #define CASE(x_) \
-        void drawText##x_(rect const& r, ut::cstrparam s, color const& c) const; \
-        void drawText##x_(rect const& r, float font_size, ut::cstrparam s, color const& c) const;
+        void drawText##x_(ut::rectf const& r, ut::cstrparam s, ut::color const& c) const; \
+        void drawText##x_(ut::rectf const& r, float h, ut::cstrparam s, ut::color const& c) const; \
+        void drawText##x_(Font font, ut::rectf const& r, ut::cstrparam s, ut::color const& c) const; \
+        void drawText##x_(Font font, ut::rectf const& r, float h, ut::cstrparam s, ut::color const& c) const;
 UT_ENUM_RECT_ALIGNMENTS
 #undef CASE
 
-        void drawThinLine(vec2 const& a, vec2 const& b, color const& c);
-        void drawRectThinLines(rect const& r, color const& c);
+        void drawThinLine(ut::vec2f const& a, ut::vec2f const& b, ut::color const& c);
+        void drawRectThinLines(ut::rectf const& r, ut::color const& c);
 
-        void drawLine(vec2 const& a, vec2 const& b, float line_width, color const& c) const;
-        void drawRectangleLines(rect const& r, float line_width, color const& c) const;
+        void drawLine(ut::vec2f const& a, ut::vec2f const& b, float line_width, ut::color const& c) const;
+        void drawRectangleLines(ut::rectf const& r, float line_width, ut::color const& c) const;
 
-        void drawRectangle(rect const& r, color const& c) const;
+        void drawRectangle(ut::rectf const& r, ut::color const& c) const;
 
-        void drawTextureV  (Texture2D texture, vec2 const& position, color const& c);                                                       // Draw a Texture2D with position defined as Vector2
-        void drawTextureEx (Texture2D texture, vec2 const& position, float rotation, float scale, color const& c);                          // Draw a Texture2D with extended parameters
+        void drawTextureV  (Texture2D texture, ut::vec2f const& position, ut::color const& c);                                                       // Draw a Texture2D with position defined as Vector2
+        void drawTextureEx (Texture2D texture, ut::vec2f const& position, float rotation, float scale, ut::color const& c);                          // Draw a Texture2D with extended parameters
 
-        void drawTextureRec(Texture2D texture, vec2 const& position, color const& c);
-        void drawTextureRec(Texture2D texture, rect const& source, vec2 const& position, color const& c);                                   // Draw a part of a texture defined by a rectangle
+        void drawTextureRec(Texture2D texture, ut::vec2f const& position, ut::color const& c);
+        void drawTextureRec(Texture2D texture, ut::rectf const& source, ut::vec2f const& position, ut::color const& c);                                   // Draw a part of a texture defined by a rectangle
 
-        void drawTexturePro(Texture2D texture, rect const& dest, color const& c);
-        void drawTexturePro(Texture2D texture, rect const& source, rect const& dest, vec2 const& origin, float rotation, color const& c);   // Draw a part of a texture defined by a rectangle with 'pro' parameters
+        void drawTexturePro(Texture2D texture, ut::rectf const& dest, ut::color const& c);
+        void drawTexturePro(Texture2D texture, ut::rectf const& source, ut::rectf const& dest, ut::vec2f const& origin, float rotation, ut::color const& c);   // Draw a part of a texture defined by a rectangle with 'pro' parameters
 
 
         //
         // debug
         //
 
-        inline void drawRectDebug(ut::cstrparam lbl, rect const& r)
+        inline void drawRectDebug(ut::cstrparam lbl, ut::rectf const& r)
         { m_debug.addRect(lbl, realRect(r)); }
 
         inline bool drawDebug()
@@ -84,8 +82,8 @@ UT_ENUM_RECT_ALIGNMENTS
         static Virt2DManager& instance();
 
     private:
-        rect    m_real_viewport;
-        rect    m_virt_viewport;
+        ut::rectf    m_real_viewport;
+        ut::rectf    m_virt_viewport;
 
         float   m_scale=1;
         Matrix  m_transform;
@@ -105,5 +103,5 @@ UT_ENUM_RECT_ALIGNMENTS
     // misc
     //
 
-    color GetDebugColor(size_t seed);
+    ut::color GetDebugColor(size_t seed);
 }

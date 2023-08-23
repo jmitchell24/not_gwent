@@ -9,6 +9,7 @@ using namespace game;
 // gfx
 //
 #include "gfx/gfx_virt2d.hpp"
+#include "gfx/gfx_curves.hpp"
 using namespace gfx;
 
 //
@@ -27,6 +28,7 @@ using namespace std;
 #include "rlImGui/rlImGui.h"
 #include "rlImGui/imgui/imgui_extra.hpp"
 #include "rlImGui/extras/IconsFontAwesome5.h"
+
 //#include <lua.hpp>
 
 size_t constexpr static SCREEN_WIDTH    = 1920;
@@ -35,96 +37,6 @@ size_t constexpr static SCREEN_HEIGHT   = 1080;
 size_t constexpr static VIRT_WIDTH  = 1280;
 size_t constexpr static VIRT_HEIGHT = 720;
 size_t constexpr static VIRT_PAD    = 10;
-
-struct Segment
-{
-    vec2 a,b,c,d;
-
-    float tmin, tmax;
-
-    void layout(vec2 const& p0, vec2 const& p1, vec2 const& p2, vec2 const& p3,
-                float alpha, float tension,
-                float tmin, float tmax)
-    {
-        //https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
-        assert(alpha >= 0 && alpha <= 1);
-        assert(tension >= 0 && alpha <= 1);
-
-        auto t01 = pow(p0.distance(p1), alpha);
-        auto t12 = pow(p1.distance(p2), alpha);
-        auto t23 = pow(p2.distance(p3), alpha);
-
-        auto m1 = ( p2 - p1 + ( ( (p1 - p0) / t01 - (p2 - p0) / (t01 + t12) ) * t12 ) ) * (1.0f - tension);
-        auto m2 = ( p2 - p1 + ( ( (p3 - p2) / t23 - (p3 - p1) / (t12 + t23) ) * t12 ) ) * (1.0f - tension);
-
-        a = ( (p1 - p2) *  2.0f ) + m1 + m2;
-        b = ( (p1 - p2) * -3.0f ) - m1 - m1 - m2;
-        c = m1;
-        d = p1;
-
-        this->tmin = tmin;
-        this->tmax = tmax;
-    }
-
-    static float mapRange(float value, float fromMin, float fromMax, float toMin, float toMax) {
-        return toMin + ((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin);
-    }
-
-    vec2 point(float _t) const
-    {
-        float t = mapRange(_t, tmin, tmax, 0, 1);
-        return
-            ( a * t * t * t ) +
-            ( b * t * t ) +
-            ( c * t ) +
-            ( d );
-    }
-};
-
-struct Spline
-{
-    vector<Segment> segments;
-
-    void layout(vector<vec2> const& control_points, float alpha, float tension)
-    {
-        assert(control_points.size() >= 4);
-        assert(alpha >= 0 && alpha <= 1);
-        assert(tension >= 0 && tension <= 1);
-
-        size_t sz = control_points.size()-3;
-        float td = 1.0f / float(sz);
-        float t0 = 0.0f;
-
-        for (size_t i = 0; i < sz; ++i)
-        {
-            float t1 = t0 + td - FLT_EPSILON;
-
-            Segment s;
-            s.layout(
-                control_points[i + 0],
-                control_points[i + 1],
-                control_points[i + 2],
-                control_points[i + 3],
-                alpha, tension, t0, t1);
-            segments.push_back(s);
-
-            t0 = t1;
-
-        }
-    }
-
-    vec2 point(float t) const
-    {
-        assert(t >= 0 && t <= 1);
-        auto fi  = (t * (1.0f - FLT_EPSILON) * float(segments.size()));
-
-        auto i = size_t(fi);
-        assert(i >= 0 && i < segments.size());
-
-        return segments[i].point(t);
-    }
-};
-
 
 
 struct CatmullRomDemo
@@ -143,13 +55,13 @@ struct CatmullRomDemo
     {
 
         auto b = m_bounds.shrunk(100);
-        auto origin = b.shrunk(10).lc();
-        auto increment = vec2(b.width() / float(cc_count), 0);
+        auto org = b.shrunk(10).lc();
+        auto inc = vec2(b.width() / float(cc_count), 0);
 
         control_points.clear();
         for (size_t i = 0; i < cc_count; ++i)
         {
-            control_points.emplace_back(origin + increment * float(i));
+            control_points.emplace_back(org + inc * float(i));
         }
     }
 
@@ -178,7 +90,7 @@ struct CatmullRomDemo
 //        Segment s;
 //        s.layout(control_points[0], control_points[1], control_points[2], control_points[3], alpha, tension);
 
-        Spline s;
+        CatmullRomSpline s;
         s.layout(control_points, alpha, tension);
 
         auto p0 = s.point(t0);
@@ -203,8 +115,10 @@ struct CatmullRomDemo
             for (size_t i = 0; i < control_points.size(); ++i)
             {
                 auto&& it = control_points[i];
-                DrawCircle(it.x, it.y, 10, torl(col_control_point));
-                DrawText(PRINTER("%d", i+1).c_str(), it.x, it.y, 30, torl(ut::colors::white));
+                DrawCircleLines(it.x, it.y, 10, torl(col_control_point));
+
+                auto text_it = it + vec2(10);
+                DrawText(PRINTER("%d", i+1).c_str(), text_it.x, text_it.y, 30, torl(ut::colors::white));
             }
         }
 
@@ -239,7 +153,7 @@ struct CatmullRomDemo
 
         ImGui::SliderFloat("alpha", &alpha, 0.0f, 1.0f);
         ImGui::SliderFloat("tension", &tension, 0.0f, 1.0f);
-        ImGui::SliderInt("segments", &segments, 1, 30);
+        ImGui::SliderInt("segments", &segments, 1, 200);
 
 #define COLOR_EDIT(x_) \
     do \
@@ -265,7 +179,7 @@ struct CatmullRomDemo
     }
 };
 
-struct Demo
+struct CardMoverDemo
 {
 
 
@@ -309,12 +223,42 @@ struct Demo
 
 
     }
+
+    void drawDebug(cstrparam label)
+    {
+
+    }
 };
 
+struct CardDemo
+{
+    Card card;
+    void layout(rect const& bounds)
+    {
+
+        card = Card::createTestCard();
+        card.layout(bounds);
+    }
+
+    void update()
+    {
+        card.update();
+    }
+
+    void draw()
+    {
+        card.draw();
+    }
+
+    void debugDraw(cstrparam label)
+    {
+
+    }
+};
+
+using game_t = CardMoverDemo;
 int main()
 {
-
-
     SetTargetFPS(120);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "not gwent");
@@ -329,8 +273,11 @@ int main()
 
     auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
 
-    CatmullRomDemo demo;
-    demo.layout(window_bounds);
+
+    game_t gg;
+
+    gg.layout(window_bounds);
+
 //    GameBoard gb;
 //    gb.layout(window_bounds);
 
@@ -357,11 +304,8 @@ int main()
         VIRT.begin();
 
 
-//        gb.update();
-//        gb.draw();
-
-        demo.update();
-        demo.draw();
+        gg.update();
+        gg.draw();
 
 
         VIRT.end();
@@ -375,12 +319,12 @@ int main()
             ImGui::RenderDockspace();
 
             ImGui::Begin("main_window");
-            {
-
-                demo.drawDebug();
-                VIRT.drawDebug();
-            }
+            VIRT.drawDebug();
             ImGui::End();
+
+//            ImGui::Begin("gg");
+//            gg.drawDebug("gg"_sv);
+//            ImGui::End();
         }
         rlImGuiEnd();
 

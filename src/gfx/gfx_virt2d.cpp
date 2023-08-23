@@ -165,20 +165,24 @@ void Virt2DManager::endScissor()
 
     m_begin_scissor_flag = false;
 }
-
+//MeasureTextEx(Font font, const char *text, float fontSize, float spacing);
 #define CASE(x_) \
-void Virt2DManager::drawText##x_(rectf const& r, float font_size, cstrparam s, color const& c) const \
+void Virt2DManager::drawText##x_(rectf const& r, float h, cstrparam s, color const& c) const \
 { \
-    assert(font_size > 0); \
-    auto w      = MeasureText(s.c_str(), font_size); \
-    auto h      = font_size; \
-    auto r_text = r.anchor##x_(w,h); \
-    \
-    DrawText(s.c_str(), r_text.min.x, r_text.min.y, font_size, torl(c)); \
-    \
+    assert(h > 0); \
+    auto r_text = r.anchor##x_(float(MeasureText(s.c_str(), int(h))),h); \
+    DrawText(s.c_str(), r_text.min.x, r_text.min.y, h, torl(c)); \
 } \
 void Virt2DManager::drawText##x_(rectf const& r, cstrparam s, color const& c) const \
-{ drawText##x_(r, r.height(), s, c); }
+{ drawText##x_(r, r.height(), s, c); } \
+void Virt2DManager::drawText##x_(Font font, rectf const& r, float h, cstrparam s, color const& c) const \
+{ \
+    assert(h > 0); \
+    auto r_text = r.anchor##x_(tout(MeasureTextEx(font, s.c_str(), h, 2))); \
+    DrawTextEx(font, s.c_str(), Vector2{r_text.min.x, r_text.min.y}, h, 2, torl(c)); \
+} \
+void Virt2DManager::drawText##x_(Font font, rectf const& r, cstrparam s, color const& c) const \
+{ drawText##x_(font, r, r.height(), s, c); }
 
     UT_ENUM_RECT_ALIGNMENTS
 #undef CASE

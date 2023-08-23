@@ -6,31 +6,36 @@
 
 #include <ut/math.hpp>
 
+#include <vector>
+
 namespace gfx
 {
-namespace curves
-{
-    using real_t = float;
-
-    template <size_t D>
-    ut::vec<real_t, D> Bezier_interpolate(real_t u, ut::vec<real_t, D> const& P0, ut::vec<real_t, D> const& P1, ut::vec<real_t, D> const& P2, ut::vec<real_t, D> const& P3)
+    class CatmullRomSpline
     {
-//    vec2 point = u*u*u*((-1) * P0 + 3 * P1 - 3 * P2 + P3);
-//    point +=u*u*(3*P0 - 6 * P1+ 3 * P2);
-//    point +=u*((-3) * P0 + 3 * P1);
-//    point +=P0;
+    public:
+        using cpoints_type = std::vector<ut::vec2f>;
 
-        auto point =
-            ( ( (P0 * -1) + (P1 * 3) - (P2 * 3) + P3) * u * u * u ) +
-            ( ( (P0 *  3) - (P1 * 6) + (P2 * 3) ) * u * u ) +
-            ( ( (P0 * -3) + (P1 * 3)) * u ) +
-            ( P0 );
+        ut::vec2f point(float t) const;
+        void layout(cpoints_type const& cpoints, float alpha, float tension);
 
-        return point;
-    }
-}
+    private:
+        struct Segment
+        {
+            ut::vec2f   m_p[4]{};
+            float       m_tmin{};
+            float       m_tmax{};
 
+            ut::vec2f point(float t) const;
+            void layout(ut::vec2f const& p0,
+                        ut::vec2f const& p1,
+                        ut::vec2f const& p2,
+                        ut::vec2f const& p3,
+                        float alpha, float tension,
+                        float tmin, float tmax);
+        };
 
-
+        using segments_type = std::vector<Segment>;
+        segments_type m_segments;
+    };
 
 }
