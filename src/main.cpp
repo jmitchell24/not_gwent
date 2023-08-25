@@ -233,11 +233,24 @@ struct CardMoverDemo
 struct CardDemo
 {
     Card card;
+
+    RenderTexture2D r2d;
+
     void layout(rect const& bounds)
     {
 
         card = Card::createTestCard();
         card.layout(bounds);
+
+//        auto [w,h] = card.rect().size().pack;
+//
+//        r2d = LoadRenderTexture(w,h);
+
+//        BeginTextureMode(r2d);
+//        card.draw();
+//        EndTextureMode();
+
+
     }
 
     void update()
@@ -255,6 +268,31 @@ struct CardDemo
 
     }
 };
+
+struct Mass
+{
+    bool anchor;
+
+    float m;
+    vec2f position;
+    vec2f velocity;
+    vec2f force;
+
+    void reset()
+    {
+        position.set(0,0);
+        velocity.set(0,0);
+        force.set(0,0);
+    }
+
+    void update(float dt)
+    {
+        velocity += (force / m) * dt;
+        position += velocity * dt;
+    }
+};
+
+
 
 using game_t = CardMoverDemo;
 int main()

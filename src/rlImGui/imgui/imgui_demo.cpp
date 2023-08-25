@@ -1743,7 +1743,7 @@ static void ShowDemoWindowWidgets()
         static int func_type = 0, display_count = 70;
         ImGui::Separator();
         ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
-        ImGui::Combo("func", &func_type, "Sin\0Saw\0");
+        ImGui::Combo("m_ease", &func_type, "Sin\0Saw\0");
         ImGui::SameLine();
         ImGui::SliderInt("Sample count", &display_count, 1, 400);
         float (*func)(void*, int) = (func_type == 0) ? Funcs::Sin : Funcs::Saw;

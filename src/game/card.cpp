@@ -40,9 +40,21 @@ Card::Card()
     : Card(createTestCard())
 {}
 
-Card::Card(color const& tint, Font const& font, Texture2D const& texture)
-    : m_tint{tint}, m_font{font}, m_texture {texture}
+//m_tween_position    = Tween2(&easings::elasticOut , 1.0f);
+//m_tween_offset      = Tween2(&easings::elasticOut , 1.0f);
+//m_tween_rotation    = Tween1(&easings::expoOut    , 0.5f);
+//m_tween_elevation   = Tween1(&easings::bounceOut  , 0.5f);
+//m_tween_opacity     = Tween1(&easings::expoOut    , 0.5f);
+
+Card::Card(color const& color, Font const& font, Texture2D const& texture) :
+    m_color {color}, m_font {font}, m_texture {texture},
+    m_tween_position  {&easings::elasticOut , 1.0f},
+    m_tween_offset    {&easings::elasticOut , 1.0f},
+    m_tween_rotation  {&easings::expoOut    , 0.5f},
+    m_tween_elevation {&easings::bounceOut  , 0.5f},
+    m_tween_opacity   {&easings::expoOut    , 0.5f}
 {
+    assert(IsFontReady(font));
     assert(IsTextureReady(texture));
 }
 
@@ -50,11 +62,20 @@ Card::Card(color const& tint, Font const& font, Texture2D const& texture)
 // Card -> target
 //
 
-void Card::targetPosition(vec2 const& p)
+void Card::targetPosition(vec2f const& p)
 {
     assert(m_is_layout_ready);
 
-    m_tween_pos.animTo(p);
+    if (m_position != p)
+        m_tween_position.anim(m_position, p);;
+}
+
+void Card::targetOffset(vec2f const& p)
+{
+    assert(m_is_layout_ready);
+
+    if (m_offset != p)
+        m_tween_offset.anim(m_offset, p);
 }
 
 void Card::targetElevation(float f)
@@ -62,28 +83,45 @@ void Card::targetElevation(float f)
     assert(m_is_layout_ready);
     assert(f >= 0.0f);
 
-    m_tween_elevation.animTo(f);
+    if (m_elevation != f)
+        m_tween_elevation.anim(m_elevation, f);
+}
+
+void Card::targetRotation(float f)
+{
+    assert(m_is_layout_ready);
+
+    if (m_rotation != f)
+        m_tween_rotation.anim(m_rotation, f);
 }
 
 void Card::targetOpacity(float f)
 {
     assert(m_is_layout_ready);
-    assert(f >= 0.0f);
-    assert(f <= 1.0f);
+    assert(f >= 0.0f); assert(f <= 1.0f);
 
-    m_tween_opacity.animTo(f);
+    if (m_opacity != f)
+        m_tween_opacity.anim(m_opacity,f);
 }
 
 //
 // Card -> set
 //
 
-void Card::setPosition(vec2 const& p)
+void Card::setPosition(vec2f const& p)
 {
     assert(m_is_layout_ready);
 
-    m_psize.pos = p;
-    m_tween_pos.setToDst(p);
+    m_position = p;
+    m_tween_position.setToDst();
+}
+
+void Card::setOffset(vec2f const& p)
+{
+    assert(m_is_layout_ready);
+
+    m_offset = p;
+    m_tween_offset.setToDst();
 }
 
 void Card::setElevation(float f)
@@ -92,17 +130,22 @@ void Card::setElevation(float f)
     assert(f >= 0.0f);
 
     m_elevation = f;
-    m_tween_elevation.setToDst(f);
+}
+
+void Card::setRotation(float f)
+{
+    assert(m_is_layout_ready);
+    assert(f >= 0.0f);
+
+    m_rotation = f;
 }
 
 void Card::setOpacity(float f)
 {
     assert(m_is_layout_ready);
-    assert(f >= 0.0f);
-    assert(f <= 1.0f);
+    assert(f >= 0.0f); assert(f <= 1.0f);
 
     m_opacity = f;
-    m_tween_opacity.setToDst(f);
 }
 
 //
@@ -126,29 +169,31 @@ void Card::animMove(vec2 const& p)
 
 }
 
-void Card::animNudge(vec2 const& p)
+void Card::animNudge(vec2f const& p)
 {
     targetPosition(p);
+
+    float len = m_width / 10;
+    auto offset = vec2f(p.x - m_position.x, 0) / 5;
+    targetOffset(offset);
+
 }
 
 void Card::layout(ut::rect const& bounds)
 {
-    auto x = bounds.anchorCCtoCC(bounds.fit(m_texture.width, m_texture.height));
-    layout(x.size());
-    m_psize.pos = x.pos();
+    auto b = bounds.anchorCCtoCC(bounds.fit((float)m_texture.width, (float)m_texture.height));
+    layout(b.size());
+
+    //m_position  = {0.0f, 0.0f};
+    //m_offset    = {0.0f, 0.0f};
 }
 
 void Card::layout(vec2 const& size)
 {
-
-
-    m_psize.size = size;
+    m_width     = size.x;
+    m_height    = size.y;
     m_elevation = ELEVATION_LO;
     m_opacity   = 1.0f;
-
-    m_tween_pos         = Tween2::make(&easings::elasticOut , 1.0f, m_psize.pos);
-    m_tween_elevation   = Tween1::make(&easings::bounceOut  , 0.5f, m_elevation);
-    m_tween_opacity     = Tween1::make(&easings::expoOut    , 0.5f, m_opacity);
 
 #ifndef NDEBUG
     m_is_layout_ready = true;
@@ -160,20 +205,12 @@ void Card::update()
     assert(m_is_layout_ready);
 
     auto dt = GetFrameTime();
-    if (m_tween_pos.update(dt))
-    {
-        m_psize.pos = m_tween_pos.curVec2();
-    }
 
-    if (m_tween_elevation.update(dt))
-    {
-        m_elevation = m_tween_elevation.curScalar();
-    }
-
-    if (m_tween_opacity.update(dt))
-    {
-        m_opacity = m_tween_opacity.curScalar();
-    }
+    if (m_tween_position     .update(dt)) m_position  = m_tween_position .now();
+    if (m_tween_offset       .update(dt)) m_offset    = m_tween_offset   .now();
+    if (m_tween_rotation     .update(dt)) m_rotation  = m_tween_rotation .now();
+    if (m_tween_elevation    .update(dt)) m_elevation = m_tween_elevation.now();
+    if (m_tween_opacity      .update(dt)) m_opacity   = m_tween_opacity  .now();
 }
 
 void Card::draw()
@@ -182,13 +219,13 @@ void Card::draw()
 
     VIRT_DEBUG(rect());
 
-    auto r = rect();
-    auto c = tint();
+    auto r = drawBounds();
+    auto c = drawColor();
 
-    auto outer = m_tint.toHSLUV();
+    auto outer = m_color.toHSLUV();
     auto inner = outer.withL(outer.l / 2).withA(0.25f);
 
-    VIRT.drawTexturePro(m_texture, r, c);
+    VIRT.drawTexturePro(m_texture, r.withOffset(m_offset), c);
     //VIRT.drawRectangle(r, inner.toColor());
 
 
@@ -201,6 +238,16 @@ void Card::draw()
     VIRT.drawTextTLtoTL(m_font, r.col(10, 9, {.outer_pad=r_pad}), "morale"_sv, outer.toColor());
 
     VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
+}
+
+RenderTexture2D Card::drawTexture()
+{
+    assert_impl();
+}
+
+RenderTexture2D Card::drawTexture(float width, float height)
+{
+    assert_impl();
 }
 
 Card Card::createTestCard()
