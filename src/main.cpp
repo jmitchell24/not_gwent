@@ -9,7 +9,9 @@ using namespace game;
 // gfx
 //
 #include "gfx/gfx_virt2d.hpp"
+#include "gfx/gfx_draw.hpp"
 #include "gfx/gfx_curves.hpp"
+#include "gfx/gfx_spring.hpp"
 using namespace gfx;
 
 //
@@ -230,11 +232,75 @@ struct CardMoverDemo
     }
 };
 
+struct ProcAnimDemo
+{
+    bool drag = false;
+
+    SpringVec2 spring { 0.5f, 3.0f * PI };
+
+    void layout(rect const& bounds)
+    {
+
+        spring.vel({});
+        spring.now(bounds.center());
+        spring.dst(bounds.center());
+
+    }
+
+    void update()
+    {
+        auto mp = tout(GetMousePosition());
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mp.distance(spring.dst()) < 10.0)
+        {
+            drag = true;
+        }
+
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+        {
+            drag = false;
+        }
+
+        if (drag)
+        {
+            spring.dst(mp);
+        }
+
+        auto t = GetFrameTime();
+
+        spring.update(t);
+    }
+
+    void draw()
+    {
+        auto now = spring.now();
+        auto dst = spring.dst();
+
+        DrawCircle     (now.x, now.y, 10.0f, GREEN);
+        DrawCircleLines(dst.x, dst.y, 10.0f, RED);
+
+    }
+
+    void drawDebug(cstrparam label)
+    {
+        auto now = spring.now();
+        auto vel = spring.vel();
+        auto dst = spring.dst();
+
+        ImGui::LabelText("now", "(%.2f,%.2f)", now.x, now.y);
+        ImGui::LabelText("vel", "(%.2f,%.2f)", vel.x, vel.y);
+        ImGui::LabelText("dst", "(%.2f,%.2f)", dst.x, dst.y);
+
+        ImGui::SliderFloat("omega", &spring.omega, 0.0, 10 * PI);
+        ImGui::SliderFloat("zeta" , &spring.zeta , 0.0, 1.0);
+
+        ImGui::LabelText("Is Done?", "%s", spring.isAtDst() ? "yes": "no");
+    }
+};
+
 struct CardDemo
 {
     Card card;
-
-    RenderTexture2D r2d;
 
     void layout(rect const& bounds)
     {
@@ -242,17 +308,9 @@ struct CardDemo
         card = Card::createTestCard();
         card.layout(bounds);
 
-//        auto [w,h] = card.rect().size().pack;
-//
-//        r2d = LoadRenderTexture(w,h);
-
-//        BeginTextureMode(r2d);
-//        card.draw();
-//        EndTextureMode();
-
 
     }
-
+    float t = 0.0f;
     void update()
     {
         card.update();
@@ -261,6 +319,9 @@ struct CardDemo
     void draw()
     {
         card.draw();
+
+
+
     }
 
     void debugDraw(cstrparam label)
@@ -269,28 +330,7 @@ struct CardDemo
     }
 };
 
-struct Mass
-{
-    bool anchor;
 
-    float m;
-    vec2f position;
-    vec2f velocity;
-    vec2f force;
-
-    void reset()
-    {
-        position.set(0,0);
-        velocity.set(0,0);
-        force.set(0,0);
-    }
-
-    void update(float dt)
-    {
-        velocity += (force / m) * dt;
-        position += velocity * dt;
-    }
-};
 
 
 
@@ -360,9 +400,9 @@ int main()
             VIRT.drawDebug();
             ImGui::End();
 
-//            ImGui::Begin("gg");
-//            gg.drawDebug("gg"_sv);
-//            ImGui::End();
+            ImGui::Begin("gg");
+            gg.drawDebug("gg"_sv);
+            ImGui::End();
         }
         rlImGuiEnd();
 

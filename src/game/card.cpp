@@ -67,7 +67,7 @@ void Card::targetPosition(vec2f const& p)
     assert(m_is_layout_ready);
 
     if (m_position != p)
-        m_tween_position.anim(m_position, p);;
+        m_tween_position.anim(m_position, p);
 }
 
 void Card::targetOffset(vec2f const& p)
@@ -173,9 +173,9 @@ void Card::animNudge(vec2f const& p)
 {
     targetPosition(p);
 
-    float len = m_width / 10;
-    auto offset = vec2f(p.x - m_position.x, 0) / 5;
-    targetOffset(offset);
+//    float len = m_width / 10;
+//    auto offset = vec2f(p.x - m_position.x, 0) / 5;
+//    targetOffset(offset);
 
 }
 
@@ -184,8 +184,14 @@ void Card::layout(ut::rect const& bounds)
     auto b = bounds.anchorCCtoCC(bounds.fit((float)m_texture.width, (float)m_texture.height));
     layout(b.size());
 
-    //m_position  = {0.0f, 0.0f};
+
+
+
+
+    //m_position  = b.pos();
     //m_offset    = {0.0f, 0.0f};
+
+
 }
 
 void Card::layout(vec2 const& size)
@@ -213,6 +219,8 @@ void Card::update()
     if (m_tween_opacity      .update(dt)) m_opacity   = m_tween_opacity  .now();
 }
 
+
+
 void Card::draw()
 {
     assert(m_is_layout_ready);
@@ -238,11 +246,22 @@ void Card::draw()
     VIRT.drawTextTLtoTL(m_font, r.col(10, 9, {.outer_pad=r_pad}), "morale"_sv, outer.toColor());
 
     VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
+
+
+
 }
 
 RenderTexture2D Card::drawTexture()
 {
-    assert_impl();
+    auto r = drawBounds();
+
+    auto r2d = LoadRenderTexture(r.width(), r.height());
+
+//    VIRT.beginTexture(r2d);
+//    VIRT.drawLine(vec2(), vec2(100,100), 2.0f, colors::white);
+//    VIRT.endTexture();
+
+    return r2d;
 }
 
 RenderTexture2D Card::drawTexture(float width, float height)

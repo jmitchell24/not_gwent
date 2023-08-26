@@ -3,21 +3,20 @@
 //
 
 #include "gfx/gfx_easings.hpp"
+#include "gfx/gfx_vlist.hpp"
 
 #define M_DECL_PURE     [[nodiscard]] inline
 #define M_DECL          inline
 
 namespace gfx
 {
-    template <typename> struct TweenXAdapter { };
-
     template <typename T> class TweenX
     {
     public:
         using func_type  = easings::func_t;
         using real_type  = easings::real_t;
-        using vlist_type = typename TweenXAdapter<T>::vlist_type;
-        using value_type = typename TweenXAdapter<T>::value_type;
+        using vlist_type = typename VlistAdapter<T>::vlist_type;
+        using value_type = typename VlistAdapter<T>::value_type;
 
         static constexpr real_type ZERO = real_type(0.0f);
 
@@ -40,7 +39,6 @@ namespace gfx
 
         M_DECL void anim(value_type const& src, value_type const& dst)
         {
-            m_time_now = ZERO;
             m_time_now  = ZERO;
             m_vlist_now = vlist(src);
             m_vlist_src = vlist(src);
@@ -78,7 +76,7 @@ namespace gfx
             assert(m_time_end >= ZERO);
             assert(m_time_now >= ZERO);
             assert(m_time_now <= m_time_end);
-            assert(time_delta   >=  ZERO);
+            assert(time_delta >= ZERO);
 
             if (m_time_now >= m_time_end)
                 return false;
@@ -107,48 +105,8 @@ namespace gfx
         vlist_type m_vlist_dst{};
         vlist_type m_vlist_now{};
 
-        M_DECL static value_type value(vlist_type const& v) { return TweenXAdapter<T>::value(v); }
-        M_DECL static vlist_type vlist(value_type const& v) { return TweenXAdapter<T>::vlist(v); }
-    };
-
-    template<> struct TweenXAdapter<easings::real_t>
-    {
-        using value_type = easings::real_t;
-        using vlist_type = std::array<value_type,1>;
-        inline static value_type value(vlist_type const& v) { return v[0]; }
-        inline static vlist_type vlist(value_type const& v) { return {v}; }
-    };
-
-    template<> struct TweenXAdapter<ut::vec2x<easings::real_t>>
-    {
-        using value_type = ut::vec2x<easings::real_t>;
-        using vlist_type = std::array<easings::real_t,2>;
-        M_DECL static value_type value(vlist_type const& v) { return {v[0],v[1]}; }
-        M_DECL static vlist_type vlist(value_type const& v) { return {v.x, v.y}; }
-    };
-
-    template<> struct TweenXAdapter<ut::vec3x<easings::real_t>>
-    {
-        using value_type = ut::vec3x<easings::real_t>;
-        using vlist_type = std::array<easings::real_t,3>;
-        M_DECL static value_type value(vlist_type const& v) { return {v[0],v[1],v[2]}; }
-        M_DECL static vlist_type vlist(value_type const& v) { return {v.x, v.y, v.z}; }
-    };
-
-    template<> struct TweenXAdapter<ut::vec4x<easings::real_t>>
-    {
-        using value_type = ut::vec4x<easings::real_t>;
-        using vlist_type = std::array<easings::real_t,4>;
-        M_DECL static value_type value(vlist_type const& v) { return {v[0],v[1],v[2],v[3]}; }
-        M_DECL static vlist_type vlist(value_type const& v) { return {v.x, v.y, v.z, v.w}; }
-    };
-
-    template<> struct TweenXAdapter<ut::rectx<easings::real_t>>
-    {
-        using value_type = ut::rectx<easings::real_t>;
-        using vlist_type = std::array<easings::real_t,4>;
-        M_DECL static value_type value(vlist_type const& v) { return {v[0],v[1],v[2],v[3]}; }
-        M_DECL static vlist_type vlist(value_type const& v) { return {v.min.x, v.min.y, v.max.x, v.max.y}; }
+        M_DECL static value_type value(vlist_type const& v) { return VlistAdapter<T>::value(v); }
+        M_DECL static vlist_type vlist(value_type const& v) { return VlistAdapter<T>::vlist(v); }
     };
 
     using TweenReal = TweenX<easings::real_t>;

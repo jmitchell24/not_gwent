@@ -9,6 +9,7 @@
 
 #include "game/object.hpp"
 #include "gfx/gfx_easings.hpp"
+#include "gfx/gfx_spring.hpp"
 
 //
 // raylib
@@ -35,8 +36,31 @@ namespace game
     class CardMover
     {
     public:
+        struct MovingCard
+        {
+            Card card;
+            gfx::SpringVec2 spring;
+
+            void update()
+            {
+                auto mp = tout(GetMousePosition());
+                auto sz2 = card.size()/2;
+
+                spring.dst(mp - sz2);
+                spring.update(GetFrameTime());
+
+                card.setPosition(spring.now());
+                card.update();
+            }
+
+            void draw()
+            {
+                card.draw();
+            }
+        };
+
         using cardlists_type    = std::vector<CardList*>;
-        using movingcard_type   = std::optional<Card>;
+        using movingcard_type   = std::optional<MovingCard>;
 
 
 
@@ -55,8 +79,6 @@ namespace game
 
             if (m_moving_card)
             {
-                auto sz2 = m_moving_card->size()/2;
-                m_moving_card->targetPosition(mp-sz2);
                 m_moving_card->update();
             }
         }
@@ -91,7 +113,7 @@ namespace game
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        cl.addCard(idx, *m_moving_card, CardList::ANIM_MOVE);
+                        cl.addCard(idx, m_moving_card->card, CardList::ANIM_MOVE);
                         m_moving_card.reset();
                         m_dead_mp = mp;
                     }
@@ -111,8 +133,9 @@ namespace game
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        m_moving_card = cl.removeCard(idx);
-                        m_moving_card->animRaise();
+                        m_moving_card = { cl.removeCard(idx), { 0.5f, 3.0f * PI } };
+                        m_moving_card->card.animRaise();
+                        m_moving_card->spring.now(m_moving_card->card.position());
                         cl.setGhost(idx);
                     }
                     else
@@ -197,6 +220,7 @@ namespace game
         void update();
         void draw();
 
+        void drawDebug(ut::cstrparam){}
     private:
         ut::rect m_bounds;
 

@@ -35,7 +35,7 @@ namespace game
 
         //inline ut::color color      () const { return m_color; }
         //inline ut::rect  rect       () const { return ut::rect(m_psize).anchorCCtoCC_W(m_psize.width * m_elevation); }
-        //inline ut::vec2  position   () const { return m_psize.pos; }
+        inline ut::vec2  position   () const { return m_position; }
         inline ut::vec2  size       () const { return {m_width, m_height}; }
         //inline float     elevation  () const { return m_elevation; }
         //inline float     opacity    () const { return m_opacity; }
