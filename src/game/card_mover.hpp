@@ -80,6 +80,7 @@ namespace game
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
                         auto card = m_moving_card->card;
+                        card.animDrop();
                         cl.addCard(idx, card);
                         m_moving_card.reset();
                     }
@@ -100,7 +101,7 @@ namespace game
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
                         auto card       = cl.removeCard(idx);
-                        auto offset     = mp - card.position() - card.offset();
+                        auto offset     = mp - card.position();
                         auto spring     = gfx::SpringVec2 { 0.5f, 6.0f * PI };
 
                         card.animGrab();

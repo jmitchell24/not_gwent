@@ -183,10 +183,10 @@ struct CatmullRomDemo
 
 struct CardMoverDemo
 {
-//TODO: pick up card with offset, instead of centering
 //TODO: only apply nudge animation to adjacent cards, not the entire row
 //TODO: replace current shadow rendering: 9-patch and a cast shadow
-//TODO: fix card render ordering issues
+//TODO: implement card rotation
+//TODO:
 
     CardList a{CardLayout::DIR_CENTER, Card::createTestCards(15)};
     CardList b{CardLayout::DIR_CENTER, Card::createTestCards(5)};

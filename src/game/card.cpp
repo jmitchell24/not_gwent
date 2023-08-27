@@ -49,7 +49,6 @@ Card::Card()
 Card::Card(color const& color, Font const& font, Texture2D const& texture) :
     m_color {color}, m_font {font}, m_texture {texture},
     m_tween_position  {&easings::elasticOut , 1.0f},
-    m_tween_offset    {&easings::elasticOut , 1.0f},
     m_tween_rotation  {&easings::expoOut    , 0.5f},
     m_tween_elevation {&easings::bounceOut  , 0.5f},
     m_tween_opacity   {&easings::expoOut    , 0.5f}
@@ -68,14 +67,6 @@ void Card::targetPosition(vec2f const& p)
 
     if (m_position != p)
         m_tween_position.anim(m_position, p);
-}
-
-void Card::targetOffset(vec2f const& p)
-{
-    assert(m_is_layout_ready);
-
-    if (m_offset != p)
-        m_tween_offset.anim(m_offset, p);
 }
 
 void Card::targetElevation(float f)
@@ -114,14 +105,6 @@ void Card::setPosition(vec2f const& p)
 
     m_position = p;
     m_tween_position.setToDst();
-}
-
-void Card::setOffset(vec2f const& p)
-{
-    assert(m_is_layout_ready);
-
-    m_offset = p;
-    m_tween_offset.setToDst();
 }
 
 void Card::setElevation(float f)
@@ -177,12 +160,6 @@ void Card::animGrab()
 {
     m_tween_elevation.set(&easings::expoOut, 0.5f);
     m_tween_elevation.anim(m_elevation, ELEVATION_GRAB);
-
-    m_tween_position.setToDst();
-    m_tween_offset.setToDst();
-
-    m_position += m_offset;
-    m_offset.set(0);
 }
 
 void Card::animNudge(vec2f const& p)
@@ -225,7 +202,6 @@ void Card::update()
     auto dt = GetFrameTime();
 
     if (m_tween_position     .update(dt)) m_position  = m_tween_position .now();
-    if (m_tween_offset       .update(dt)) m_offset    = m_tween_offset   .now();
     if (m_tween_rotation     .update(dt)) m_rotation  = m_tween_rotation .now();
     if (m_tween_elevation    .update(dt)) m_elevation = m_tween_elevation.now();
     if (m_tween_opacity      .update(dt)) m_opacity   = m_tween_opacity  .now();

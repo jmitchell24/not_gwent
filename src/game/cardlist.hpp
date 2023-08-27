@@ -32,7 +32,7 @@ namespace game
 
         inline ut::rect const& bounds() const { return m_bounds; }
 
-        inline size_t                   count       () const { return m_cards.size(); }
+        inline size_t                   count       () const { return m_slots.size(); }
         inline CardLayout::Direction    direction   () const { return m_direction; }
 
         inline bool hasGhostedCard() const { return m_idx_ghosted >= 0; }
@@ -60,10 +60,18 @@ namespace game
         Card removeCard(size_t idx);
 
     private:
+        struct Slot
+        {
+            Card    card;
+            size_t  order;
+        };
+
+        using slotlist_t = std::vector<Slot>;
         using indexlist_t = std::vector<size_t>;
 
-        ssize_t         m_idx_hovered = -1;
-        ssize_t         m_idx_ghosted = -1;
+        size_t          m_next_order_value    = 0;
+        ssize_t         m_idx_hovered   = -1;
+        ssize_t         m_idx_ghosted   = -1;
 
         CardLayout        m_layout_hovered;
         CardLayout        m_layout_ghosted;
@@ -73,17 +81,16 @@ namespace game
         float           m_card_height;
 
         CardLayout::Direction      m_direction;
-        cardlist_t      m_cards;
+
+        slotlist_t      m_slots;
         indexlist_t     m_draw_indices;
 
-        bool hasDrawIdx(size_t idx);
-        void addDrawIdx(size_t idx);
-        void removeDrawIdx(size_t idx);
-        void replaceDrawIdx(size_t idx);
-        void rebuildDrawIndices();
+        void refreshDrawIndices();
+        void refreshCardPositions(ssize_t place_idx = -1);
 
-        void updateCardPositions(ssize_t place_idx = -1);
         void hover(ssize_t idx);
+
+        size_t nextOrderValue();
 
 #ifndef NDEBUG
         bool m_is_layout_ready = false;
