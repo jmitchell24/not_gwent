@@ -130,6 +130,7 @@ void Card::setElevation(float f)
     assert(f >= 0.0f);
 
     m_elevation = f;
+    m_tween_elevation.setToDst();
 }
 
 void Card::setRotation(float f)
@@ -138,6 +139,7 @@ void Card::setRotation(float f)
     assert(f >= 0.0f);
 
     m_rotation = f;
+    m_tween_rotation.setToDst();
 }
 
 void Card::setOpacity(float f)
@@ -146,59 +148,69 @@ void Card::setOpacity(float f)
     assert(f >= 0.0f); assert(f <= 1.0f);
 
     m_opacity = f;
+    m_tween_opacity.setToDst();
 }
 
 //
 // Card -> anim
 //
 
-void Card::animRaise()
+void Card::animDrop()
 {
-    //setElevation(ELEVATION_LO);
-    targetElevation(ELEVATION_HI);
+    m_tween_elevation.set(&easings::bounceOut  , 0.5f);
+    m_tween_elevation.anim(m_elevation, ELEVATION_DROP);
+
+//    m_tween_offset.set(&easings::expoOut , 0.5f);
+//    m_tween_offset.anim(m_offset, {0.0f, 0.0f});
 }
 
-void Card::animLower()
+void Card::animPeek()
 {
-    //setElevation(ELEVATION_HI);
-    targetElevation(ELEVATION_LO);
+    m_tween_elevation.set(&easings::expoOut, 0.5f);
+    m_tween_elevation.anim(m_elevation, ELEVATION_PEEK);
+
+//    m_tween_offset.set(&easings::expoOut , 0.5f);
+//    m_tween_offset.anim(m_offset, {0.0f, 0.0f});
 }
 
-void Card::animMove(vec2 const& p)
+void Card::animGrab()
 {
+    m_tween_elevation.set(&easings::expoOut, 0.5f);
+    m_tween_elevation.anim(m_elevation, ELEVATION_GRAB);
 
+    m_tween_position.setToDst();
+    m_tween_offset.setToDst();
+
+    m_position += m_offset;
+    m_offset.set(0);
 }
 
 void Card::animNudge(vec2f const& p)
 {
-    targetPosition(p);
+    m_tween_position.set(&easings::expoOut , 1.0f);
+    m_tween_position.anim(m_position, p);
 
-//    float len = m_width / 10;
-//    auto offset = vec2f(p.x - m_position.x, 0) / 5;
-//    targetOffset(offset);
+//    m_tween_offset.set(&easings::expoOut , 0.5f);
+//    m_tween_offset.anim(m_offset, m_offset * 0.75f);
+}
 
+void Card::animPlace(vec2f const& p)
+{
+    m_tween_position.set(&easings::expoOut , 0.5f);
+    m_tween_position.anim(m_position, p);
 }
 
 void Card::layout(ut::rect const& bounds)
 {
     auto b = bounds.anchorCCtoCC(bounds.fit((float)m_texture.width, (float)m_texture.height));
     layout(b.size());
-
-
-
-
-
-    //m_position  = b.pos();
-    //m_offset    = {0.0f, 0.0f};
-
-
 }
 
 void Card::layout(vec2 const& size)
 {
     m_width     = size.x;
     m_height    = size.y;
-    m_elevation = ELEVATION_LO;
+    m_elevation = ELEVATION_DROP;
     m_opacity   = 1.0f;
 
 #ifndef NDEBUG
@@ -229,15 +241,57 @@ void Card::draw()
 
     auto r = drawBounds();
     auto c = drawColor();
+    auto r_pad = r.min.distance(r.max) / 20;
 
     auto outer = m_color.toHSLUV();
     auto inner = outer.withL(outer.l / 2).withA(0.25f);
 
-    VIRT.drawTexturePro(m_texture, r.withOffset(m_offset), c);
+
+    auto shadow_sz  = ( (m_elevation - ELEVATION_DROP) / (ELEVATION_GRAB - ELEVATION_DROP) ) * r_pad;
+
+    auto r_shadowl  = r.anchorLCtoRC(shadow_sz, r.height());
+    auto r_shadowt  = r.anchorTCtoBC(r.width(), shadow_sz);
+    auto r_shadowr  = r.anchorRCtoLC(shadow_sz, r.height());
+    auto r_shadowb  = r.anchorBCtoTC(r.width(), shadow_sz);
+
+    auto r_shadowtl  = r.anchorTLtoBR(shadow_sz, shadow_sz);
+    auto r_shadowtr  = r.anchorTRtoBL(shadow_sz, shadow_sz);
+    auto r_shadowbl  = r.anchorBLtoTR(shadow_sz, shadow_sz);
+    auto r_shadowbr  = r.anchorBRtoTL(shadow_sz, shadow_sz);
+
+    VIRT_DEBUG(r_shadowl);
+    VIRT_DEBUG(r_shadowr);
+    VIRT_DEBUG(r_shadowt);
+    VIRT_DEBUG(r_shadowb);
+
+    VIRT_DEBUG(r_shadowtl);
+    VIRT_DEBUG(r_shadowtr);
+    VIRT_DEBUG(r_shadowbl);
+    VIRT_DEBUG(r_shadowbr);
+
+    // tl, bl, br, tr
+    auto blk = BLACK;
+    auto clr = blk;
+    clr.a = 0;
+
+    DrawRectangleGradientEx(torl(r_shadowl), clr, clr, blk, blk);
+    DrawRectangleGradientEx(torl(r_shadowr), blk, blk, clr, clr);
+    DrawRectangleGradientEx(torl(r_shadowt), clr, blk, blk, clr);
+    DrawRectangleGradientEx(torl(r_shadowb), blk, clr, clr, blk);
+
+    DrawRectangleGradientEx(torl(r_shadowtl), clr, clr, blk, clr);
+    DrawRectangleGradientEx(torl(r_shadowtr), clr, blk, clr, clr);
+    DrawRectangleGradientEx(torl(r_shadowbl), clr, clr, clr, blk);
+    DrawRectangleGradientEx(torl(r_shadowbr), blk, clr, clr, clr);
+
+
+    VIRT.drawTexturePro(m_texture, r, c);
     //VIRT.drawRectangle(r, inner.toColor());
 
 
-    auto r_pad = r.min.distance(r.max) / 20;
+
+
+
 
     VIRT.drawRectangle(r.col(10, 7, {.h=3}), outer.withL(15).withA(0.85).toColor());
 

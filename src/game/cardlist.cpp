@@ -26,13 +26,15 @@ size_t constexpr static VIRT_PAD    = 10;
 // CardList -> Implementation
 //
 
-CardList::CardList(Direction direction, cardlist_t cards) :
+CardList::CardList(CardLayout::Direction direction, cardlist_t cards) :
     m_bounds        {},
     m_card_width    {},
     m_card_height   {},
     m_direction     {direction},
     m_cards         {std::move(cards)}
-{ }
+{
+    rebuildDrawIndices();
+}
 
 void CardList::layout(rect const& bounds)
 {
@@ -42,8 +44,8 @@ void CardList::layout(rect const& bounds)
     //m_card_width    = m_card_height / 1.88f; // aspect ratio of card images from Witcher 3
     m_card_width    = m_card_height / 1.43f;
 
-    m_calc_ghosted = CardCalc::create(m_direction, m_bounds, m_card_width, m_cards.size() + 1);
-    m_calc_hovered = CardCalc::create(m_direction, m_bounds, m_card_width, m_cards.size());
+    m_layout_ghosted = CardLayout::create(m_direction, m_bounds, m_card_width, m_cards.size() + 1);
+    m_layout_hovered = CardLayout::create(m_direction, m_bounds, m_card_width, m_cards.size());
 
     m_idx_hovered   = -1;
     m_idx_ghosted   = -1;
@@ -56,7 +58,7 @@ void CardList::layout(rect const& bounds)
     {
         auto&& it = m_cards[i];
         it.layout({m_card_width, m_card_height});
-        it.setPosition(m_calc_hovered.getPos(i));
+        it.setPosition(m_layout_hovered.getPos(i));
     }
 }
 
@@ -73,25 +75,28 @@ void CardList::draw()
     assert(m_is_layout_ready);
 
     VIRT_DEBUG(CardList::m_bounds);
-    VIRT_DEBUG(CardList::m_calc_ghosted.bounds);
-    VIRT_DEBUG(CardList::m_calc_hovered.bounds);
+    VIRT_DEBUG(CardList::m_layout_ghosted.bounds);
+    VIRT_DEBUG(CardList::m_layout_hovered.bounds);
 
     VIRT.drawRectangleLines(m_bounds, 2.0f, colors::white);
     VIRT.drawRectangle(m_bounds, colors::darkslategrey);
 
-    for (size_t i = 0; i < m_cards.size(); ++i)
-    {
-        if (m_idx_hovered == i)
-            continue;
-        m_cards[i].draw();
-    }
+    for (auto&& it: m_draw_indices)
+        m_cards[it].draw();
 
-    if (m_idx_hovered >= 0)
-        m_cards[m_idx_hovered].draw();
+//    for (size_t i = 0; i < m_cards.size(); ++i)
+//    {
+//        if (m_idx_hovered == i)
+//            continue;
+//        m_cards[i].draw();
+//    }
+//
+//    if (m_idx_hovered >= 0)
+//        m_cards[m_idx_hovered].draw();
 
     if (m_idx_ghosted >= 0)
     {
-        auto r = m_calc_ghosted.getRect(m_idx_ghosted);
+        auto r = m_layout_ghosted.getRect(m_idx_ghosted);
         VIRT.drawRectangle(r, colors::greenyellow.withNormalA(0.5f));
     }
 }
@@ -105,12 +110,12 @@ void CardList::setGhost(size_t idx)
 
         for (size_t i = 0; i < m_idx_ghosted; ++i)
         {
-            m_cards[i].animNudge(m_calc_ghosted.getPos(i));
+            m_cards[i].animNudge(m_layout_ghosted.getPos(i));
         }
 
         for (size_t i = m_idx_ghosted; i < m_cards.size(); ++i)
         {
-            m_cards[i].animNudge(m_calc_ghosted.getPos(i+1));
+            m_cards[i].animNudge(m_layout_ghosted.getPos(i + 1));
         }
     }
 }
@@ -123,7 +128,7 @@ void CardList::clearGhost()
 
         for (size_t i = 0; i < m_cards.size(); ++i)
         {
-            m_cards[i].animNudge(m_calc_hovered.getPos(i));
+            m_cards[i].animNudge(m_layout_hovered.getPos(i));
         }
     }
 }
@@ -139,19 +144,19 @@ void CardList::clearHover()
     hover(-1);
 }
 
-bool CardList::tryGetHoverIndex(vec2 const& mp, size_t& idx) const
-{
-    assert(m_is_layout_ready);
-    return m_calc_hovered.tryGetIndex(mp, idx);
-}
+//bool CardList::tryGetHoverIndex(vec2 const& mp, size_t& idx) const
+//{
+//    assert(m_is_layout_ready);
+//    return m_layout_hovered.tryGetIndex(mp, idx);
+//}
+//
+//bool CardList::tryGetGhostIndex(vec2 const& mp, size_t& idx) const
+//{
+//    assert(m_is_layout_ready);
+//    return m_layout_ghosted.tryGetIndex(mp, idx);
+//}
 
-bool CardList::tryGetGhostIndex(vec2 const& mp, size_t& idx) const
-{
-    assert(m_is_layout_ready);
-    return m_calc_ghosted.tryGetIndex(mp, idx);
-}
-
-void CardList::addCard(size_t idx, Card const& card, AddAnim anim)
+void CardList::addCard(size_t idx, Card const& card)
 {
     assert(m_is_layout_ready);
     assert(idx <= m_cards.size());
@@ -161,42 +166,13 @@ void CardList::addCard(size_t idx, Card const& card, AddAnim anim)
 
     Card& it = *m_cards.insert(m_cards.begin() + idx, card);
     //it.layout({m_card_width, m_card_height});
-    it.animLower();
+    it.animDrop();
 
-    updateCardPositions();
+    m_idx_hovered = idx;
 
-//    switch (anim)
-//    {
-//        case ANIM_NONE:
-//            it.setElevation(0.0f);
-//            it.setOpacity(1.0f);
-//            //it.setPosition(calcCardPos(idx, m_cards.size()));
-//            it.setPosition(m_calc_hovered.getPos(idx));
-//            break;
-//
-//        case ANIM_MOVE:
-//            it.setElevation(0.0f);
-//            it.setOpacity(1.0f);
-//            //it.targetPosition(calcCardPos(idx, m_cards.size()));
-//            //it.targetPosition(m_calc_hovered.getPos(idx));
-//            break;
-//
-//        case ANIM_CREATE:
-//            it.setElevation(3.0f);
-//            it.targetElevation(0.0f);
-//            it.setOpacity(0.5f);
-//            it.targetOpacity(1.0f);
-//
-//            //it.setPosition(calcCardPos(idx, m_cards.size()));
-//            it.setPosition(m_calc_hovered.getPos(idx));
-//            break;
-//
-//        default:
-//            assert_case(AddAnim);
-//            break;
-//    }
-
-
+    updateCardPositions(idx);
+    rebuildDrawIndices();
+    replaceDrawIdx(idx);
 }
 
 Card CardList::removeCard(size_t idx)
@@ -210,20 +186,59 @@ Card CardList::removeCard(size_t idx)
     Card card = m_cards[idx];
     m_cards.erase(m_cards.begin()+idx);
     updateCardPositions();
+    rebuildDrawIndices();
 
     return card;
 }
 
-void CardList::updateCardPositions()
+bool CardList::hasDrawIdx(size_t idx)
+{
+    for (auto&& it: m_draw_indices)
+        if (it == idx)
+            return true;
+    return false;
+}
+
+void CardList::addDrawIdx(size_t idx)
+{
+    assert(!hasDrawIdx(idx));
+    m_draw_indices.push_back(idx);
+
+}
+
+void CardList::rebuildDrawIndices()
+{
+    m_draw_indices.clear();
+    for (size_t i = 0; i < m_cards.size(); ++i)
+        m_draw_indices.push_back(i);
+}
+
+void CardList::replaceDrawIdx(size_t idx)
+{
+    removeDrawIdx(idx);
+    addDrawIdx(idx);
+}
+
+void CardList::removeDrawIdx(size_t idx)
+{
+    assert(hasDrawIdx(idx));
+    auto it = find(m_draw_indices.begin(), m_draw_indices.end(), idx);
+    m_draw_indices.erase(it);
+}
+
+void CardList::updateCardPositions(ssize_t place_idx)
 {
     assert(m_is_layout_ready);
 
-    m_calc_ghosted = CardCalc::create(m_direction, m_bounds, m_card_width, m_cards.size() + 1);
-    m_calc_hovered = CardCalc::create(m_direction, m_bounds, m_card_width, m_cards.size());
+    m_layout_ghosted = CardLayout::create(m_direction, m_bounds, m_card_width, m_cards.size() + 1);
+    m_layout_hovered = CardLayout::create(m_direction, m_bounds, m_card_width, m_cards.size());
 
     for (size_t i = 0; i < m_cards.size(); ++i)
     {
-        m_cards[i].animNudge(m_calc_hovered.getPos(i));
+        if (i == place_idx)
+            m_cards[i].animPlace(m_layout_hovered.getPos(i));
+        else
+            m_cards[i].animNudge(m_layout_hovered.getPos(i));
     }
 }
 
@@ -233,20 +248,23 @@ void CardList::hover(ssize_t idx)
     if (m_idx_hovered != idx)
     {
         if (m_idx_hovered >= 0)
-            m_cards[m_idx_hovered].animLower();
+            m_cards[m_idx_hovered].animDrop();
 
         m_idx_hovered = (ssize_t)idx;
 
         if (m_idx_hovered >= 0)
-            m_cards[m_idx_hovered].animRaise();
+        {
+            m_cards[m_idx_hovered].animPeek();
+            replaceDrawIdx(idx);
+        }
     }
 }
 
 //
-// CardList::CardCalc -> Implementation
+// CardList::CardLayout -> Implementation
 //
 
-CardList::CardCalc CardList::CardCalc::create(Direction direction, rect const& bounds, float card_width, size_t card_count)
+CardLayout CardLayout::create(Direction direction, rect const& bounds, float card_width, size_t card_count)
 {
     if (float w = card_width * float(card_count); w < bounds.width())
     {
@@ -264,7 +282,7 @@ CardList::CardCalc CardList::CardCalc::create(Direction direction, rect const& b
     return { bounds, card_count, card_width, (bounds.width() - card_width) / float(card_count-1) };
 }
 
-bool CardList::CardCalc::tryGetIndex(ut::vec2 const& mp, size_t& idx) const
+bool CardLayout::tryGetIndex(ut::vec2 const& mp, size_t& idx) const
 {
     if (bounds.contains(mp))
     {
@@ -278,12 +296,12 @@ bool CardList::CardCalc::tryGetIndex(ut::vec2 const& mp, size_t& idx) const
     return false;
 }
 
-vec2 CardList::CardCalc::getPos(size_t idx) const
+vec2 CardLayout::getPos(size_t idx) const
 {
     return bounds.pos().withOffsetX(card_gap * float(idx));
 }
 
-rect CardList::CardCalc::getRect(size_t idx) const
+rect CardLayout::getRect(size_t idx) const
 {
     return bounds.withWidth(card_width).withOffsetX(card_gap * float(idx));
 }

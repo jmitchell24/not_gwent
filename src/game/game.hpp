@@ -8,6 +8,7 @@
 #include "game/cardlist.hpp"
 
 #include "game/object.hpp"
+#include "game/card_mover.hpp"
 #include "gfx/gfx_easings.hpp"
 #include "gfx/gfx_spring.hpp"
 
@@ -33,131 +34,15 @@
 
 namespace game
 {
-    class CardMover
-    {
-    public:
-        struct MovingCard
-        {
-            Card card;
-            gfx::SpringVec2 spring;
 
-            void update()
-            {
-                auto mp = tout(GetMousePosition());
-                auto sz2 = card.size()/2;
-
-                spring.dst(mp - sz2);
-                spring.update(GetFrameTime());
-
-                card.setPosition(spring.now());
-                card.update();
-            }
-
-            void draw()
-            {
-                card.draw();
-            }
-        };
-
-        using cardlists_type    = std::vector<CardList*>;
-        using movingcard_type   = std::optional<MovingCard>;
-
-
-
-        void set(cardlists_type cardlists)
-        {
-            m_cardlists = std::move(cardlists);
-            m_moving_card.reset();
-        }
-
-
-        void update()
-        {
-            auto mp = tout(GetMousePosition());
-            for (auto&& it: m_cardlists)
-                updateCL(mp, *it);
-
-            if (m_moving_card)
-            {
-                m_moving_card->update();
-            }
-        }
-
-        void draw()
-        {
-            if (m_moving_card)
-                m_moving_card->draw();
-        }
-
-
-
-    private:
-        cardlists_type      m_cardlists;
-        movingcard_type     m_moving_card;
-
-        std::optional<ut::vec2> m_dead_mp;
-
-        void updateCL(ut::vec2 const& mp, CardList& cl)
-        {
-            if (m_dead_mp)
-            {
-                auto radius = (mp - *m_dead_mp).length();
-                if (radius < 10)
-                    return;
-                m_dead_mp.reset();
-            }
-
-            if (m_moving_card)
-            {
-                if (size_t idx; cl.tryGetGhostIndex(mp, idx))
-                {
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-                    {
-                        cl.addCard(idx, m_moving_card->card, CardList::ANIM_MOVE);
-                        m_moving_card.reset();
-                        m_dead_mp = mp;
-                    }
-                    else
-                    {
-                        cl.setGhost(idx);
-                    }
-                }
-                else
-                {
-                    cl.clearGhost();
-                }
-            }
-            else
-            {
-                if (size_t idx; cl.tryGetHoverIndex(mp, idx))
-                {
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-                    {
-                        m_moving_card = { cl.removeCard(idx), { 0.5f, 3.0f * PI } };
-                        m_moving_card->card.animRaise();
-                        m_moving_card->spring.now(m_moving_card->card.position());
-                        cl.setGhost(idx);
-                    }
-                    else
-                    {
-                        cl.setHover(idx);
-                    }
-                }
-                else
-                {
-                    cl.clearHover();
-                }
-            }
-        }
-    };
 
 
 
     class CombatRow
     {
     public:
-        CardList units { CardList::DIR_CENTER, Card::createTestCards(3) };
-        CardList special { CardList::DIR_CENTER, Card::createTestCards(1) };
+        CardList units { CardLayout::DIR_CENTER, Card::createTestCards(3) };
+        CardList special { CardLayout::DIR_CENTER, Card::createTestCards(1) };
 
         void layout(ut::rect const& bounds);
         void update();
@@ -233,8 +118,8 @@ namespace game
         CombatRow m_combat_usr_ranged;
         CombatRow m_combat_usr_melee;
 
-        CardList m_hand_usr { CardList::DIR_LEFT, Card::createTestCards(3) };
-        CardList m_hand_cpu { CardList::DIR_LEFT, Card::createTestCards(3) };
+        CardList m_hand_usr { CardLayout::DIR_LEFT, Card::createTestCards(3) };
+        CardList m_hand_cpu { CardLayout::DIR_LEFT, Card::createTestCards(3) };
 
         PlayerStats m_stats_cpu;
         PlayerStats m_stats_usr;

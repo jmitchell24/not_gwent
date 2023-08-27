@@ -183,10 +183,13 @@ struct CatmullRomDemo
 
 struct CardMoverDemo
 {
+//TODO: pick up card with offset, instead of centering
+//TODO: only apply nudge animation to adjacent cards, not the entire row
+//TODO: replace current shadow rendering: 9-patch and a cast shadow
+//TODO: fix card render ordering issues
 
-
-    CardList a{CardList::DIR_CENTER, Card::createTestCards(5)};
-    CardList b{CardList::DIR_CENTER, Card::createTestCards(5)};
+    CardList a{CardLayout::DIR_CENTER, Card::createTestCards(15)};
+    CardList b{CardLayout::DIR_CENTER, Card::createTestCards(5)};
 
     CardMover mover;
 
@@ -241,9 +244,9 @@ struct ProcAnimDemo
     void layout(rect const& bounds)
     {
 
-        spring.vel({});
-        spring.now(bounds.center());
-        spring.dst(bounds.center());
+        spring.setVel({});
+        spring.setNow(bounds.center());
+        spring.setDst(bounds.center());
 
     }
 
@@ -263,7 +266,7 @@ struct ProcAnimDemo
 
         if (drag)
         {
-            spring.dst(mp);
+            spring.setDst(mp);
         }
 
         auto t = GetFrameTime();
@@ -376,7 +379,7 @@ int main()
     {
         BeginDrawing();
 
-        ClearBackground(BLACK);
+        ClearBackground(GRAY);
 
         VIRT.layout(ImGui::GetDockspaceViewport(), VIRT_WIDTH, VIRT_HEIGHT);
         VIRT.begin();

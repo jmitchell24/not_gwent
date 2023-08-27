@@ -20,9 +20,9 @@ namespace game
     {
     public:
         //static constexpr float ASPECT_RATIO = 1.88f;
-        static constexpr float ELEVATION_HI    = 1.20f;
-        static constexpr float ELEVATION_MID   = 1.10f;
-        static constexpr float ELEVATION_LO    = 1.00f;
+        static constexpr float ELEVATION_GRAB       = 1.15f;
+        static constexpr float ELEVATION_PEEK       = 1.08f;
+        static constexpr float ELEVATION_DROP       = 1.00f;
 
         static constexpr float ASPECT_RATIO     = 1.43f;
         static constexpr float ASPECT_RATIO_INV = 0.70f;
@@ -36,6 +36,7 @@ namespace game
         //inline ut::color color      () const { return m_color; }
         //inline ut::rect  rect       () const { return ut::rect(m_psize).anchorCCtoCC_W(m_psize.width * m_elevation); }
         inline ut::vec2  position   () const { return m_position; }
+        inline ut::vec2  offset() const  {return m_offset; }
         inline ut::vec2  size       () const { return {m_width, m_height}; }
         //inline float     elevation  () const { return m_elevation; }
         //inline float     opacity    () const { return m_opacity; }
@@ -69,10 +70,12 @@ namespace game
         // anim
         //
 
-        void animRaise();
-        void animLower();
-        void animMove(ut::vec2 const& p);
-        void animNudge(ut::vec2 const& p);
+        void animDrop();
+        void animPeek();
+        void animGrab();
+
+        void animNudge(ut::vec2f const& p);
+        void animPlace(ut::vec2f const& p);
 
 
         void layout(ut::rect const& bounds);

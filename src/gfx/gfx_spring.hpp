@@ -41,9 +41,9 @@ namespace gfx
             M_DECL_PURE value_type dst() const { return value(m_vlist_dst); }
             M_DECL_PURE value_type vel() const { return value(m_vlist_vel); }
 
-            M_DECL void now(value_type const& x) { m_vlist_now = vlist(x); }
-            M_DECL void dst(value_type const& x) { m_vlist_dst = vlist(x); }
-            M_DECL void vel(value_type const& x) { m_vlist_vel = vlist(x); }
+            M_DECL void setNow(value_type const& x) { m_vlist_now = vlist(x); m_vlist_vel={}; }
+            M_DECL void setDst(value_type const& x) { m_vlist_dst = vlist(x); }
+            M_DECL void setVel(value_type const& x) { m_vlist_vel = vlist(x); }
 
             M_DECL void update(real_type time_delta)
             {
