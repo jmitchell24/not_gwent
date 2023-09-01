@@ -10,6 +10,7 @@
 #define dbg__
 #endif
 
+#define assert_break()      assert(!"breakpoint")
 #define assert_impl()       assert(!"unimplemented")
 #define assert_reach()      assert(!"unreachable")
 #define assert_null(x_)     assert((x_) != nullptr)

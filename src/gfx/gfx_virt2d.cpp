@@ -4,7 +4,6 @@
 using namespace gfx;
 
 #include "game/conv.hpp"
-using namespace game;
 
 #include <raymath.h>
 #include <raylib.h>

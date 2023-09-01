@@ -5,6 +5,7 @@
 //
 
 #include "gfx/gfx_tween.hpp"
+//#include "ng/cards.hpp"
 
 //
 // raylib
@@ -19,6 +20,15 @@ namespace game
     class Card
     {
     public:
+        struct Assets
+        {
+            Texture2D   artwork;
+            Texture2D   badge1;
+            Texture2D   badge2;
+            Font        font;
+            ut::color   color;
+        };
+
         //static constexpr float ASPECT_RATIO = 1.88f;
         static constexpr float ELEVATION_GRAB       = 1.15f;
         static constexpr float ELEVATION_PEEK       = 1.08f;
@@ -29,7 +39,7 @@ namespace game
 
 
         Card();
-        Card(ut::color const& color, Font const& font, Texture2D const& texture_back);
+        Card(Assets const& stuff);
 
         //inline Texture2D const& texture() const { return m_texture; }
 
@@ -98,13 +108,11 @@ namespace game
 
         inline ut::color drawColor() const
         {
-            return m_color.withNormalA(m_opacity);
+            return m_assets.color.withNormalA(m_opacity);
         }
 
     private:
-        Font            m_font;
-        ut::color       m_color;
-        Texture2D       m_texture;
+        Assets      m_assets;
 
         float           m_width;
         float           m_height;

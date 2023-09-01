@@ -29,6 +29,7 @@ void DebugDrawManager::addRect(cstrparam label, rectf const& r)
         m_draws.push_back(tag.toDraw(r));
 }
 
+#if 0
 struct Gizmo
 {
     enum Mode
@@ -131,6 +132,7 @@ struct Gizmo
     }
 
 } static GIZMO;
+#endif
 
 bool DebugDrawManager::drawDebug()
 {
@@ -177,6 +179,8 @@ bool DebugDrawManager::drawDebug()
         ImGui::RadioButton("Default", &m_im_style, ImGuiDebugRectangleStyle_Default);
         ImGui::SameLine();
         ImGui::RadioButton("Full", &m_im_style, ImGuiDebugRectangleStyle_Full);
+        ImGui::SameLine();
+        ImGui::RadioButton("Simple", &m_im_style, ImGuiDebugRectangleStyle_Simple);
 
         if (ImGui::Button("Enable All"))
         {

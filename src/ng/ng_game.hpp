@@ -1,7 +1,9 @@
 #pragma once
 
-#include "ng/cards.hpp"
+#include "ng/ng_card_data.hpp"
 #include "assert.hpp"
+
+#include "ut/container/stack_array.hpp"
 
 #include <cstddef>
 
@@ -11,11 +13,17 @@ namespace ng::gs
     {
         static constexpr size_t ROW_SIZE = 20;
         Card cards[ROW_SIZE];
+        size_t count=0;
 
         unsigned score() const
         {
-            assert_impl();
-            return 0;
+            unsigned score;
+            for (size_t i = 0; i < count; ++i)
+            {
+                if (cards[i].isUnitCard())
+                    score += cards[i].asUnitCard().strength;
+            }
+            return score;
         }
     };
 

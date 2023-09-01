@@ -1,8 +1,16 @@
 #pragma once
 
+//
+// ut
+//
+
 #include <ut/math.hpp>
 #include <ut/string.hpp>
 #include <ut/color.hpp>
+
+//
+// std
+//
 
 #include <vector>
 
@@ -13,9 +21,10 @@ namespace gfx
     class DebugDrawManager
     {
     public:
-        bool            enabled = false;
-        float           scale   = 1;
-        ut::vec2f       offset  = {0,0};
+        bool            enabled          = false;
+        bool            show_rect_labels = true;
+        float           scale            = 1;
+        ut::vec2f       offset           = {0,0};
 
         DebugDrawManager();
 
@@ -35,7 +44,7 @@ namespace gfx
         {
             bool            enabled;
             ut::cstrview    text;
-            ut::color           col;
+            ut::color       col;
             size_t          cnt;
 
             inline RectDraw toDraw(ut::rectf const& r) const { return { text, col, r}; }

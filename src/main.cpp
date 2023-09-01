@@ -1,8 +1,21 @@
+/*
+
+    TODO: only apply nudge animation to adjacent cards, not the entire row
+    TODO: replace current shadow rendering: 9-patch and a cast shadow
+    TODO: implement card rotation
+    TODO: lookup how to do vertex arrays in rlgl. Use to build shadow shape.
+    TODO: implement ng::Card as the data for game::Card
+    TODO: Compound Tween (like spline segments but built out of easings)
+*/
+
+
 //
 // game
 //
 #include "game/conv.hpp"
 #include "game/game.hpp"
+#include "game/assets.hpp"
+
 using namespace game;
 
 //
@@ -12,6 +25,7 @@ using namespace game;
 #include "gfx/gfx_draw.hpp"
 #include "gfx/gfx_curves.hpp"
 #include "gfx/gfx_spring.hpp"
+
 using namespace gfx;
 
 //
@@ -23,6 +37,7 @@ using namespace ut;
 // std
 //
 #include <optional>
+
 using namespace std;
 
 #include "raylib.h"
@@ -33,21 +48,20 @@ using namespace std;
 
 //#include <lua.hpp>
 
-size_t constexpr static SCREEN_WIDTH    = 1920;
-size_t constexpr static SCREEN_HEIGHT   = 1080;
+size_t constexpr static SCREEN_WIDTH = 1920;
+size_t constexpr static SCREEN_HEIGHT = 1080;
 
-size_t constexpr static VIRT_WIDTH  = 1280;
+size_t constexpr static VIRT_WIDTH = 1280;
 size_t constexpr static VIRT_HEIGHT = 720;
-size_t constexpr static VIRT_PAD    = 10;
-
+size_t constexpr static VIRT_PAD = 10;
 
 struct CatmullRomDemo
 {
     vector<vec2> control_points;
-    vec2* cp_ptr=nullptr;
+    vec2 *cp_ptr = nullptr;
     rect m_bounds;
 
-    void layout(rect const& bounds)
+    void layout(rect const &bounds)
     {
         m_bounds = bounds;
         layoutControlPoints();
@@ -87,7 +101,7 @@ struct CatmullRomDemo
         }
     }
 
-    void drawLineT(float t0, float t1, color const& c)
+    void drawLineT(float t0, float t1, color const &c)
     {
 //        Segment s;
 //        s.layout(control_points[0], control_points[1], control_points[2], control_points[3], alpha, tension);
@@ -108,7 +122,7 @@ struct CatmullRomDemo
         for (size_t i = 0; i < segments; ++i)
         {
             float t0 = float(i) / float(segments);
-            float t1 = float(i+1) / float(segments);
+            float t1 = float(i + 1) / float(segments);
             drawLineT(t0, t1, i % 2 == 0 ? col_line : col_line_alt);
         }
 
@@ -116,28 +130,28 @@ struct CatmullRomDemo
         {
             for (size_t i = 0; i < control_points.size(); ++i)
             {
-                auto&& it = control_points[i];
+                auto &&it = control_points[i];
                 DrawCircleLines(it.x, it.y, 10, torl(col_control_point));
 
                 auto text_it = it + vec2(10);
-                DrawText(PRINTER("%d", i+1).c_str(), text_it.x, text_it.y, 30, torl(ut::colors::white));
+                DrawText(PRINTER("%d", i + 1).c_str(), text_it.x, text_it.y, 30, torl(ut::colors::white));
             }
         }
 
 
     }
 
-    float   alpha       =   0.5f;
-    float   tension     =   0.0f;
-    int     segments    =   10;
-    size_t  cc_count    =   5;
-    bool    show_cc     =   true;
+    float alpha = 0.5f;
+    float tension = 0.0f;
+    int segments = 10;
+    size_t cc_count = 5;
+    bool show_cc = true;
 
     color col_control_point = colors::orangered;
-    color col_line          = colors::greenyellow;
-    color col_line_alt      = colors::darkcyan;
+    color col_line = colors::greenyellow;
+    color col_line_alt = colors::darkcyan;
 
-    void drawDebug()
+    void drawDebug(cstrparam)
     {
         ImGui::Begin("CatmullRomDemo");
 
@@ -172,9 +186,9 @@ struct CatmullRomDemo
 
     }
 
-    vec2* getControlPoint(vec2 const& mp)
+    vec2 *getControlPoint(vec2 const &mp)
     {
-        for (auto&& it: control_points)
+        for (auto &&it: control_points)
             if (it.distance(mp) < 10)
                 return &it;
         return nullptr;
@@ -183,10 +197,7 @@ struct CatmullRomDemo
 
 struct CardMoverDemo
 {
-//TODO: only apply nudge animation to adjacent cards, not the entire row
-//TODO: replace current shadow rendering: 9-patch and a cast shadow
-//TODO: implement card rotation
-//TODO:
+
 
     CardList a{CardLayout::DIR_CENTER, Card::createTestCards(15)};
     CardList b{CardLayout::DIR_CENTER, Card::createTestCards(5)};
@@ -194,8 +205,7 @@ struct CardMoverDemo
     CardMover mover;
 
 
-
-    void layout(rect const& bounds)
+    void layout(rect const &bounds)
     {
         a.layout(bounds.col(4, 1, {.inner_pad=10, .outer_pad=10}));
         b.layout(bounds.col(4, 2, {.inner_pad=10, .outer_pad=10}));
@@ -204,7 +214,6 @@ struct CardMoverDemo
 
 
     }
-
 
 
     void update()
@@ -225,8 +234,6 @@ struct CardMoverDemo
         mover.draw();
 
 
-
-
     }
 
     void drawDebug(cstrparam label)
@@ -239,9 +246,9 @@ struct ProcAnimDemo
 {
     bool drag = false;
 
-    SpringVec2 spring { 0.5f, 3.0f * PI };
+    SpringVec2 spring{0.5f, 3.0f * PI};
 
-    void layout(rect const& bounds)
+    void layout(rect const &bounds)
     {
 
         spring.setVel({});
@@ -279,7 +286,7 @@ struct ProcAnimDemo
         auto now = spring.now();
         auto dst = spring.dst();
 
-        DrawCircle     (now.x, now.y, 10.0f, GREEN);
+        DrawCircle(now.x, now.y, 10.0f, GREEN);
         DrawCircleLines(dst.x, dst.y, 10.0f, RED);
 
     }
@@ -295,49 +302,195 @@ struct ProcAnimDemo
         ImGui::LabelText("dst", "(%.2f,%.2f)", dst.x, dst.y);
 
         ImGui::SliderFloat("omega", &spring.omega, 0.0, 10 * PI);
-        ImGui::SliderFloat("zeta" , &spring.zeta , 0.0, 1.0);
+        ImGui::SliderFloat("zeta", &spring.zeta, 0.0, 1.0);
 
-        ImGui::LabelText("Is Done?", "%s", spring.isAtDst() ? "yes": "no");
+        ImGui::LabelText("Is Done?", "%s", spring.isAtDst() ? "yes" : "no");
     }
 };
 
 struct CardDemo
 {
-    Card card;
+    CardList a{CardLayout::DIR_CENTER, Card::createTestCards(3)};
+    CardMover mover;
 
-    void layout(rect const& bounds)
+    void layout(rect const &bounds)
     {
+        a.layout(bounds.anchorCCtoCC(bounds.size()/2));
 
-        card = Card::createTestCard();
-        card.layout(bounds);
+        mover.set({&a});
 
 
     }
-    float t = 0.0f;
+
+
     void update()
     {
-        card.update();
+        a.update();
+
+        mover.update();
+
+
     }
 
     void draw()
     {
-        card.draw();
+        a.draw();
 
+        mover.draw();
 
 
     }
 
-    void debugDraw(cstrparam label)
+    void drawDebug(cstrparam label)
     {
 
     }
 };
 
 
+struct ShadowDemo
+{
+    constexpr static size_t tex_width = 200;
+    constexpr static size_t tex_height = 200;
+    constexpr static size_t NUM_TEXTURES = 9;
+
+    Texture2D tex;
+
+    rect m_bounds;
+
+    int m_param_width = 200;
+    int m_param_height = 200;
+    int m_param_pad = 20;
+    int m_param_blur = 20;
+
+
+    bool m_param_flag = true;
+
+    void layout(rect const &bounds)
+    {
+        m_bounds = bounds;
+
+
+    }
+
+    void update()
+    {
+        if (m_param_flag)
+        {
+            m_param_flag = false;
+
+            if (IsTextureReady(tex))
+                UnloadTexture(tex);
+
+            Image img = GenImageColor(m_param_width, m_param_height, BLANK);
+
+            {
+                auto r = rect(psize(m_param_width, m_param_height)).shrunk(m_param_pad);
+                ImageDrawRectangleRec(&img, torl(r), BLACK);
+                ImageBlurGaussian(&img, m_param_blur);
+            }
+
+            tex = LoadTextureFromImage(img);
+            UnloadImage(img);
+        }
+
+    }
+
+    void draw()
+    {
+        drawRect(m_bounds, colors::burlywood);
+        drawRectOutline(m_bounds, 10, colors::darkslateblue);
+
+        {
+            auto r = m_bounds.anchorCCtoCC(m_param_width, m_param_height);
+
+
+            drawShadow(r, {(float)m_param_pad, (float)m_param_pad}, m_param_blur);
+
+            drawTexture(textures::card_0(), r);
+
+        }
+
+        //drawTexture(tex, m_bounds.anchorCCtoCC(m_param_width,m_param_height));
+
+    }
+
+    void drawDebug(cstrparam label)
+    {
+        m_param_flag |= ImGui::SliderInt("width"    , &m_param_width, 32, 512);
+        m_param_flag |= ImGui::SliderInt("height"   , &m_param_height, 32, 512);
+        m_param_flag |= ImGui::SliderInt("pad"      , &m_param_pad, 5, 50);
+        m_param_flag |= ImGui::SliderInt("blur"     , &m_param_blur, 5, 50);
+
+
+    }
+};
+
+struct Draw2HDDemo
+{
+    rect r;
+    rlRenderBatch batch;
+    Model m_model;
+
+    void layout(rect const& bounds)
+    {
+        r = bounds;
+
+        m_model = LoadModel("data/fbx/Apple/trn_Apple.fbx");
+
+        assert(IsModelReady(m_model));
+    }
+
+    void update()
+    {
+
+    }
+
+    void draw()
+    {
+
+        VIRT_DEBUG(r);
+    }
+
+    void draw3d()
+    {
+        // Define the camera to look into our 3d world
+        Camera camera = { 0 };
+        camera.position = (Vector3){ 1.0f, 1.0f, 1.0f }; // Camera position
+        camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };     // Camera looking at point
+        camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+        camera.fovy = 45.0f;                                // Camera field-of-view Y
+        camera.projection = CAMERA_PERSPECTIVE;                   // Camera mode type
 
 
 
-using game_t = CardMoverDemo;
+
+
+        BeginMode3D(camera);
+
+        DrawModel(m_model, {}, 1.0f, WHITE);        // Draw 3d model with texture
+
+        DrawGrid(20, 10.0f);         // Draw a grid
+
+        //if (selected) DrawBoundingBox(bounds, GREEN);   // Draw selection box
+
+        EndMode3D();
+
+
+
+
+
+    }
+
+    void drawDebug(cstrparam)
+    {
+
+    }
+};
+
+// https://github.com/Rabios/awesome-raylib
+using game_t = GameBoard;
+
 int main()
 {
     SetTargetFPS(120);
@@ -375,25 +528,28 @@ int main()
 
 
 
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
 
         ClearBackground(GRAY);
 
-        VIRT.layout(ImGui::GetDockspaceViewport(), VIRT_WIDTH, VIRT_HEIGHT);
-        VIRT.begin();
 
+
+        auto real_viewport = ImGui::GetDockspaceViewport();
+
+        VIRT.layout(real_viewport, VIRT_WIDTH, VIRT_HEIGHT);
+        VIRT.begin();
 
         gg.update();
         gg.draw();
 
-
         VIRT.end();
 
-        DrawFPS(10,10);
 
-        DrawGrid(10,10);
+
+        DrawFPS(10, 10);
 
         rlImGuiBegin();
         {

@@ -11,7 +11,9 @@ using namespace game;
 // gfx
 //
 #include "gfx/gfx_virt2d.hpp"
+#include "gfx/gfx_draw.hpp"
 #include "game/conv.hpp"
+#include "game/assets.hpp"
 
 using namespace gfx;
 
@@ -78,25 +80,35 @@ void PlayerStats::draw()
 {
     assert(m_is_layout_ready);
 
-    VIRT.drawTextLCtoLC(m_bounds_name, m_name, colors::white);
-    VIRT.drawTextLCtoLC(m_bounds_deckname, m_deckname, colors::white);
-    VIRT.drawTextLCtoLC(m_bounds_gems_name, "gems", colors::white);
-    VIRT.drawTextCCtoCC(m_bounds_handcount_name, "hand", colors::white);
-    VIRT.drawTextRCtoRC(m_bounds_score_name, "score", colors::white);
+    drawShadow(m_bounds, {5,5}, 5);
+    VIRT.drawRectangle(m_bounds, colors::saddlebrown);
+
+    auto font = game::fonts::smallburgRegular64();
+
+    VIRT.drawTextLCtoLC(font, m_bounds_name, m_name, colors::white);
+    VIRT.drawTextLCtoLC(font, m_bounds_deckname, m_deckname, colors::white);
+    VIRT.drawTextLCtoLC(font, m_bounds_gems_name, "gems", colors::white);
+    VIRT.drawTextCCtoCC(font, m_bounds_handcount_name, "hand", colors::white);
+    VIRT.drawTextRCtoRC(font, m_bounds_score_name, "score", colors::white);
 
     switch (m_gems)
     {
-        case GEMS_NONE: VIRT.drawTextLCtoLC(m_bounds_gems, "x x", colors::white); break;
-        case GEMS_ONE : VIRT.drawTextLCtoLC(m_bounds_gems, "o x", colors::white); break;
-        case GEMS_TWO : VIRT.drawTextLCtoLC(m_bounds_gems, "o o", colors::white); break;
+        case GEMS_NONE: VIRT.drawTextLCtoLC(font, m_bounds_gems, "x x", colors::white); break;
+        case GEMS_ONE : VIRT.drawTextLCtoLC(font, m_bounds_gems, "o x", colors::white); break;
+        case GEMS_TWO : VIRT.drawTextLCtoLC(font, m_bounds_gems, "o o", colors::white); break;
     }
 
-    VIRT.drawTextCCtoCC(m_bounds_handcount, PRINTER("%02d", m_handcount), colors::white);
-    VIRT.drawTextRCtoRC(m_bounds_score, PRINTER("%02d", m_score), colors::white);
-    VIRT.drawRectangleLines(m_bounds_avatar, 2.0f, colors::white);
-    VIRT.drawRectangleLines(m_bounds_leader, 2.0f, colors::white);
+    VIRT.drawTextCCtoCC(font, m_bounds_handcount, PRINTER("%02d", m_handcount), colors::white);
+    VIRT.drawTextRCtoRC(font, m_bounds_score, PRINTER("%02d", m_score), colors::white);
 
-    VIRT.drawRectangleLines(m_bounds, 2.0f, colors::white);
+    drawShadow(m_bounds_avatar, {1,1}, 3);
+    VIRT.drawRectangle(m_bounds_avatar, colors::maroon);
+
+
+    drawShadow(m_bounds_leader, {1,1}, 3);
+    VIRT.drawRectangle(m_bounds_leader, colors::maroon);
+
+
 
     VIRT_DEBUG(m_bounds_name           );
     VIRT_DEBUG(m_bounds_deckname       );
@@ -141,14 +153,14 @@ void CombatRow::update()
 void CombatRow::draw()
 {
 
-
+    auto font = game::fonts::smallburgRegular64();
     {
         auto c = colors::hsluv::orchid().scheme<3>();
         auto fg = c[0].withL(85).toColor();
         auto bg = c[0].withL(15).toColor();
 
         VIRT.drawRectangle(m_bounds_score, bg);
-        VIRT.drawTextCCtoCC(m_bounds_score.anchorCCtoCC(25, 25), PRINTER("%02d", m_score), fg);
+        VIRT.drawTextCCtoCC(font, m_bounds_score.anchorCCtoCC(25, 25), PRINTER("%02d", m_score), fg);
 
         VIRT.drawRectangle(units.bounds(), c[1].withL(15).toColor());
         VIRT.drawRectangle(special.bounds(), c[2].withL(15).toColor());
