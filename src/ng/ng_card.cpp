@@ -11,8 +11,18 @@ using namespace ng;
 using namespace ut;
 
 //
+// std
+//
+using namespace std;
+
+//
 // Card -> Implementation
 //
+
+string Card::toString() const
+{
+    return name.c_str();
+}
 
 Card Card::makeNil()
 {

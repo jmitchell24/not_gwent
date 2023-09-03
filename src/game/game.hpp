@@ -105,6 +105,7 @@ namespace game
         void update();
         void draw();
 
+        static constexpr ut::cstrview DEBUG_LABEL = "GameBoard";
         void drawDebug(ut::cstrparam){}
     private:
         ut::rect m_bounds;

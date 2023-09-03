@@ -10,6 +10,11 @@
 
 
 //
+// ng
+//
+#include "ng/ng_game_solver.hpp"
+
+//
 // game
 //
 #include "game/conv.hpp"
@@ -25,6 +30,8 @@ using namespace game;
 #include "gfx/gfx_draw.hpp"
 #include "gfx/gfx_curves.hpp"
 #include "gfx/gfx_spring.hpp"
+#include "gfx/gfx_tween.hpp"
+#include "gfx/gfx_spinner.hpp"
 
 using namespace gfx;
 
@@ -54,6 +61,403 @@ size_t constexpr static SCREEN_HEIGHT = 1080;
 size_t constexpr static VIRT_WIDTH = 1280;
 size_t constexpr static VIRT_HEIGHT = 720;
 size_t constexpr static VIRT_PAD = 10;
+
+
+struct NgDemo
+{
+    ng::Game game;
+
+    gfx::Spinner m_int;
+
+    void layout(rect const& bounds)
+    {
+        m_int.layout(bounds.anchorCCtoCC(100,100));
+
+        game = ng::GameSolver::makeGame();
+    }
+
+    void update()
+    {
+        m_int.update(GetFrameTime());
+    }
+
+    void draw()
+    {
+        m_int.draw();
+    }
+
+    void draw3d()
+    {
+
+    }
+
+    static constexpr cstrview DEBUG_LABEL = "Cards"_sv;
+
+    int m_slider=0;
+    void drawDebug(cstrparam)
+    {
+        if (ImGui::Button("GO"))
+        {
+            m_int.anim(m_slider);
+        }
+        ImGui::SameLine();
+        ImGui::SliderInt("target", &m_slider, -10,10);
+
+    }
+
+    void drawCards(cstrparam lbl, ng::cardlist_t const& cards)
+    {
+        auto flags = ImGuiTableFlags_None |
+                ImGuiTableFlags_Borders |
+                ImGuiTableFlags_RowBg;
+        if (ImGui::BeginTable(lbl, 10, flags))
+        {
+
+
+            for (auto&& it : cards)
+            {
+                ImGui::TableNextRow();
+                if (ImGui::TableNextColumn())
+                {
+                    ImGui::TextUnformatted(it.name);
+                }
+            }
+
+
+
+
+            ImGui::EndTable();
+        }
+
+
+    }
+};
+
+#if 0
+
+struct NgDemo
+{
+    ng::Game game;
+
+
+
+    void layout(rect const& bounds)
+    {
+        m_bounds = bounds.anchorCCtoCC(100,100);
+        m_bounds_a = m_bounds;
+        m_bounds_b = m_bounds;
+
+        game = ng::GameSolver::makeGame();
+    }
+
+    void update()
+    {
+//        if (!m_tween.update(GetFrameTime()))
+//            return;
+
+        m_min = min(m_src, m_dst);
+        m_max = max(m_src, m_dst);
+
+        //m_time = m_tween.now();
+
+
+        float t = m_src > m_dst ? 1.0f - m_time : m_time;
+        t *=  (1.0f - FLT_EPSILON);
+
+        m_range         = float(m_max - m_min);
+        m_trange        = 1.0f / m_range;
+        m_fmod_range    = m_range * abs(fmod(t, m_trange));
+        m_i             = int(t * m_range);
+
+        float offset_x = m_bounds.width() * m_fmod_range;
+
+        rect r = m_bounds;
+
+        if (m_src < m_dst)
+        {
+            m_bounds_a = r.withOffsetX(offset_x);
+            m_bounds_b = r.withOffsetX(offset_x - m_bounds.height());
+
+            m_integer_a = m_min + int(m_i);
+            m_integer_b = m_integer_a + 1;
+
+            m_color_a = colors::white.withNormalA(std::min(1.0f, std::max(0.0f, 1.0f - m_fmod_range)));
+            m_color_b = colors::white.withNormalA(m_fmod_range);
+        }
+        else
+        {
+            m_bounds_b = r.withOffsetX(offset_x);
+            m_bounds_a = r.withOffsetX(offset_x - m_bounds.height());
+
+            m_integer_b = m_min + int(m_i);
+            m_integer_a = m_integer_b + 1;
+
+            m_color_b = colors::white.withNormalA(std::min(1.0f, std::max(0.0f, 1.0f - m_fmod_range)));
+            m_color_a = colors::white.withNormalA(std::min(1.0f, std::max(0.0f, m_fmod_range)));
+        }
+    }
+
+    void draw()
+    {
+
+
+        auto font = fonts::smallburgRegular128();
+
+
+
+        VIRT.drawTextCCtoCC(font, m_bounds_a, PRINTER("%d", m_integer_a), m_color_a);
+        VIRT.drawTextCCtoCC(font, m_bounds_b, PRINTER("%d", m_integer_b), m_color_b);
+
+        VIRT_DEBUG(m_bounds);
+        VIRT_DEBUG(m_bounds_a);
+        VIRT_DEBUG(m_bounds_b);
+    }
+
+    void draw3d()
+    {
+
+    }
+
+    int m_target=10;
+    int m_src=0, m_dst=10;
+    int m_min=0, m_max=10;
+
+    int   m_i           =0;
+    float m_time        =0;
+    float m_range       =0;
+    float m_trange      =0;
+    float m_fmod_range  =0;
+
+    rect m_bounds;
+    rect m_bounds_a;
+    rect m_bounds_b;
+
+    int m_integer_a;
+    int m_integer_b;
+
+    color m_color_a;
+    color m_color_b;
+
+    gfx::TweenReal m_tween{easings::elasticOut, 2.0f};
+
+    static constexpr cstrview DEBUG_LABEL = "Cards"_sv;
+    void drawDebug(cstrparam)
+    {
+        ImGui::SliderInt("dst", &m_target, -100, 100);
+        ImGui::SliderFloat("t", &m_time, -1,1 );
+
+        if (ImGui::Button("GO"))
+        {
+
+            m_src = m_dst;
+            m_dst = m_target;
+            m_tween.anim(0, 1);
+        }
+
+
+
+//#define LABEL_(x_) ImGui::LabelText(#x_, "%.2f", x_);
+//        LABEL_(m_time);
+//        LABEL_(m_range);
+//        LABEL_(m_trange);
+//        LABEL_(m_fmod_range);
+//        LABEL_(m_i);
+//#undef LABEL_
+
+
+//        ImGui::Text("p1 deck (%d)", game.p1.deck.size());
+//        drawCards("p1 deck"_sv, game.p1.deck);
+//        ImGui::Text("p1 hand (%d)", game.p1.hand.size());
+//        drawCards("p1 hand"_sv, game.p1.hand);
+    }
+
+    void drawCards(cstrparam lbl, ng::cardlist_t const& cards)
+    {
+        auto flags = ImGuiTableFlags_None |
+                ImGuiTableFlags_Borders |
+                ImGuiTableFlags_RowBg;
+        if (ImGui::BeginTable(lbl, 10, flags))
+        {
+
+
+            for (auto&& it : cards)
+            {
+                ImGui::TableNextRow();
+                if (ImGui::TableNextColumn())
+                {
+                    ImGui::TextUnformatted(it.name);
+                }
+            }
+
+
+
+
+            ImGui::EndTable();
+        }
+
+
+    }
+};
+
+struct NgDemo
+{
+    ng::Game game;
+
+
+
+    void layout(rect const& bounds)
+    {
+        m_bounds = bounds.anchorCCtoCC(100,100);
+        m_bounds_a = m_bounds;
+        m_bounds_b = m_bounds;
+
+        game = ng::GameSolver::makeGame();
+    }
+
+    void update()
+    {
+        if (!m_tween.update(GetFrameTime()))
+            return;
+
+        m_min = min(m_src, m_dst);
+        m_max = max(m_src, m_dst);
+
+        m_time = m_tween.now();
+
+        float t = m_src > m_dst ? 1.0f - m_time : m_time;
+        t *=  (1.0f - FLT_EPSILON);
+
+        m_range         = float(m_max - m_min);
+        m_trange        = 1.0f / m_range;
+        m_fmod_range    = m_range * fmod(t, m_trange);
+        m_i             = int(t * m_range);
+
+        float offset_y = m_bounds.height() * m_fmod_range;
+
+        rect r = m_bounds;
+
+        if (m_src < m_dst)
+        {
+            m_bounds_a = r.withOffsetY(offset_y);
+            m_bounds_b = r.withOffsetY(offset_y - m_bounds.height());
+
+            m_integer_a = m_min + int(m_i);
+            m_integer_b = m_integer_a + 1;
+
+            m_color_a = colors::white.withNormalA(1.0f - m_fmod_range);
+            m_color_b = colors::white.withNormalA(m_fmod_range);
+        }
+        else
+        {
+            m_bounds_b = r.withOffsetY(offset_y);
+            m_bounds_a = r.withOffsetY(offset_y - m_bounds.height());
+
+            m_integer_b = m_min + int(m_i);
+            m_integer_a = m_integer_b + 1;
+
+            m_color_b = colors::white.withNormalA(1.0f - m_fmod_range);
+            m_color_a = colors::white.withNormalA(m_fmod_range);
+        }
+    }
+
+    void draw()
+    {
+
+
+        auto font = fonts::smallburgRegular128();
+
+
+
+        VIRT.drawTextCCtoCC(font, m_bounds_a, PRINTER("%d", m_integer_a), m_color_a);
+        VIRT.drawTextCCtoCC(font, m_bounds_b, PRINTER("%d", m_integer_b), m_color_b);
+
+        VIRT_DEBUG(m_bounds);
+        VIRT_DEBUG(m_bounds_a);
+        VIRT_DEBUG(m_bounds_b);
+    }
+
+    void draw3d()
+    {
+
+    }
+
+    int m_src=0, m_dst=10;
+    int m_min=0, m_max=10;
+
+    int   m_i           =0;
+    float m_time        =0;
+    float m_range       =0;
+    float m_trange      =0;
+    float m_fmod_range  =0;
+
+    rect m_bounds;
+    rect m_bounds_a;
+    rect m_bounds_b;
+
+    int m_integer_a;
+    int m_integer_b;
+
+    color m_color_a;
+    color m_color_b;
+
+    gfx::TweenReal m_tween{easings::elasticOut, 2.0f};
+
+    static constexpr cstrview DEBUG_LABEL = "Cards"_sv;
+    void drawDebug(cstrparam)
+    {
+        ImGui::SliderInt("dst", &m_dst, -100, 100);
+        //ImGui::SliderFloat("t", &m_time, 0,1 );
+
+        if (ImGui::Button("GO"))
+        {
+            m_src = m_dst;
+            m_tween.anim(0, 1);
+        }
+
+
+
+//#define LABEL_(x_) ImGui::LabelText(#x_, "%.2f", x_);
+//        LABEL_(m_time);
+//        LABEL_(m_range);
+//        LABEL_(m_trange);
+//        LABEL_(m_fmod_range);
+//        LABEL_(m_i);
+//#undef LABEL_
+
+
+//        ImGui::Text("p1 deck (%d)", game.p1.deck.size());
+//        drawCards("p1 deck"_sv, game.p1.deck);
+//        ImGui::Text("p1 hand (%d)", game.p1.hand.size());
+//        drawCards("p1 hand"_sv, game.p1.hand);
+    }
+
+    void drawCards(cstrparam lbl, ng::cardlist_t const& cards)
+    {
+        auto flags = ImGuiTableFlags_None |
+                ImGuiTableFlags_Borders |
+                ImGuiTableFlags_RowBg;
+        if (ImGui::BeginTable(lbl, 10, flags))
+        {
+
+
+            for (auto&& it : cards)
+            {
+                ImGui::TableNextRow();
+                if (ImGui::TableNextColumn())
+                {
+                    ImGui::TextUnformatted(it.name);
+                }
+            }
+
+
+
+
+            ImGui::EndTable();
+        }
+
+
+    }
+};
 
 struct CatmullRomDemo
 {
@@ -347,7 +751,6 @@ struct CardDemo
     }
 };
 
-
 struct ShadowDemo
 {
     constexpr static size_t tex_width = 200;
@@ -426,70 +829,11 @@ struct ShadowDemo
     }
 };
 
-struct Draw2HDDemo
-{
-    rect r;
-    rlRenderBatch batch;
-    Model m_model;
+#endif
 
-    void layout(rect const& bounds)
-    {
-        r = bounds;
-
-        m_model = LoadModel("data/fbx/Apple/trn_Apple.fbx");
-
-        assert(IsModelReady(m_model));
-    }
-
-    void update()
-    {
-
-    }
-
-    void draw()
-    {
-
-        VIRT_DEBUG(r);
-    }
-
-    void draw3d()
-    {
-        // Define the camera to look into our 3d world
-        Camera camera = { 0 };
-        camera.position = (Vector3){ 1.0f, 1.0f, 1.0f }; // Camera position
-        camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };     // Camera looking at point
-        camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-        camera.fovy = 45.0f;                                // Camera field-of-view Y
-        camera.projection = CAMERA_PERSPECTIVE;                   // Camera mode type
-
-
-
-
-
-        BeginMode3D(camera);
-
-        DrawModel(m_model, {}, 1.0f, WHITE);        // Draw 3d model with texture
-
-        DrawGrid(20, 10.0f);         // Draw a grid
-
-        //if (selected) DrawBoundingBox(bounds, GREEN);   // Draw selection box
-
-        EndMode3D();
-
-
-
-
-
-    }
-
-    void drawDebug(cstrparam)
-    {
-
-    }
-};
 
 // https://github.com/Rabios/awesome-raylib
-using game_t = GameBoard;
+using game_t = NgDemo;
 
 int main()
 {
@@ -559,8 +903,8 @@ int main()
             VIRT.drawDebug();
             ImGui::End();
 
-            ImGui::Begin("gg");
-            gg.drawDebug("gg"_sv);
+            ImGui::Begin(game_t::DEBUG_LABEL);
+            gg.drawDebug(game_t::DEBUG_LABEL);
             ImGui::End();
         }
         rlImGuiEnd();

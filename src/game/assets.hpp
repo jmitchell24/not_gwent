@@ -7,7 +7,9 @@
 #include "assert.hpp"
 
 #define GAME_ENUM_FONTS \
-    CASE(smallburgRegular64, "data/font/smallburg-Regular.ttf", 64)
+    CASE(smallburgRegular32, "data/font/smallburg-Regular.ttf", 32) \
+    CASE(smallburgRegular64, "data/font/smallburg-Regular.ttf", 64) \
+    CASE(smallburgRegular128, "data/font/smallburg-Regular.ttf", 128)
 
 
 #define GAME_ENUM_TEXTURES_BADGES \

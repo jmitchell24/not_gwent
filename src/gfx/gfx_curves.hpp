@@ -8,6 +8,9 @@
 
 #include <vector>
 
+#define _vec ut::vec2f const&
+#define _flt float
+
 namespace gfx
 {
     class CatmullRomSpline
@@ -25,17 +28,23 @@ namespace gfx
             float       m_tmin{};
             float       m_tmax{};
 
-            ut::vec2f point(float t) const;
-            void layout(ut::vec2f const& p0,
-                        ut::vec2f const& p1,
-                        ut::vec2f const& p2,
-                        ut::vec2f const& p3,
-                        float alpha, float tension,
-                        float tmin, float tmax);
+            ut::vec2f point(_flt t) const;
+            void layout(_vec p0, _vec p1, _vec p2, _vec p3,
+                        _flt alpha, _flt tension, _flt tmin, _flt tmax);
         };
 
         using segments_type = std::vector<Segment>;
         segments_type m_segments;
     };
 
+
+    class BezierCurve
+    {
+    public:
+
+    private:
+    };
 }
+
+#undef _vec
+#undef _flt

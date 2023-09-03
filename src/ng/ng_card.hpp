@@ -144,9 +144,11 @@ NG_ENUM_CARD_TYPE
 NG_ENUM_CARD_TYPE
 #undef CASE
 
+        std::string toString() const;
+
         static Card makeNil    ();
-        static Card makeUnit   (unsigned id, ut::cstrparam name, ut::cstrparam filename, Expansion expansion, Deck deck, UnitCard unit);
-        static Card makeLeader (unsigned id, ut::cstrparam name, ut::cstrparam filename, Expansion expansion, Deck deck, LeaderCard leader);
+        static Card makeUnit   (unsigned id, ut::cstrparam name, ut::cstrparam filename, Expansion expansion, Deck deck, UnitCard    unit   );
+        static Card makeLeader (unsigned id, ut::cstrparam name, ut::cstrparam filename, Expansion expansion, Deck deck, LeaderCard  leader );
         static Card makeSpecial(unsigned id, ut::cstrparam name, ut::cstrparam filename, Expansion expansion, Deck deck, SpecialCard special);
     };
 }

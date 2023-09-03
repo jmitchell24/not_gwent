@@ -1,6 +1,7 @@
 //
 // Created by james on 8/24/23.
 //
+#pragma once
 
 #include "gfx/gfx_easings.hpp"
 #include "gfx/gfx_vlist.hpp"

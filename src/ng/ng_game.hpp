@@ -1,42 +1,46 @@
 #pragma once
 
-#include "ng/ng_card_data.hpp"
 #include "assert.hpp"
+#include "ng/ng_card_data.hpp"
 
-#include "ut/container/stack_array.hpp"
-
-#include <cstddef>
-
-namespace ng::gs
+namespace ng
 {
     struct CombatRow
     {
-        static constexpr size_t ROW_SIZE = 20;
-        Card cards[ROW_SIZE];
-        size_t count=0;
-
-        unsigned score() const
-        {
-            unsigned score;
-            for (size_t i = 0; i < count; ++i)
-            {
-                if (cards[i].isUnitCard())
-                    score += cards[i].asUnitCard().strength;
-            }
-            return score;
-        }
+        Card        special;
+        cardlist_t  cards;
     };
 
     struct Player
     {
-        CombatRow melee, ranged, seige;
+        unsigned round_wins = 0;
 
-        inline unsigned score() const
+        Card        leader;
+        cardlist_t  hand;
+        cardlist_t  deck;
+        cardlist_t  graveyard;
+        cardlist_t  weather;
+        CombatRow   combat_row_melee;
+        CombatRow   combat_row_ranged;
+        CombatRow   combat_row_siege;
+
+        inline unsigned strength() const
         {
-            return
-                melee.score() +
-                ranged.score() +
-                seige.score();
+            unsigned strength=0;
+
+            for (auto&& it : combat_row_melee.cards)
+                if (it.isUnitCard())
+                    strength += it.asUnitCard().strength;
+
+            for (auto&& it : combat_row_ranged.cards)
+                if (it.isUnitCard())
+                    strength += it.asUnitCard().strength;
+
+            for (auto&& it : combat_row_siege.cards)
+                if (it.isUnitCard())
+                    strength += it.asUnitCard().strength;
+
+            return strength;
         }
     };
 

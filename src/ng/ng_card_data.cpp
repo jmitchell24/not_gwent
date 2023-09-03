@@ -2,9 +2,3 @@
 using namespace ng;
 
 
-
-
-void foo()
-{
-
-}
