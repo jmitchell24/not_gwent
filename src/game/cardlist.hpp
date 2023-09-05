@@ -63,7 +63,7 @@ namespace game
         struct Slot
         {
             Card    card;
-            size_t  order;
+            size_t  order=0;
         };
 
         using slotlist_t = std::vector<Slot>;

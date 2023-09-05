@@ -64,7 +64,7 @@ namespace ImGui
 
 
 
-    void DrawDebugRectangle(ut::cstrparam lbl, ut::rectf r, ut::color col,
+    void DrawDebugRectangle(ut::cstrparam lbl, ut::rectf const& r, ut::color const& col,
         ImGuiDebugRectangleStyle style = ImGuiDebugRectangleStyle_Full,
         ut::cstrparam format = IM_DEBUG_RECTANGLE_FORMAT);
 

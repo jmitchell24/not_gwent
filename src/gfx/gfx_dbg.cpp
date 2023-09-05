@@ -6,17 +6,17 @@ using namespace gfx;
 using namespace ut;
 
 //
-// DebugRectManager
+// DebugRectManager -> Implementation
 //
 
-DebugDrawManager::DebugDrawManager() :
+DebugRectManager::DebugRectManager() :
     m_tags      {},
     m_draws     {},
     m_im_style  {ImGuiDebugRectangleStyle_Default},
     m_im_alpha  {1}
 {}
 
-void DebugDrawManager::addRect(cstrparam label, rectf const& r)
+void DebugRectManager::addRect(cstrparam label, rectf const& r)
 {
     if (!enabled)
         return;
@@ -27,6 +27,96 @@ void DebugDrawManager::addRect(cstrparam label, rectf const& r)
 
     if (tag.enabled)
         m_draws.push_back(tag.toDraw(r));
+}
+
+bool DebugRectManager::drawDebug()
+{
+    for (auto& p: m_draws)
+        ImGui::DrawDebugRectangle(p.text, p.bound, p.col.withNormalA(m_im_alpha), (ImGuiDebugRectangleStyle_)m_im_style);
+    m_draws.clear();
+
+    auto flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
+    if (ImGui::TreeNodeEx("Debug Rectangles", flags))
+    {
+        if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent))
+            enabled = !enabled;
+
+
+
+        ImGui::Checkbox("Enable Debug", &enabled);
+
+
+        ImGui::Separator();
+        ImGui::Text("Bounds");
+
+
+        if (ImGui::Button("100%")) m_im_alpha = 1.00f;
+        ImGui::SameLine();
+        if (ImGui::Button("75%")) m_im_alpha = 0.75f;
+        ImGui::SameLine();
+        if (ImGui::Button("50%")) m_im_alpha = 0.50f;
+        ImGui::SameLine();
+        if (ImGui::Button("25%")) m_im_alpha = 0.25f;
+
+        ImGui::DragFloat("Alpha", &m_im_alpha, 0.003, 0.25, 1);
+        ImGui::RadioButton("Default", &m_im_style, ImGuiDebugRectangleStyle_Default);
+        ImGui::SameLine();
+        ImGui::RadioButton("Full", &m_im_style, ImGuiDebugRectangleStyle_Full);
+        ImGui::SameLine();
+        ImGui::RadioButton("Simple", &m_im_style, ImGuiDebugRectangleStyle_Simple);
+
+        if (ImGui::Button("Enable All"))
+        {
+            for (auto& p: m_tags)
+                p.enabled = true;
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Disable All"))
+        {
+            for (auto& p: m_tags)
+                p.enabled = false;
+        }
+
+        ImGui::BeginChild("virt2d-rects", {0,150}, true);
+
+        for (auto& p: m_tags)
+        {
+            auto lbl = p.text.c_str();
+            auto nor = p.col.toNormal();
+
+            ImGui::Text("%d", (int)p.cnt);
+
+            ImGui::SameLine();
+
+            if (float c[3]{nor.r, nor.g, nor.b}; ImGui::ColorEdit3(lbl, c, ImGuiColorEditFlags_NoLabel|ImGuiColorEditFlags_NoInputs))
+                p.col = color::fromNormal({c[0], c[1], c[2]});
+
+            ImGui::SameLine();
+
+            ImGui::Checkbox(lbl, &p.enabled);
+
+            p.cnt = 0;
+        }
+
+        ImGui::EndChild();
+
+        ImGui::TreePop();
+
+        return true;
+    }
+
+    return false;
+}
+
+DebugRectManager::RectTag& DebugRectManager::getTag(cstrparam label)
+{
+    for (RectTag& x: m_tags)
+        if (x.text == label)
+            return x;
+    m_tags.push_back({true, label, RANDOM.nextColor(),0});
+    return m_tags.back();
 }
 
 #if 0
@@ -133,110 +223,3 @@ struct Gizmo
 
 } static GIZMO;
 #endif
-
-bool DebugDrawManager::drawDebug()
-{
-    for (auto& p: m_draws)
-        ImGui::DrawDebugRectangle(p.text, p.bound, p.col.withNormalA(m_im_alpha), (ImGuiDebugRectangleStyle_)m_im_style);
-    m_draws.clear();
-
-    auto flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
-    if (ImGui::TreeNodeEx("Virt2D", flags))
-    {
-        ImGui::Checkbox("Enable Debug", &enabled);
-        //ImGui::Checkbox("Enable Gizmo", &GIZMO.enabled);
-
-        ImGui::Separator();
-        ImGui::Text("View");
-
-        if (ImGui::Button("Reset##scale")) scale = 1;
-        ImGui::DragFloat("Scale", &scale, 0.001, 0, 0, "%.3f");
-
-
-        if (ImGui::Button("Reset##offset")) offset.set(0);
-        ImGui::SameLine();
-        if (ImGui::Button("X")) offset.x = 0;
-        ImGui::SameLine();
-        if (ImGui::Button("Y")) offset.y = 0;
-
-        ImGui::SameLine();
-        ImGui::DragFloat2("Offset", offset.pack, 1);
-
-
-        ImGui::Separator();
-        ImGui::Text("Bounds");
-
-
-        if (ImGui::Button("100%")) m_im_alpha = 1.00f;
-        ImGui::SameLine();
-        if (ImGui::Button("75%")) m_im_alpha = 0.75f;
-        ImGui::SameLine();
-        if (ImGui::Button("50%")) m_im_alpha = 0.50f;
-        ImGui::SameLine();
-        if (ImGui::Button("25%")) m_im_alpha = 0.25f;
-
-        ImGui::DragFloat("Alpha", &m_im_alpha, 0.003, 0.25, 1);
-        ImGui::RadioButton("Default", &m_im_style, ImGuiDebugRectangleStyle_Default);
-        ImGui::SameLine();
-        ImGui::RadioButton("Full", &m_im_style, ImGuiDebugRectangleStyle_Full);
-        ImGui::SameLine();
-        ImGui::RadioButton("Simple", &m_im_style, ImGuiDebugRectangleStyle_Simple);
-
-        if (ImGui::Button("Enable All"))
-        {
-            for (auto& p: m_tags)
-                p.enabled = true;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Disable All"))
-        {
-            for (auto& p: m_tags)
-                p.enabled = false;
-        }
-
-        ImGui::BeginChild("virt2d-rects", {0,150}, true);
-
-        for (auto& p: m_tags)
-        {
-            auto lbl = p.text.c_str();
-            auto nor = p.col.toNormal();
-
-            ImGui::Text("%d", (int)p.cnt);
-
-            ImGui::SameLine();
-
-            if (float c[3]{nor.r, nor.g, nor.b}; ImGui::ColorEdit3(lbl, c, ImGuiColorEditFlags_NoLabel|ImGuiColorEditFlags_NoInputs))
-                p.col = color::fromNormal({c[0], c[1], c[2]});
-
-            ImGui::SameLine();
-
-            ImGui::Checkbox(lbl, &p.enabled);
-
-            p.cnt = 0;
-        }
-
-        ImGui::EndChild();
-
-        ImGui::TreePop();
-
-//        GIZMO.draw();
-
-//        offset = GIZMO.offset;
-//        scale = GIZMO.zoom;
-
-        return true;
-    }
-
-    return false;
-}
-
-DebugDrawManager::RectTag& DebugDrawManager::getTag(cstrparam label)
-{
-    for (RectTag& x: m_tags)
-        if (x.text == label)
-            return x;
-    m_tags.push_back({true, label, RANDOM.nextColor(),0});
-    return m_tags.back();
-}

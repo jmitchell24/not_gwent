@@ -8,6 +8,11 @@
 //#include "ng/cards.hpp"
 
 //
+// ng
+//
+#include "ng/ng_card.hpp"
+
+//
 // raylib
 //
 #include "raylib.h"
@@ -27,6 +32,21 @@ namespace game
             Texture2D   badge2;
             Font        font;
             ut::color   color;
+
+            inline bool hasBadge1() const
+            {
+                return IsTextureReady(badge1);
+            }
+
+            inline bool hasBadge2() const
+            {
+                return IsTextureReady(badge2);
+            }
+
+            inline bool hasArtwork() const
+            {
+                return IsTextureReady(artwork);
+            }
         };
 
         //static constexpr float ASPECT_RATIO = 1.88f;
@@ -39,9 +59,14 @@ namespace game
 
 
         Card();
-        Card(Assets const& stuff);
+        Card(Card const&)=default;
+        Card(ng::Card const& card);
 
+
+        void setCard(ng::Card const& card);
         //inline Texture2D const& texture() const { return m_texture; }
+
+        inline ng::Card const& card() const { return m_card; }
 
         //inline ut::color color      () const { return m_color; }
         //inline ut::rect  rect       () const { return ut::rect(m_psize).anchorCCtoCC_W(m_psize.width * m_elevation); }
@@ -112,7 +137,8 @@ namespace game
         }
 
     private:
-        Assets      m_assets;
+        Assets          m_assets;
+        ng::Card        m_card;
 
         float           m_width;
         float           m_height;
@@ -128,7 +154,7 @@ namespace game
         gfx::TweenReal  m_tween_opacity;
 
 
-
+        static Assets assetsFromCard(ng::Card const& card);
 
 #ifndef NDEBUG
         bool            m_is_layout_ready = false;

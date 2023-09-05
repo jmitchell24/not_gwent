@@ -43,10 +43,10 @@ size_t constexpr static VIRT_PAD = 10;
 
 
 //
-// PlayerStats -> Implementation
+// PlayerBoard -> Implementation
 //
 
-void PlayerStats::layout(rect const& bounds)
+void PlayerBoard::layout(rect const& bounds)
 {
     m_bounds = bounds;
 
@@ -71,12 +71,12 @@ void PlayerStats::layout(rect const& bounds)
 #endif
 }
 
-void PlayerStats::update()
+void PlayerBoard::update()
 {
     assert(m_is_layout_ready);
 }
 
-void PlayerStats::draw()
+void PlayerBoard::draw()
 {
     assert(m_is_layout_ready);
 
@@ -146,12 +146,15 @@ void CombatRow::layout(rect const &bounds)
 
 void CombatRow::update()
 {
+    assert(m_is_layout_ready);
+
     units.update();
     special.update();
 }
 
 void CombatRow::draw()
 {
+    assert(m_is_layout_ready);
 
     auto font = game::fonts::smallburgRegular64();
     {
@@ -170,16 +173,71 @@ void CombatRow::draw()
     special.draw();
 }
 
+//
+// PlayerCards -> Implementation
+//
+
+void PlayerCards::layout(rect const& bounds)
+{
+    m_bounds = bounds;
+    graveyard   .layout(m_bounds.row(7, 1, {.w=5, .inner_pad=VIRT_PAD}));
+    hand        .layout(m_bounds.row(7, 0, {.inner_pad=VIRT_PAD}));
+    deck        .layout(m_bounds.row(7, 6, {.inner_pad=VIRT_PAD}));
+
+#ifndef NDEBUG
+    m_is_layout_ready = true;
+#endif
+}
+
+void PlayerCards::update()
+{
+    assert(m_is_layout_ready);
+
+    hand.update();
+    deck.update();
+    graveyard.update();
+}
+
+void PlayerCards::draw()
+{
+    assert(m_is_layout_ready);
+
+    hand.draw();
+    deck.draw();
+    graveyard.draw();
+}
+
+//
+// WeatherBoard -> Implementation
+//
+
+void WeatherBoard::layout(rect const& bounds)
+{
+    m_bounds = bounds;
+    cards.layout(m_bounds);
+
+#ifndef NDEBUG
+    m_is_layout_ready = true;
+#endif
+}
+
+void WeatherBoard::update()
+{
+    assert(m_is_layout_ready);
+    cards.update();
+}
+
+void WeatherBoard::draw()
+{
+    assert(m_is_layout_ready);
+    cards.draw();
+}
 
 //
 // GameBoard -> Implementation
 //
 
-
-
-
-
-void GameBoard::layout(ut::rect const &bounds)
+void GameBoard::layout(rect const& bounds)
 {
     m_bounds = bounds;
 
@@ -188,18 +246,19 @@ void GameBoard::layout(ut::rect const &bounds)
 
     //auto b_cards_rows = b_cards.splitNV<8>(VIRT_PAD);
 
-    m_hand_cpu         .layout(b_cards.col(8, 0, {.inner_pad=VIRT_PAD}));
+    m_cards_cpu        .layout(b_cards.col(8, 0, {.inner_pad=VIRT_PAD}));
     m_combat_cpu_siege .layout(b_cards.col(8, 1, {.inner_pad=VIRT_PAD}));
     m_combat_cpu_ranged.layout(b_cards.col(8, 2, {.inner_pad=VIRT_PAD}));
     m_combat_cpu_melee .layout(b_cards.col(8, 3, {.inner_pad=VIRT_PAD}));
     m_combat_usr_siege .layout(b_cards.col(8, 4, {.inner_pad=VIRT_PAD}));
     m_combat_usr_ranged.layout(b_cards.col(8, 5, {.inner_pad=VIRT_PAD}));
     m_combat_usr_melee .layout(b_cards.col(8, 6, {.inner_pad=VIRT_PAD}));
-    m_hand_usr         .layout(b_cards.col(8, 7, {.inner_pad=VIRT_PAD}));
+    m_cards_usr        .layout(b_cards.col(8, 7, {.inner_pad=VIRT_PAD}));
 
-    auto [b_stats_cpu, b_dummy, b_stats_usr] = b_stats.splitNV<3>(VIRT_PAD);
-    m_stats_cpu.layout(b_stats_cpu);
-    m_stats_usr.layout(b_stats_usr);
+    auto [b_stats_cpu, b_weather, b_stats_usr] = b_stats.splitNV<3>(VIRT_PAD);
+    m_stats_cpu     .layout(b_stats_cpu);
+    m_weather_cards .layout(b_weather);
+    m_stats_usr     .layout(b_stats_usr);
 
     m_card_mover.set({
         &m_combat_cpu_siege.units,
@@ -208,14 +267,19 @@ void GameBoard::layout(ut::rect const &bounds)
         &m_combat_cpu_ranged.special,
         &m_combat_cpu_melee.units,
         &m_combat_cpu_melee.special,
+        &m_cards_cpu.hand,
+        &m_cards_cpu.deck,
+        &m_cards_cpu.graveyard,
         &m_combat_usr_siege.units,
         &m_combat_usr_siege.special,
         &m_combat_usr_ranged.units,
         &m_combat_usr_ranged.special,
         &m_combat_usr_melee.units,
         &m_combat_usr_melee.special,
-        &m_hand_usr,
-        &m_hand_cpu
+        &m_cards_usr.hand,
+        &m_cards_usr.deck,
+        &m_cards_usr.graveyard
+
     });
 
 
@@ -237,11 +301,12 @@ void GameBoard::update()
     m_combat_usr_ranged.update();
     m_combat_usr_melee.update();
 
-    m_hand_usr.update();
-    m_hand_cpu.update();
+    m_cards_usr.update();
+    m_cards_cpu.update();
 
     m_stats_cpu.update();
     m_stats_usr.update();
+    m_weather_cards.update();
 }
 
 void GameBoard::draw()
@@ -255,11 +320,12 @@ void GameBoard::draw()
     m_combat_usr_ranged.draw();
     m_combat_usr_melee.draw();
 
-    m_hand_usr.draw();
-    m_hand_cpu.draw();
+    m_cards_usr.draw();
+    m_cards_cpu.draw();
 
     m_stats_cpu.draw();
     m_stats_usr.draw();
+    m_weather_cards.draw();
 
     m_card_mover.draw();
 }

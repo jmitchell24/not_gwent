@@ -9,6 +9,11 @@
 using namespace game;
 
 //
+// ng
+//
+#include "ng/ng_card_data.hpp"
+
+//
 // ut
 //
 #include <ut/random.hpp>
@@ -48,15 +53,18 @@ Card::Card()
 //m_tween_elevation   = Tween1(&easings::bounceOut  , 0.5f);
 //m_tween_opacity     = Tween1(&easings::expoOut    , 0.5f);
 
-Card::Card(Assets const& stuff) :
-        m_assets{stuff},
-        m_tween_position  {&easings::elasticOut , 1.0f},
-        m_tween_rotation  {&easings::expoOut    , 0.5f},
-        m_tween_elevation {&easings::bounceOut  , 0.5f},
-        m_tween_opacity   {&easings::expoOut    , 0.5f}
+Card::Card(ng::Card const& card) :
+    m_assets            {assetsFromCard(card)},
+    m_card              {card},
+    m_tween_position    {&easings::elasticOut , 1.0f},
+    m_tween_rotation    {&easings::expoOut    , 0.5f},
+    m_tween_elevation   {&easings::bounceOut  , 0.5f},
+    m_tween_opacity     {&easings::expoOut    , 0.5f}
 {
 
 }
+
+
 
 //
 // Card -> target
@@ -99,6 +107,12 @@ void Card::targetOpacity(float f)
 //
 // Card -> set
 //
+
+void Card::setCard(ng::Card const& card)
+{
+    m_assets = assetsFromCard(card);
+    m_card = card;
+}
 
 void Card::setPosition(vec2f const& p)
 {
@@ -278,10 +292,17 @@ void Card::draw()
 
     VIRT.drawRectangle(r_stats, outer.withL(15).withA(0.85).toColor());
 
-    VIRT.drawTextBCtoBC(m_assets.font, r_stat_strength, "10"_sv, outer.toColor());
+    if (m_card.isUnitCard())
+    {
+        auto& unit = m_card.asUnitCard();
+        VIRT.drawTextBCtoBC(m_assets.font, r_stat_strength, PRINTER("%d", unit.strength), outer.toColor());
+    }
 
-    gfx::drawTextureFit(m_assets.badge1, r_stat_row, c);
-    gfx::drawTextureFit(m_assets.badge2, r_stat_ability, c);
+    if (m_assets.hasBadge1())
+        gfx::drawTextureFit(m_assets.badge1, r_stat_row, c);
+
+    if (m_assets.hasBadge2())
+        gfx::drawTextureFit(m_assets.badge2, r_stat_ability, c);
 
     VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
 
@@ -312,17 +333,17 @@ RenderTexture2D Card::drawTexture(float width, float height)
 
 Card Card::createTestCard()
 {
-    static rangen rg;
+//    static rangen rg;
+//
+//    Card card({
+//        getCardTexture((CardTextureID)rg.nexti(_CARD_TEXTURE_ID_COUNT-1)),
+//        getBadgeTexture((BadgeTextureID)rg.nexti(_BADGE_TEXTURE_ID_COUNT-1)),
+//        getBadgeTexture((BadgeTextureID)rg.nexti(_BADGE_TEXTURE_ID_COUNT-1)),
+//        fonts::smallburgRegular64(),
+//        RANDOM.nextColor()
+//    });
 
-    Card card({
-        getCardTexture((CardTextureID)rg.nexti(_CARD_TEXTURE_ID_COUNT-1)),
-        getBadgeTexture((BadgeTextureID)rg.nexti(_BADGE_TEXTURE_ID_COUNT-1)),
-        getBadgeTexture((BadgeTextureID)rg.nexti(_BADGE_TEXTURE_ID_COUNT-1)),
-        fonts::smallburgRegular64(),
-        RANDOM.nextColor()
-    });
-
-    return card;
+    return {ng::cards::neutral_avallach};
 }
 
 cardlist_t Card::createTestCards(size_t n)
@@ -335,5 +356,60 @@ cardlist_t Card::createTestCards(size_t n)
 
 
 
+Texture2D abilityBadge(ng::UnitCard::Ability x)
+{
+    switch (x)
+    {
+        case ng::UnitCard::ABILITY_NONE     : return {};
+        case ng::UnitCard::ABILITY_AGILE    : return TEXTURES.get("data/board/card_ability_agile.png");
+        case ng::UnitCard::ABILITY_MEDIC    : return TEXTURES.get("data/board/card_ability_medic.png");
+        case ng::UnitCard::ABILITY_MORALE   : return TEXTURES.get("data/board/card_ability_morale.png");
+        case ng::UnitCard::ABILITY_MUSTER   : return TEXTURES.get("data/board/card_ability_muster.png");
+        case ng::UnitCard::ABILITY_SPY      : return TEXTURES.get("data/board/card_ability_spy.png");
+        default: assert_case(ng::UnitCard::Ability);
+    }
 
+    return {};
+}
 
+Texture2D rowBadge(ng::UnitCard::Row x)
+{
+    switch (x)
+    {
+        case ng::UnitCard::ROW_MELEE        : return TEXTURES.get("data/board/combat_row_melee.png");
+        case ng::UnitCard::ROW_MELEE_RANGED : return TEXTURES.get("data/board/combat_row_melee_ranged.png");
+        case ng::UnitCard::ROW_RANGED       : return TEXTURES.get("data/board/combat_row_ranged.png");
+        case ng::UnitCard::ROW_SIEGE        : return TEXTURES.get("data/board/combat_row_siege.png");
+        default: assert_case(ng::UnitCard::Row);
+    }
+
+    return {};
+}
+
+Card::Assets Card::assetsFromCard(ng::Card const& card)
+{
+    Texture2D artwork = TEXTURES.get(PRINTER("data/cards/%s", card.filename.c_str()));
+
+    if (card.isUnitCard())
+    {
+        auto& unit = card.asUnitCard();
+
+        return
+        {
+            artwork,
+            abilityBadge(unit.ability),
+            rowBadge(unit.row),
+            fonts::smallburgRegular64(),
+            RANDOM.nextColor()
+        };
+    }
+
+    return
+    {
+        artwork,
+        {},
+        {},
+        fonts::smallburgRegular64(),
+        RANDOM.nextColor()
+    };
+}

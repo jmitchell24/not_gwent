@@ -37,30 +37,15 @@ vec2 Virt2DManager::realPoint(vec2 const& p) const
 {
     auto& mat = m_transform;
 
-    if (m_debug.enabled)
-    {
-        float x = p.x * m_debug.scale + m_debug.offset.x;
-        float y = p.y * m_debug.scale + m_debug.offset.y;
-        float z = 0;
+    float x = p.x;
+    float y = p.y;
+    float z = 0;
 
-        return
-        {
-            mat.m0*x + mat.m4*y + mat.m8*z + mat.m12,
-            mat.m1*x + mat.m5*y + mat.m9*z + mat.m13
-        };
-    }
-    else
+    return
     {
-        float x = p.x;
-        float y = p.y;
-        float z = 0;
-
-        return
-        {
-            mat.m0*x + mat.m4*y + mat.m8*z + mat.m12,
-            mat.m1*x + mat.m5*y + mat.m9*z + mat.m13
-        };
-    }
+        mat.m0*x + mat.m4*y + mat.m8*z + mat.m12,
+        mat.m1*x + mat.m5*y + mat.m9*z + mat.m13
+    };
 }
 
 rectf Virt2DManager::realRect(rectf const& r) const
@@ -190,12 +175,6 @@ void Virt2DManager::pushMatrix()
 {
     rlPushMatrix();
     rlMultMatrixf(MatrixToFloat(m_transform));
-
-    if (m_debug.enabled)
-    {
-        rlTranslatef(m_debug.offset.x, m_debug.offset.y, 0);
-        rlScalef(m_debug.scale, m_debug.scale, 1);
-    }
 }
 
 void Virt2DManager::popMatrix()

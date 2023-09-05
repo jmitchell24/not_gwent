@@ -91,7 +91,7 @@ UT_ENUM_RECT_ALIGNMENTS
         bool    m_begin_flag    = false;
         bool    m_begin_scissor_flag = false;
 
-        DebugDrawManager m_debug;
+        DebugRectManager m_debug;
 
         void pushMatrix();
         void popMatrix();

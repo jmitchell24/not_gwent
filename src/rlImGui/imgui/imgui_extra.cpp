@@ -5,6 +5,8 @@
 #include <ut/color.hpp>
 using namespace ut;
 
+#include "assert.hpp"
+
 //
 // Struct
 //
@@ -93,27 +95,27 @@ void ImGui::RenderDockspace()
 // Misc. Functions
 //
 
-ImU32 ToU32(color::normal nor) { return ImGui::ColorConvertFloat4ToU32({nor.r, nor.g, nor.b, nor.a}); }
-ImU32 ToU32(color::hsv hsv) { return ToU32(hsv.toNormal()); }
-ImU32 ToU32(color col) { return ToU32(col.toNormal()); }
+ImU32 ToU32(color::normal   const& nor  ) { return ImGui::ColorConvertFloat4ToU32({nor.r, nor.g, nor.b, nor.a}); }
+ImU32 ToU32(color::hsv      const& hsv  ) { return ToU32(hsv.toNormal()); }
+ImU32 ToU32(color::hsluv    const& hsluv) { return ToU32(hsluv.toNormal()); }
+ImU32 ToU32(color           const& col  ) { return ToU32(col.toNormal()); }
 
-void ImGui::DrawDebugRectangle(cstrparam lbl, rectf r, color col,
-    ImGuiDebugRectangleStyle style, cstrparam format)
+void ImGui::DrawDebugRectangle(cstrparam lbl, rectf const& rect, color const& col, ImGuiDebugRectangleStyle style, cstrparam format)
 {
     ImGuiContext&   g = *GImGui;
     ImGuiStyle&     s = ImGui::GetStyle();
 
-    color::hsv hsv = col.toHSV();
+    auto hsluv = col.toHSLUV();
 
-    ImU32 c_border  = ToU32(hsv.opaque().withV(0.85f));          //GetColorU32(ImGuiCol_Border);
-    ImU32 c_text    = ToU32(hsv.opaque().withV(1));              //GetColorU32(ImGuiCol_Text);
-    ImU32 c_bg      = ToU32(hsv.withV(0.5f));                    //GetColorU32(ImGuiCol_TableHeaderBg);
+    ImU32 c_border  = ToU32(hsluv.opaque().withL(85.0f));          //GetColorU32(ImGuiCol_Border);
+    ImU32 c_text    = ToU32(hsluv.opaque().withL(100.0f));         //GetColorU32(ImGuiCol_Text);
+    ImU32 c_bg      = ToU32(hsluv.withL(50.0f));                   //GetColorU32(ImGuiCol_TableHeaderBg);
 
     strview sv
     {
         g.TempBuffer,
         g.TempBuffer + ImFormatString(g.TempBuffer, IM_ARRAYSIZE(g.TempBuffer),
-            format.c_str(), lbl.c_str(), r.min.x, r.min.y, r.width(), r.height())
+            format.c_str(), lbl.c_str(), rect.min.x, rect.min.y, rect.width(), rect.height())
     };
 
     auto [txt_w, txt_h] = ImGui::CalcTextSize(sv.begin(), sv.end());
@@ -122,7 +124,7 @@ void ImGui::DrawDebugRectangle(cstrparam lbl, rectf r, color col,
     txt_h += s.CellPadding.y*2;
 
     auto dl = ImGui::GetForegroundDrawList();
-    r = r.round();
+    auto r = rect.round();
 
     switch (style)
     {
@@ -143,6 +145,12 @@ void ImGui::DrawDebugRectangle(cstrparam lbl, rectf r, color col,
 
             dl->AddText({r.min.x+s.CellPadding.x, r.min.y+s.CellPadding.y}, c_text, sv.begin(), sv.end());
             break;
+
+        case ImGuiDebugRectangleStyle_Simple:
+            dl->AddRect({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_border);
+            break;
+
+        default: assert_case(ImGuiDebugRectangleStyle_);
     }
 }
 

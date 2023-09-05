@@ -13,6 +13,11 @@
 #include "gfx/gfx_spring.hpp"
 
 //
+// ng
+//
+#include "ng/ng_game.hpp"
+
+//
 // raylib
 //
 #include "raylib.h"
@@ -34,15 +39,11 @@
 
 namespace game
 {
-
-
-
-
     class CombatRow
     {
     public:
-        CardList units { CardLayout::DIR_CENTER, Card::createTestCards(3) };
-        CardList special { CardLayout::DIR_CENTER, Card::createTestCards(1) };
+        CardList units      { CardLayout::DIR_CENTER, {} };
+        CardList special    { CardLayout::DIR_CENTER, {} };
 
         void layout(ut::rect const& bounds);
         void update();
@@ -59,9 +60,42 @@ namespace game
 #endif
     };
 
+    class PlayerCards
+    {
+    public:
+        CardList hand       { CardLayout::DIR_CENTER, {} };
+        CardList deck       { CardLayout::DIR_LEFT, {} };
+        CardList graveyard  { CardLayout::DIR_LEFT, {} };
 
+        void layout(ut::rect const& bounds);
+        void update();
+        void draw();
+    private:
+        ut::rect m_bounds;
 
-    class PlayerStats
+#ifndef NDEBUG
+        bool m_is_layout_ready = false;
+#endif
+    };
+
+    class WeatherBoard
+    {
+    public:
+        CardList cards{ CardLayout::DIR_LEFT, {} };
+
+        void layout(ut::rect const& bounds);
+        void update();
+        void draw();
+
+    private:
+        ut::rect m_bounds;
+
+#ifndef NDEBUG
+        bool m_is_layout_ready = false;
+#endif
+    };
+
+    class PlayerBoard
     {
     public:
         enum Gems { GEMS_NONE, GEMS_ONE, GEMS_TWO };
@@ -101,6 +135,8 @@ namespace game
     public:
         // enum Layout { LAYOUT_LANDSCAPE, LAYOUT_PORTRAIT };
 
+
+
         void layout(ut::rect const& bounds);
         void update();
         void draw();
@@ -108,29 +144,25 @@ namespace game
         static constexpr ut::cstrview DEBUG_LABEL = "GameBoard";
         void drawDebug(ut::cstrparam){}
     private:
-        ut::rect m_bounds;
+        ut::rect        m_bounds;
 
+        CombatRow       m_combat_cpu_siege;
+        CombatRow       m_combat_cpu_ranged;
+        CombatRow       m_combat_cpu_melee;
 
-        CombatRow m_combat_cpu_siege;
-        CombatRow m_combat_cpu_ranged;
-        CombatRow m_combat_cpu_melee;
+        CombatRow       m_combat_usr_siege;
+        CombatRow       m_combat_usr_ranged;
+        CombatRow       m_combat_usr_melee;
 
-        CombatRow m_combat_usr_siege;
-        CombatRow m_combat_usr_ranged;
-        CombatRow m_combat_usr_melee;
+        WeatherBoard    m_weather_cards;
 
-        CardList m_hand_usr { CardLayout::DIR_LEFT, Card::createTestCards(3) };
-        CardList m_hand_cpu { CardLayout::DIR_LEFT, Card::createTestCards(3) };
+        PlayerCards     m_cards_usr;
+        PlayerCards     m_cards_cpu;
 
-        PlayerStats m_stats_cpu;
-        PlayerStats m_stats_usr;
+        PlayerBoard     m_stats_cpu;
+        PlayerBoard     m_stats_usr;
 
-        CardMover m_card_mover;
-
-        // hand
-
-
-
+        CardMover       m_card_mover;
 
 #ifndef NDEBUG
         bool m_is_layout_ready = false;

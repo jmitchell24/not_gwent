@@ -20,11 +20,11 @@ static cardlist_t makeDeck()
 {
     cardlist_t cards
     {
-#define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6, _p7, _p8, _p9) cards::_p3,
+#define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6, _p7, _p8, _p9, _p10) cards::_p4,
 NG_ENUM_CARDS_UNITS
 #undef CASE
 
-#define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6) cards::_p3,
+#define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6, _p7) cards::_p4,
 NG_ENUM_CARDS_SPECIALS
 #undef CASE
     };

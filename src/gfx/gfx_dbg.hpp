@@ -14,19 +14,15 @@
 
 #include <vector>
 
-
-
 namespace gfx
 {
-    class DebugDrawManager
+    class DebugRectManager
     {
     public:
         bool            enabled          = false;
         bool            show_rect_labels = true;
-        float           scale            = 1;
-        ut::vec2f       offset           = {0,0};
 
-        DebugDrawManager();
+        DebugRectManager();
 
         void addRect(ut::cstrparam label, ut::rectf const& r);
 

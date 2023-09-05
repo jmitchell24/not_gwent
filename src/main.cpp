@@ -67,23 +67,20 @@ struct NgDemo
 {
     ng::Game game;
 
-    gfx::Spinner m_int;
-
     void layout(rect const& bounds)
     {
-        m_int.layout(bounds.anchorCCtoCC(100,100));
 
         game = ng::GameSolver::makeGame();
     }
 
     void update()
     {
-        m_int.update(GetFrameTime());
+
     }
 
     void draw()
     {
-        m_int.draw();
+
     }
 
     void draw3d()
@@ -93,15 +90,9 @@ struct NgDemo
 
     static constexpr cstrview DEBUG_LABEL = "Cards"_sv;
 
-    int m_slider=0;
+
     void drawDebug(cstrparam)
     {
-        if (ImGui::Button("GO"))
-        {
-            m_int.anim(m_slider);
-        }
-        ImGui::SameLine();
-        ImGui::SliderInt("target", &m_slider, -10,10);
 
     }
 
@@ -712,44 +703,7 @@ struct ProcAnimDemo
     }
 };
 
-struct CardDemo
-{
-    CardList a{CardLayout::DIR_CENTER, Card::createTestCards(3)};
-    CardMover mover;
 
-    void layout(rect const &bounds)
-    {
-        a.layout(bounds.anchorCCtoCC(bounds.size()/2));
-
-        mover.set({&a});
-
-
-    }
-
-
-    void update()
-    {
-        a.update();
-
-        mover.update();
-
-
-    }
-
-    void draw()
-    {
-        a.draw();
-
-        mover.draw();
-
-
-    }
-
-    void drawDebug(cstrparam label)
-    {
-
-    }
-};
 
 struct ShadowDemo
 {
@@ -831,9 +785,48 @@ struct ShadowDemo
 
 #endif
 
+struct CardDemo
+{
+    CardList cards{CardLayout::DIR_CENTER, Card::createTestCards(3)};
+    CardMover mover;
+
+    void layout(rect const &bounds)
+    {
+        cards.layout(bounds.anchorCCtoCC(bounds.size()/2));
+
+        mover.set({&cards});
+
+
+    }
+
+
+    void update()
+    {
+        cards.update();
+
+        mover.update();
+
+
+    }
+
+    void draw()
+    {
+        cards.draw();
+
+        mover.draw();
+
+
+    }
+
+    static constexpr cstrview DEBUG_LABEL = "Card Demo";
+    void drawDebug(cstrparam label)
+    {
+
+    }
+};
 
 // https://github.com/Rabios/awesome-raylib
-using game_t = NgDemo;
+using game_t = CardDemo;
 
 int main()
 {
@@ -846,14 +839,11 @@ int main()
     rlImGuiReloadFonts();
     rlImGuiEndInitImGui();
 
-
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
-
 
     game_t gg;
 
+    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
     gg.layout(window_bounds);
 
 //    GameBoard gb;
@@ -894,6 +884,8 @@ int main()
 
 
         DrawFPS(10, 10);
+
+        rlDrawRenderBatchActive();
 
         rlImGuiBegin();
         {

@@ -216,7 +216,7 @@ void CardList::refreshDrawIndices()
 }
 
 
-
+//TODO: nudge everything except card on top (As per order). place_idx not necessary
 void CardList::refreshCardPositions(ssize_t place_idx)
 {
     assert(m_is_layout_ready);
@@ -226,11 +226,6 @@ void CardList::refreshCardPositions(ssize_t place_idx)
 
     for (size_t i = 0; i < m_slots.size(); ++i)
     {
-//        if (i == place_idx)
-//            m_cards[i].animPlace(m_layout_hovered.getPos(i));
-//        else
-//            m_cards[i].animNudge(m_layout_hovered.getPos(i));
-
         if (i != place_idx)
             m_slots[i].card.animNudge(m_layout_hovered.getPos(i));
     }
