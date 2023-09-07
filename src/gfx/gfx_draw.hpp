@@ -15,27 +15,21 @@
 #define _vec2       ut::vec2f const&
 #define _rect       ut::rectf const&
 #define _color      ut::color const&
+#define _text       ut::cstrparam
 
 namespace gfx
 {
-    inline void drawCircle(_vec2 center, _flt radius, _color color)
-    {
-        return DrawCircle((int)center.x, (int)center.y, radius, torl(color));
-    }
+    void drawCircle(_vec2 center, _flt radius, _color color);
+    void drawRect(_rect rect, _color color);
+    void drawRectOutline(_rect rect, _flt thickness, _color color);
 
-    inline void drawRect(_rect rect, _color color)
-    {
-        DrawRectangleRec(torl(rect), torl(color));
-    }
-
-    inline void drawRectOutline(_rect rect, _flt thickness, _color color)
-    {
-        DrawRectangleLinesEx(torl(rect), thickness, torl(color));
-    }
-
-    //void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint)
-
-
+#define CASE(x_) \
+        void drawText##x_(_rect r, _text s, _color c); \
+        void drawText##x_(_rect r, _flt h, _text s, _color c); \
+        void drawText##x_(Font font, _rect r, _text s, _color  c); \
+        void drawText##x_(Font font, _rect r, _flt h, _text s, _color c);
+UT_ENUM_RECT_ALIGNMENTS
+#undef CASE
 
     inline void drawTexture(Texture2D texture, _rect rect, _color color)
     {
@@ -52,7 +46,7 @@ namespace gfx
 
     inline void drawTextureFit(Texture2D texture, _rect rect, _color color)
     {
-        auto sz = rect.fit((float)texture.width, texture.height);
+        auto sz = rect.fit((float)texture.width, (float)texture.height);
         drawTexture(texture, rect.anchorCCtoCC(sz), color);
     }
 
@@ -142,3 +136,4 @@ namespace gfx
 #undef _vec2
 #undef _rect
 #undef _color
+#undef _text

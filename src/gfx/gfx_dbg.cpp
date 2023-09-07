@@ -79,7 +79,7 @@ bool DebugRectManager::drawDebug()
                 p.enabled = false;
         }
 
-        ImGui::BeginChild("virt2d-rects", {0,150}, true);
+        ImGui::BeginChild("virt2d-rects", {0,300}, true);
 
         for (auto& p: m_tags)
         {

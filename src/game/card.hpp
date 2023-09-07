@@ -28,19 +28,19 @@ namespace game
         struct Assets
         {
             Texture2D   artwork;
-            Texture2D   badge1;
-            Texture2D   badge2;
+            Texture2D   row;
+            Texture2D   ability;
             Font        font;
             ut::color   color;
 
-            inline bool hasBadge1() const
+            inline bool hasRow() const
             {
-                return IsTextureReady(badge1);
+                return IsTextureReady(row);
             }
 
-            inline bool hasBadge2() const
+            inline bool hasAbility() const
             {
-                return IsTextureReady(badge2);
+                return IsTextureReady(ability);
             }
 
             inline bool hasArtwork() const
@@ -60,7 +60,7 @@ namespace game
 
         Card();
         Card(Card const&)=default;
-        Card(ng::Card const& card);
+        explicit Card(ng::Card const& card);
 
 
         void setCard(ng::Card const& card);

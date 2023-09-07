@@ -19,6 +19,7 @@
 //
 #include "game/conv.hpp"
 #include "game/game.hpp"
+
 #include "game/assets.hpp"
 
 using namespace game;
@@ -787,22 +788,30 @@ struct ShadowDemo
 
 struct CardDemo
 {
-    CardList cards{CardLayout::DIR_CENTER, Card::createTestCards(3)};
+    CardList cards1{CardLayout::DIR_CENTER, Card::createTestCards(5)};
+    CardList cards2{CardLayout::DIR_CENTER, {}};
+
     CardMover mover;
+
+    CardStack card_stack;
 
     void layout(rect const &bounds)
     {
-        cards.layout(bounds.anchorCCtoCC(bounds.size()/2));
+        cards1.layout(bounds.col(4, 1, {.inner_pad=10}));
+        cards2.layout(bounds.col(4, 2, {.inner_pad=10}));
+        card_stack.layout(bounds.col(4, 3, {.inner_pad=10}));
 
-        mover.set({&cards});
+        mover.set({&cards1, &cards2});
 
-
+        card_stack.setCards(Card::createTestCards(10));
     }
 
 
     void update()
     {
-        cards.update();
+        cards1.update();
+        cards2.update();
+        card_stack.update();
 
         mover.update();
 
@@ -811,7 +820,9 @@ struct CardDemo
 
     void draw()
     {
-        cards.draw();
+        cards1.draw();
+        cards2.draw();
+        card_stack.draw();
 
         mover.draw();
 
@@ -821,7 +832,14 @@ struct CardDemo
     static constexpr cstrview DEBUG_LABEL = "Card Demo";
     void drawDebug(cstrparam label)
     {
-
+        if (ImGui::Button("Draw"))
+        {
+            Card card = card_stack.pop();
+            card.layout(card_stack.bounds());
+            card.setPosition(card_stack.boundsCards().pos());
+            card.targetPosition(cards2.layoutGhosted().getPos(cards2.count()/2));
+            cards2.addCard(cards2.count()/2, card);
+        }
     }
 };
 

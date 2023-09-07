@@ -284,9 +284,9 @@ void Card::draw()
     VIRT.drawTexturePro(m_assets.artwork, r, c);
 
     auto r_stats            = r.col(10, 7, {.h=3});
-    auto r_stat_row         = r_stats.row(3,0, {.inner_pad=r_pad, .outer_pad=r_pad});
-    auto r_stat_ability     = r_stats.row(3,1, {.inner_pad=r_pad, .outer_pad=r_pad});
-    auto r_stat_strength    = r_stats.row(3,2, {.inner_pad=r_pad, .outer_pad=r_pad});
+    auto r_stat_strength    = r_stats.row(3,0, {.inner_pad=r_pad, .outer_pad=r_pad});
+    auto r_stat_row         = r_stats.row(3,1, {.inner_pad=r_pad, .outer_pad=r_pad});
+    auto r_stat_ability     = r_stats.row(3,2, {.inner_pad=r_pad, .outer_pad=r_pad});
 
 
 
@@ -298,11 +298,11 @@ void Card::draw()
         VIRT.drawTextBCtoBC(m_assets.font, r_stat_strength, PRINTER("%d", unit.strength), outer.toColor());
     }
 
-    if (m_assets.hasBadge1())
-        gfx::drawTextureFit(m_assets.badge1, r_stat_row, c);
+    if (m_assets.hasRow())
+        gfx::drawTextureFit(m_assets.row, r_stat_row, c);
 
-    if (m_assets.hasBadge2())
-        gfx::drawTextureFit(m_assets.badge2, r_stat_ability, c);
+    if (m_assets.hasAbility())
+        gfx::drawTextureFit(m_assets.ability, r_stat_ability, c);
 
     VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
 
@@ -333,17 +333,11 @@ RenderTexture2D Card::drawTexture(float width, float height)
 
 Card Card::createTestCard()
 {
-//    static rangen rg;
-//
-//    Card card({
-//        getCardTexture((CardTextureID)rg.nexti(_CARD_TEXTURE_ID_COUNT-1)),
-//        getBadgeTexture((BadgeTextureID)rg.nexti(_BADGE_TEXTURE_ID_COUNT-1)),
-//        getBadgeTexture((BadgeTextureID)rg.nexti(_BADGE_TEXTURE_ID_COUNT-1)),
-//        fonts::smallburgRegular64(),
-//        RANDOM.nextColor()
-//    });
+    static rangen rg;
 
-    return {ng::cards::neutral_avallach};
+    auto id = (ng::CardID)rg.nexti((int)ng::CARD_COUNT_-1);
+
+    return Card{ng::getCard(id)};
 }
 
 cardlist_t Card::createTestCards(size_t n)
@@ -361,11 +355,14 @@ Texture2D abilityBadge(ng::UnitCard::Ability x)
     switch (x)
     {
         case ng::UnitCard::ABILITY_NONE     : return {};
-        case ng::UnitCard::ABILITY_AGILE    : return TEXTURES.get("data/board/card_ability_agile.png");
-        case ng::UnitCard::ABILITY_MEDIC    : return TEXTURES.get("data/board/card_ability_medic.png");
-        case ng::UnitCard::ABILITY_MORALE   : return TEXTURES.get("data/board/card_ability_morale.png");
-        case ng::UnitCard::ABILITY_MUSTER   : return TEXTURES.get("data/board/card_ability_muster.png");
         case ng::UnitCard::ABILITY_SPY      : return TEXTURES.get("data/board/card_ability_spy.png");
+        case ng::UnitCard::ABILITY_BOND     : return TEXTURES.get("data/board/card_ability_bond.png");
+        case ng::UnitCard::ABILITY_MORALE   : return TEXTURES.get("data/board/card_ability_morale.png");
+        case ng::UnitCard::ABILITY_MEDIC    : return TEXTURES.get("data/board/card_ability_medic.png");
+        case ng::UnitCard::ABILITY_AGILE    : return TEXTURES.get("data/board/card_ability_agile.png");
+        case ng::UnitCard::ABILITY_MUSTER   : return TEXTURES.get("data/board/card_ability_muster.png");
+        case ng::UnitCard::ABILITY_SCORCH   : return TEXTURES.get("data/board/card_ability_scorch.png");
+        case ng::UnitCard::ABILITY_BERSERKER: return TEXTURES.get("data/board/card_ability_berserker.png");
         default: assert_case(ng::UnitCard::Ability);
     }
 
@@ -397,8 +394,8 @@ Card::Assets Card::assetsFromCard(ng::Card const& card)
         return
         {
             artwork,
-            abilityBadge(unit.ability),
             rowBadge(unit.row),
+            abilityBadge(unit.ability),
             fonts::smallburgRegular64(),
             RANDOM.nextColor()
         };

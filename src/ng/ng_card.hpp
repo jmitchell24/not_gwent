@@ -22,6 +22,13 @@
     CASE(UnitCard       , UNIT      , u_unit    , "Unit"        )  \
     CASE(LeaderCard     , LEADER    , u_leader  , "Leader"      )
 
+#define NG_ENUM_LEADER_TYPE \
+    CASE(EREDIN_1, Eredin1 , "Eredin: 1"           ) \
+    CASE(EREDIN_2, Eredin2 , "Eredin: 2"           ) \
+    CASE(EREDIN_3, Eredin3 , "Eredin: 3"           ) \
+    CASE(EREDIN_4, Eredin4 , "Eredin: 4"           ) \
+    CASE(EREDIN_5, Eredin5 , "Eredin: 5"           )
+
 #define NG_ENUM_SPECIAL_TYPE \
     CASE(DECOY          , Decoy         , "Decoy"           ) \
     CASE(CMDR_HORN      , CmdrHorn      , "Commander Horn"  ) \
@@ -68,7 +75,16 @@ namespace ng
     using cardlist_t = std::vector<Card>;
 
     struct NilCard { };
-    struct LeaderCard { };
+
+    struct LeaderCard
+    {
+        enum Type
+        {
+#define CASE(x_, y_, z_) LEADER_##x_,
+NG_ENUM_LEADER_TYPE
+#undef CASE
+        } type;
+    };
 
     struct SpecialCard
     {
