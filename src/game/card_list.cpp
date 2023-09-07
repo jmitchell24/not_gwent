@@ -4,7 +4,7 @@
 
 #include "assert.hpp"
 
-#include "game/cardlist.hpp"
+#include "game/card_list.hpp"
 using namespace game;
 
 //
@@ -155,7 +155,7 @@ void CardList::clearHover()
     hover(-1);
 }
 
-void CardList::addCard(size_t idx, Card const& card)
+rect CardList::addCard(size_t idx, Card const& card)
 {
     assert(m_is_layout_ready);
     assert(idx <= m_slots.size());
@@ -168,6 +168,8 @@ void CardList::addCard(size_t idx, Card const& card)
 
     refreshCardPositions(ssize_t(idx));
     refreshDrawIndices();
+
+    return layoutHovered().getRect(idx);
 }
 
 Card CardList::removeCard(size_t idx)

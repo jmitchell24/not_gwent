@@ -5,8 +5,8 @@
 
 #include "game/conv.hpp"
 #include "game/card.hpp"
-#include "game/cardlist.hpp"
-#include "game/cardstack.hpp"
+#include "game/card_list.hpp"
+#include "game/card_stack.hpp"
 
 #include "game/object.hpp"
 #include "game/card_mover.hpp"

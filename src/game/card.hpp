@@ -107,12 +107,12 @@ namespace game
         void animGrab();
 
         void animNudge(ut::vec2f const& p);
-        void animPlace(ut::vec2f const& p);
+        void animThrow(ut::vec2f const& src, ut::vec2f const& dst);
 
 
         void layout(ut::rect const& bounds);
         void layout(ut::vec2 const& size);
-        void update();
+        bool update();
         void draw();
         void drawDebug();
 
@@ -148,9 +148,10 @@ namespace game
 
         ut::vec2f       m_position;
 
-        gfx::TweenVec2  m_tween_position;
+        gfx::TweenVec2  m_tween_nudge;
+        gfx::TweenReal  m_tween_drop;
+
         gfx::TweenReal  m_tween_rotation;
-        gfx::TweenReal  m_tween_elevation;
         gfx::TweenReal  m_tween_opacity;
 
 

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "game/card_container.hpp"
-#include "game/cardlist.hpp"
 #include "gfx/gfx_spring.hpp"
 
 namespace game
@@ -23,18 +22,45 @@ namespace game
             void draw();
         };
 
-        using cardlists_type    = std::vector<CardList*>;
-        using movingcard_type   = std::optional<CardSpring>;
+        using containerlist_type    = std::vector<CardContainer*>;
+        using movingcard_type       = std::optional<CardSpring>;
 
-        void set(cardlists_type cardlists);
+        void set(containerlist_type containers);
         void update();
         void draw();
 
     private:
-        cardlists_type      m_cardlists;
-        movingcard_type     m_moving_card;
+        containerlist_type      m_containers;
+        movingcard_type         m_moving_card;
 
-        void updateCL(ut::vec2 const& mp, CardList& cl);
+        void updateContainer(ut::vec2 const& mp, CardContainer& container);
+    };
+
+    class CardDeleter
+    {
+    public:
+        void addCard(Card const& card)
+        {
+            m_cards.push_back(card);
+        }
+
+        void update()
+        {
+            m_swap.clear();
+            for (auto&& it : m_cards)
+                if (it.update())
+                    m_swap.push_back(it);
+            m_cards.swap(m_swap);
+        }
+
+        void draw()
+        {
+            for (auto&& it : m_cards)
+                it.draw();
+        }
+    private:
+        cardlist_t m_cards;
+        cardlist_t m_swap;
     };
 }
 

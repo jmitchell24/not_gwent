@@ -4,7 +4,7 @@
 // Created by james on 8/16/23.
 //
 
-#include "game/card.hpp"
+#include "game/card_container.hpp"
 
 namespace game
 {
@@ -25,13 +25,14 @@ namespace game
         [[nodiscard]] ut::rect getRect(size_t idx) const;
     };
 
-    class CardList
+    class CardList : public CardContainer
     {
     public:
         CardList(CardLayout::Direction direction, cardlist_t cards);
 
         inline ut::rect const& bounds() const { return m_bounds; }
 
+        inline bool                     empty       () const { return m_slots.empty(); }
         inline size_t                   count       () const { return m_slots.size(); }
         inline CardLayout::Direction    direction   () const { return m_direction; }
 
@@ -50,14 +51,33 @@ namespace game
         void update();
         void draw();
 
-        void setGhost(size_t idx);
-        void clearGhost();
+        //
+        // CardContainer -> Overrides
+        //
 
-        void setHover(size_t idx);
-        void clearHover();
 
-        void addCard(size_t idx, Card const& card);
-        Card removeCard(size_t idx);
+        void setGhost(size_t idx) override;
+        void clearGhost() override;
+        inline bool tryGetGhostIndex(ut::vec2 const& mp, size_t& idx) override
+        { return layoutGhosted().tryGetIndex(mp, idx); }
+        inline bool hasGhost() const override
+        { return m_idx_ghosted >= 0; }
+        inline ut::rect getGhostRect() const override
+        { assert(hasGhost()); return layoutGhosted().getRect(m_idx_ghosted); }
+
+        void setHover(size_t idx) override;
+        void clearHover() override;
+        inline bool tryGetHoveredIndex(ut::vec2 const& mp, size_t& idx) override
+        { return layoutHovered().tryGetIndex(mp, idx); }
+        inline bool hasHover() const override
+        { return m_idx_hovered >= 0; }
+        inline ut::rect getHoverRect() const override
+        { assert(hasHover()); return layoutHovered().getRect(m_idx_hovered); }
+
+        ut::rect addCard(size_t idx, Card const& card) override;
+        Card removeCard(size_t idx) override;
+
+
 
     private:
         struct Slot

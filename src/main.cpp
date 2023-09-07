@@ -792,6 +792,7 @@ struct CardDemo
     CardList cards2{CardLayout::DIR_CENTER, {}};
 
     CardMover mover;
+    CardDeleter deleter;
 
     CardStack card_stack;
 
@@ -814,6 +815,7 @@ struct CardDemo
         card_stack.update();
 
         mover.update();
+        deleter.update();
 
 
     }
@@ -825,20 +827,35 @@ struct CardDemo
         card_stack.draw();
 
         mover.draw();
-
+        deleter.draw();
 
     }
 
     static constexpr cstrview DEBUG_LABEL = "Card Demo";
     void drawDebug(cstrparam label)
     {
-        if (ImGui::Button("Draw"))
+        if (ImGui::Button("Draw") && !card_stack.empty())
         {
             Card card = card_stack.pop();
             card.layout(card_stack.bounds());
-            card.setPosition(card_stack.boundsCards().pos());
-            card.targetPosition(cards2.layoutGhosted().getPos(cards2.count()/2));
+
+            auto src = card_stack.boundsCards().pos();
+            auto dst = cards2.layoutGhosted().getPos(cards2.count()/2);
+
+            card.animThrow(src, dst);
             cards2.addCard(cards2.count()/2, card);
+        }
+
+        if (ImGui::Button("Discard") && !cards2.empty())
+        {
+            Card card = cards2.removeCard(cards2.count()/2);
+
+            auto src = card.position();
+            auto dst = card_stack.boundsCards().pos();
+
+            card.animThrow(src, dst);
+            deleter.addCard(card);
+            card_stack.push(card);
         }
     }
 };

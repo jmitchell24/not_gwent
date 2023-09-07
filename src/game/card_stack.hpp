@@ -33,6 +33,7 @@ namespace game
         ut::rect m_bounds_cards;
         cardlist_t m_cards;
 
+
 #ifndef NDEBUG
         bool m_is_layout_ready = false;
 #endif

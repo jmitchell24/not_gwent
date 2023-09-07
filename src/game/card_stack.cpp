@@ -2,7 +2,7 @@
 // Created by james on 9/6/23.
 //
 
-#include "game/cardstack.hpp"
+#include "game/card_stack.hpp"
 #include "game/assets.hpp"
 using namespace game;
 
@@ -68,7 +68,9 @@ void CardStack::draw()
     drawShadow(m_bounds_cards, {5,5}, 5);
     drawTextureFit(tex, m_bounds_cards, colors::white);
 
-    drawTextTCtoTC(font, m_bounds_cards, m_bounds_cards.height()/3, PRINTER("%d", m_cards.size()), colors::ivory);
+    auto r = m_bounds_cards.anchorBCtoBC(m_bounds_cards.width()/2, m_bounds_cards.height()/2);
+    drawRect(r, colors::black.withNormalA(0.4));
+    drawTextBCtoBC(font, m_bounds_cards, m_bounds_cards.height()/3, PRINTER("%d", m_cards.size()), colors::ivory);
 
     VIRT_DEBUG(CardStack::m_bounds);
     VIRT_DEBUG(CardStack::m_bounds_cards);

@@ -47,19 +47,19 @@ Card::Card()
     : Card(createTestCard())
 {}
 
-//m_tween_position    = Tween2(&easings::elasticOut , 1.0f);
+//m_tween_nudge    = Tween2(&easings::elasticOut , 1.0f);
 //m_tween_offset      = Tween2(&easings::elasticOut , 1.0f);
 //m_tween_rotation    = Tween1(&easings::expoOut    , 0.5f);
-//m_tween_elevation   = Tween1(&easings::bounceOut  , 0.5f);
+//m_tween_drop   = Tween1(&easings::bounceOut  , 0.5f);
 //m_tween_opacity     = Tween1(&easings::expoOut    , 0.5f);
 
 Card::Card(ng::Card const& card) :
-    m_assets            {assetsFromCard(card)},
-    m_card              {card},
-    m_tween_position    {&easings::elasticOut , 1.0f},
-    m_tween_rotation    {&easings::expoOut    , 0.5f},
-    m_tween_elevation   {&easings::bounceOut  , 0.5f},
-    m_tween_opacity     {&easings::expoOut    , 0.5f}
+        m_assets            {assetsFromCard(card)},
+        m_card              {card},
+        m_tween_nudge    {&easings::elasticOut , 1.0f},
+        m_tween_rotation    {&easings::expoOut    , 0.5f},
+        m_tween_drop   {&easings::bounceOut  , 0.5f},
+        m_tween_opacity     {&easings::expoOut    , 0.5f}
 {
 
 }
@@ -75,7 +75,7 @@ void Card::targetPosition(vec2f const& p)
     assert(m_is_layout_ready);
 
     if (m_position != p)
-        m_tween_position.anim(m_position, p);
+        m_tween_nudge.anim(m_position, p);
 }
 
 void Card::targetElevation(float f)
@@ -84,7 +84,7 @@ void Card::targetElevation(float f)
     assert(f >= 0.0f);
 
     if (m_elevation != f)
-        m_tween_elevation.anim(m_elevation, f);
+        m_tween_drop.anim(m_elevation, f);
 }
 
 void Card::targetRotation(float f)
@@ -119,7 +119,7 @@ void Card::setPosition(vec2f const& p)
     assert(m_is_layout_ready);
 
     m_position = p;
-    m_tween_position.setToDst();
+    m_tween_nudge.setToDst();
 }
 
 void Card::setElevation(float f)
@@ -128,7 +128,7 @@ void Card::setElevation(float f)
     assert(f >= 0.0f);
 
     m_elevation = f;
-    m_tween_elevation.setToDst();
+    m_tween_drop.setToDst();
 }
 
 void Card::setRotation(float f)
@@ -155,8 +155,8 @@ void Card::setOpacity(float f)
 
 void Card::animDrop()
 {
-    m_tween_elevation.set(&easings::bounceOut  , 0.5f);
-    m_tween_elevation.anim(m_elevation, ELEVATION_DROP);
+    m_tween_drop.set(&easings::bounceOut  , 0.5f);
+    m_tween_drop.anim(m_elevation, ELEVATION_DROP);
 
 //    m_tween_offset.set(&easings::expoOut , 0.5f);
 //    m_tween_offset.anim(m_offset, {0.0f, 0.0f});
@@ -164,8 +164,8 @@ void Card::animDrop()
 
 void Card::animPeek()
 {
-    m_tween_elevation.set(&easings::expoOut, 0.5f);
-    m_tween_elevation.anim(m_elevation, ELEVATION_PEEK);
+    m_tween_drop.set(&easings::expoOut, 0.5f);
+    m_tween_drop.anim(m_elevation, ELEVATION_PEEK);
 
 //    m_tween_offset.set(&easings::expoOut , 0.5f);
 //    m_tween_offset.anim(m_offset, {0.0f, 0.0f});
@@ -173,23 +173,28 @@ void Card::animPeek()
 
 void Card::animGrab()
 {
-    m_tween_elevation.set(&easings::expoOut, 0.5f);
-    m_tween_elevation.anim(m_elevation, ELEVATION_GRAB);
+    m_tween_drop.set(&easings::expoOut, 0.5f);
+    m_tween_drop.anim(m_elevation, ELEVATION_GRAB);
 }
 
 void Card::animNudge(vec2f const& p)
 {
-    m_tween_position.set(&easings::expoOut , 1.0f);
-    m_tween_position.anim(m_position, p);
+    m_tween_nudge.set(&easings::expoOut , 1.0f);
+    m_tween_nudge.anim(m_position, p);
 
 //    m_tween_offset.set(&easings::expoOut , 0.5f);
 //    m_tween_offset.anim(m_offset, m_offset * 0.75f);
 }
 
-void Card::animPlace(vec2f const& p)
+void Card::animThrow(vec2f const& src, vec2f const& dst)
 {
-    m_tween_position.set(&easings::expoOut , 0.5f);
-    m_tween_position.anim(m_position, p);
+    m_position = src;
+
+    m_tween_nudge.set(&easings::expoOut , 0.75f);
+    m_tween_nudge.anim(src, dst);
+
+    m_tween_drop.set(&easings::bounceOut , 1.5f);
+    m_tween_drop.anim(ELEVATION_GRAB, ELEVATION_DROP);
 }
 
 void Card::layout(ut::rect const& bounds)
@@ -210,16 +215,19 @@ void Card::layout(vec2 const& size)
 #endif
 }
 
-void Card::update()
+bool Card::update()
 {
     assert(m_is_layout_ready);
 
     auto dt = GetFrameTime();
+    auto b = false;
 
-    if (m_tween_position     .update(dt)) m_position  = m_tween_position .now();
-    if (m_tween_rotation     .update(dt)) m_rotation  = m_tween_rotation .now();
-    if (m_tween_elevation    .update(dt)) m_elevation = m_tween_elevation.now();
-    if (m_tween_opacity      .update(dt)) m_opacity   = m_tween_opacity  .now();
+    if (m_tween_nudge    .update(dt)) { b = true; m_position  = m_tween_nudge.now(); }
+    if (m_tween_rotation .update(dt)) { b = true; m_rotation  = m_tween_rotation.now(); }
+    if (m_tween_drop     .update(dt)) { b = true; m_elevation = m_tween_drop.now(); }
+    if (m_tween_opacity  .update(dt)) { b = true; m_opacity   = m_tween_opacity.now(); }
+
+    return b;
 }
 
 

@@ -38,12 +38,21 @@ namespace gfx
     };
 
 
-    class BezierCurve
+    template <size_t D>
+    static ut::vecnf<D> cubicBezier(float t,
+                                    ut::vecnf<D> const& p1,
+                                    ut::vecnf<D> const& p2,
+                                    ut::vecnf<D> const& p3,
+                                    ut::vecnf<D> const& p4)
     {
-    public:
+        _flt a = powf((1.0f - t), 3.0f);
+        _flt b = 3.0f * t * powf((1.0f - t), 2.0f);
+        _flt c = 3.0f * powf(t, 2.0f) * (1.0f - t);
+        _flt d = powf(t, 3.0f);
 
-    private:
-    };
+        return (p1 * a) + (p2 * b) + (p3 * c) + (p4 * d);
+    }
+
 }
 
 #undef _vec
