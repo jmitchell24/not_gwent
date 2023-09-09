@@ -24,4 +24,4 @@
     inline bool operator<  (x_ const& x) const { return tie() < x.tie(); }          \
     inline bool operator>  (x_ const& x) const { return *this < x; }                \
     inline bool operator<= (x_ const& x) const { return !(*this < x); }             \
-    inline bool operator>= (x_ const& x) const { return !(x < *this); }             \
+    inline bool operator>= (x_ const& x) const { return !(x < *this); }

@@ -25,6 +25,70 @@ namespace game
         [[nodiscard]] ut::rect getRect(size_t idx) const;
     };
 
+    struct CardListSlot
+    {
+        static constexpr float ELEVATION_GRAB       = 1.15f;
+        static constexpr float ELEVATION_PEEK       = 1.08f;
+        static constexpr float ELEVATION_DROP       = 1.00f;
+
+        Card    card;
+        size_t  order=0;
+
+        gfx::TweenVec2  m_tween_nudge{&gfx::easings::elasticOut , 1.0f};
+        gfx::TweenReal  m_tween_drop{&gfx::easings::bounceOut  , 0.5f};
+
+        void animDrop()
+        {
+            m_tween_drop.set(&gfx::easings::bounceOut  , 0.5f);
+            m_tween_drop.anim(card.getElevation(), ELEVATION_DROP);
+        }
+
+        void animPeek()
+        {
+            m_tween_drop.set(&gfx::easings::expoOut, 0.5f);
+            m_tween_drop.anim(card.getElevation(), ELEVATION_PEEK);
+        }
+
+        void animGrab()
+        {
+            m_tween_drop.set(&gfx::easings::expoOut, 0.5f);
+            m_tween_drop.anim(card.getElevation(), ELEVATION_GRAB);
+        }
+
+        void animNudge(ut::vec2f const& p)
+        {
+            m_tween_nudge.set(&gfx::easings::expoOut , 1.0f);
+            m_tween_nudge.anim(card.getPosition2(), p);
+        }
+
+        void animThrow(ut::vec2f const& src, ut::vec2f  const& dst)
+        {
+
+            card.setPosition2(src);
+            m_tween_nudge.set(&gfx::easings::expoOut , 0.75f);
+            m_tween_nudge.anim(src, dst);
+
+            m_tween_drop.set(&gfx::easings::bounceOut , 1.5f);
+            m_tween_drop.anim(1.3, ELEVATION_DROP);
+        }
+
+        bool update()
+        {
+            auto dt = GetFrameTime();
+            auto b = false;
+
+            if (m_tween_nudge.update(dt)) { b = true; card.setPosition2(m_tween_nudge.now()); }
+            if (m_tween_drop     .update(dt)) { b = true; card.setElevation(m_tween_drop.now()); }
+
+            return b;
+        }
+
+        void draw()
+        {
+            card.draw();
+        }
+    };
+
     class CardList : public CardContainer
     {
     public:
@@ -74,24 +138,19 @@ namespace game
         inline ut::rect getHoverRect() const override
         { assert(hasHover()); return layoutHovered().getRect(m_idx_hovered); }
 
-        ut::rect addCard(size_t idx, Card const& card) override;
+        void dropCard(size_t idx, Card const& card) override;
+        void throwCard(size_t idx, Card const& card) override;
         Card removeCard(size_t idx) override;
 
 
 
     private:
-        struct Slot
-        {
-            Card    card;
-            size_t  order=0;
-        };
-
-        using slotlist_t = std::vector<Slot>;
+        using slotlist_t = std::vector<CardListSlot>;
         using indexlist_t = std::vector<size_t>;
 
-        size_t          m_next_order_value    = 0;
-        ssize_t         m_idx_hovered   = -1;
-        ssize_t         m_idx_ghosted   = -1;
+        size_t          m_next_order_value      = 0;
+        ssize_t         m_idx_hovered           = -1;
+        ssize_t         m_idx_ghosted           = -1;
 
         CardLayout        m_layout_hovered;
         CardLayout        m_layout_ghosted;
@@ -109,6 +168,7 @@ namespace game
         void refreshCardPositions(ssize_t place_idx = -1);
 
         void hover(ssize_t idx);
+        CardListSlot& addCard(size_t idx, Card const& card);
 
         size_t nextOrderValue();
 

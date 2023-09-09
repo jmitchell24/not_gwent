@@ -25,11 +25,12 @@ void CardMover::CardSpring::update()
 {
     auto mp = tout(GetMousePosition());
 
-    spring.setDst(mp - offset);
+    auto dst = mp - offset;
+    spring.setDst({dst.x, dst.y, Card::ELEVATION_GRAB});
     spring.update(GetFrameTime());
 
-    card.setPosition(spring.now());
-    card.update();
+    card.setPosition3(spring.now());
+    //card.update();
 }
 
 void CardMover::CardSpring::draw()
@@ -96,8 +97,7 @@ void CardMover::updateContainer(vec2 const& mp, CardContainer& cl)
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 auto card = m_moving_card->card;
-                card.animDrop();
-                cl.addCard(idx, card);
+                cl.dropCard(idx, card);
                 m_moving_card.reset();
             }
             else
@@ -117,11 +117,11 @@ void CardMover::updateContainer(vec2 const& mp, CardContainer& cl)
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
                 auto card       = cl.removeCard(idx);
-                auto offset     = mp - card.position();
-                auto spring     = gfx::SpringVec2 { 0.40f, 6.0f * PI };
+                auto offset     = mp - card.getPosition2();
+                auto spring     = gfx::SpringVec3 { 0.40f, 6.0f * PI };
 
-                card.animGrab();
-                spring.setNow(mp - offset);
+                auto now = mp - offset;
+                spring.setNow({now.x, now.y, card.getElevation()});
 
                 m_moving_card = { card, offset, spring };
 

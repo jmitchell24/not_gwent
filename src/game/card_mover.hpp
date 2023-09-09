@@ -16,7 +16,7 @@ namespace game
         {
             Card card;
             ut::vec2 offset;
-            gfx::SpringVec2 spring;
+            gfx::SpringVec3 spring;
 
             void update();
             void draw();
@@ -36,32 +36,32 @@ namespace game
         void updateContainer(ut::vec2 const& mp, CardContainer& container);
     };
 
-    class CardDeleter
-    {
-    public:
-        void addCard(Card const& card)
-        {
-            m_cards.push_back(card);
-        }
-
-        void update()
-        {
-            m_swap.clear();
-            for (auto&& it : m_cards)
-                if (it.update())
-                    m_swap.push_back(it);
-            m_cards.swap(m_swap);
-        }
-
-        void draw()
-        {
-            for (auto&& it : m_cards)
-                it.draw();
-        }
-    private:
-        cardlist_t m_cards;
-        cardlist_t m_swap;
-    };
+//    class CardDeleter
+//    {
+//    public:
+//        void addCard(Card const& card)
+//        {
+//            m_cards.push_back(card);
+//        }
+//
+//        void update()
+//        {
+//            m_swap.clear();
+//            for (auto&& it : m_cards)
+//                if (it.update())
+//                    m_swap.push_back(it);
+//            m_cards.swap(m_swap);
+//        }
+//
+//        void draw()
+//        {
+//            for (auto&& it : m_cards)
+//                it.draw();
+//        }
+//    private:
+//        cardlist_t m_cards;
+//        cardlist_t m_swap;
+//    };
 }
 
 #if 0

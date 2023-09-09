@@ -24,8 +24,14 @@ namespace game
         virtual bool        tryGetHoveredIndex(ut::vec2 const& mp, size_t& idx)=0;
 
         //virtual size_t      count()=0;
-        virtual ut::rect    addCard(size_t idx, Card const& card)=0;
-        virtual Card        removeCard(size_t idx)=0;
+        //virtual ut::rect    addCard(size_t idx, Card const& card)=0;
+        //virtual Card        removeCard(size_t idx)=0;
+
+        virtual void dropCard(size_t idx, Card const& card)=0;
+        virtual void throwCard(size_t idx, Card const& card)=0;
+        virtual Card removeCard(size_t idx)=0;
+
+
     private:
 
     };
