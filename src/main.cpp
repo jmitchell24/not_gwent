@@ -19,6 +19,8 @@
 //
 #include "game/conv.hpp"
 #include "game/game.hpp"
+#include "game/card_tank.hpp"
+#include "game/cards_layout.hpp"
 
 #include "game/assets.hpp"
 
@@ -845,8 +847,38 @@ struct CardDemo
     }
 };
 
+struct TankDemo
+{
+    CardTank tank;
+
+    layout::GameBoard gb;
+
+    void layout(ut::rect const& bounds)
+    {
+        gb.layout(bounds);
+    }
+
+    void update()
+    {
+
+    }
+
+    void draw()
+    {
+        gb.drawDebug();
+    }
+
+    static constexpr cstrview DEBUG_LABEL= "CardTank Demo";
+    void drawDebug(cstrparam lbl)
+    {
+        ImGui::LabelText("slots", "%zu", tank.m_slots.size());
+        ImGui::LabelText("slots_open", "%zu", tank.m_slots_open.size());
+        ImGui::LabelText("slots_draw", "%zu", tank.m_slots_draw.size());
+    }
+};
+
 // https://github.com/Rabios/awesome-raylib
-using game_t = CardDemo;
+using game_t = TankDemo;
 
 int main()
 {

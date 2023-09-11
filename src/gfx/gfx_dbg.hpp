@@ -13,12 +13,16 @@
 //
 
 #include <vector>
+#include <unordered_map>
 
 namespace gfx
 {
+
     class DebugRectManager
     {
     public:
+        using label_type = std::vector<ut::cstrview>;
+
         bool            enabled          = false;
         bool            show_rect_labels = true;
 
@@ -43,7 +47,10 @@ namespace gfx
             ut::color       col;
             size_t          cnt;
 
-            inline RectDraw toDraw(ut::rectf const& r) const { return { text, col, r}; }
+            inline RectDraw toDraw(ut::rectf const& r) const
+            {
+                return { text, col, r};
+            }
         };
 
         using tags_type     = std::vector<RectTag>;
@@ -56,5 +63,13 @@ namespace gfx
         float       m_im_alpha;
 
         RectTag& getTag(ut::cstrparam label);
+
+        std::string labelToKey(label_type const& label)
+        {
+            std::string s;
+            for (auto&& it : label)
+                s += it.c_str();
+            return s;
+        }
     };
 }
