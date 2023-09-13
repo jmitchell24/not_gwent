@@ -4,6 +4,7 @@
 // ut
 //
 
+#include <memory>
 #include <ut/math.hpp>
 #include <ut/string.hpp>
 #include <ut/color.hpp>
@@ -14,6 +15,9 @@
 
 #include <vector>
 #include <unordered_map>
+#include "random.hpp"
+
+
 
 namespace gfx
 {
@@ -21,7 +25,7 @@ namespace gfx
     class DebugRectManager
     {
     public:
-        using label_type = std::vector<ut::cstrview>;
+
 
         bool            enabled          = false;
         bool            show_rect_labels = true;
@@ -29,6 +33,10 @@ namespace gfx
         DebugRectManager();
 
         void addRect(ut::cstrparam label, ut::rectf const& r);
+        void pushRect(ut::cstrparam label, ut::rectf const& r);
+
+        void addRect(ut::rectf const& r);
+        void popRect();
 
         bool drawDebug();
 
@@ -36,40 +44,45 @@ namespace gfx
         struct RectDraw
         {
             ut::cstrview    text;
-            ut::color       col;
+            ut::color       color;
             ut::rectf       bound;
+            bool            highlighted;
         };
 
         struct RectTag
         {
-            bool            enabled;
-            ut::cstrview    text;
-            ut::color       col;
-            size_t          cnt;
+            using taglist_type = std::vector<RectTag>;
+
+            bool                enabled;
+            bool                highlighted;
+            ut::cstrview        text;
+            ut::color           color;
+            size_t              count;
+            taglist_type        child_tags;
 
             inline RectDraw toDraw(ut::rectf const& r) const
             {
-                return { text, col, r};
+                return { text, color, r, highlighted };
             }
+
+            void enableAll();
+            void disableAll();
+
+            void draw();
+            void drawLeaf();
+            void drawBranch();
+
+            RectTag& getChildTag(ut::cstrview const* begin, ut::cstrview const* end);
         };
 
-        using tags_type     = std::vector<RectTag>;
-        using draws_type    = std::vector<RectDraw>;
+        using label_type = std::vector<ut::cstrview>;
+        using draws_type = std::vector<RectDraw>;
 
-        tags_type   m_tags;
-        draws_type  m_draws;
+        RectTag                 m_root_tag{true, false, "", {}, 0};
+        label_type              m_label{""};
+        draws_type              m_draws;
 
-        int         m_im_style;
-        float       m_im_alpha;
-
-        RectTag& getTag(ut::cstrparam label);
-
-        std::string labelToKey(label_type const& label)
-        {
-            std::string s;
-            for (auto&& it : label)
-                s += it.c_str();
-            return s;
-        }
+        int                     m_im_style;
+        float                   m_im_alpha;
     };
 }

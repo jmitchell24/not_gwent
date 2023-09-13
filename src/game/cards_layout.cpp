@@ -41,10 +41,11 @@ void CombatRow::layout(rect const& b)
 
 void CombatRow::drawDebug()
 {
-    VIRT_DEBUG(CombatRow::bounds);
-    VIRT_DEBUG(CombatRow::score);
-    VIRT_DEBUG(CombatRow::special);
-    VIRT_DEBUG(CombatRow::units);
+    DRECT_PUSH(CombatRow,bounds);
+    DRECT(score);
+    DRECT(special);
+    DRECT(units);
+    DRECT_POP();
 }
 
 //
@@ -61,10 +62,11 @@ void PlayerRow::layout(rect const& b)
 
 void PlayerRow::drawDebug()
 {
-    VIRT_DEBUG(PlayerRow::bounds);
-    VIRT_DEBUG(PlayerRow::hand);
-    VIRT_DEBUG(PlayerRow::deck);
-    VIRT_DEBUG(PlayerRow::graveyard);
+    DRECT_PUSH(PlayerRow,bounds);
+    DRECT(hand);
+    DRECT(deck);
+    DRECT(graveyard);
+    DRECT_POP();
 }
 
 //
@@ -78,7 +80,7 @@ void WeatherBoard::layout(rect const& b)
 
 void WeatherBoard::drawDebug()
 {
-    VIRT_DEBUG(WeatherBoard::bounds);
+    DRECT(WeatherBoard::bounds);
 }
 
 //
@@ -108,17 +110,18 @@ void StatsBoard::layout(rect const& b)
 
 void StatsBoard::drawDebug()
 {
-    VIRT_DEBUG(StatsBoard::bounds);
-    VIRT_DEBUG(StatsBoard::name);
-    VIRT_DEBUG(StatsBoard::deck_name);
-    VIRT_DEBUG(StatsBoard::gems_label);
-    VIRT_DEBUG(StatsBoard::hand_count_label);
-    VIRT_DEBUG(StatsBoard::score_label);
-    VIRT_DEBUG(StatsBoard::gems);
-    VIRT_DEBUG(StatsBoard::hand_count);
-    VIRT_DEBUG(StatsBoard::score);
-    VIRT_DEBUG(StatsBoard::avatar);
-    VIRT_DEBUG(StatsBoard::leader);
+    DRECT_PUSH(StatsBoard,bounds);
+    DRECT(name);
+    DRECT(deck_name);
+    DRECT(gems_label);
+    DRECT(hand_count_label);
+    DRECT(score_label);
+    DRECT(gems);
+    DRECT(hand_count);
+    DRECT(score);
+    DRECT(avatar);
+    DRECT(leader);
+    DRECT_POP();
 }
 
 //
@@ -147,8 +150,7 @@ void GameBoard::layout(rect const& b)
 
 void GameBoard::drawDebug()
 {
-    VIRT_DEBUG(GameBoard::bounds);
-
+    DRECT_PUSH(GameBoard,bounds);
     player_cpu       .drawDebug();
     combat_cpu_siege .drawDebug();
     combat_cpu_ranged.drawDebug();
@@ -160,6 +162,7 @@ void GameBoard::drawDebug()
     stats_cpu        .drawDebug();
     weather          .drawDebug();
     stats_usr        .drawDebug();
+    DRECT_POP();
 }
 
 

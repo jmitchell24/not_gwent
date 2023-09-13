@@ -10,33 +10,61 @@ using namespace ut;
 //
 
 DebugRectManager::DebugRectManager() :
-    m_tags      {},
-    m_draws     {},
-    m_im_style  {ImGuiDebugRectangleStyle_Default},
-    m_im_alpha  {1}
+    m_root_tag      {},
+    m_draws         {},
+    m_im_style      {ImGuiDebugRectangleStyle_Simple},
+    m_im_alpha      {1}
 {}
 
 void DebugRectManager::addRect(cstrparam label, rectf const& r)
 {
+    assert(!m_label.empty());
+
+    m_label.back() = label;
+    addRect(r);
+    m_label.back() = "";
+}
+
+void DebugRectManager::addRect(rectf const& r)
+{
+    assert(!m_label.empty());
+
     if (!enabled)
         return;
 
-    RectTag& tag = getTag(label);
+    RectTag& tag = m_root_tag.getChildTag(m_label.data(), m_label.data()+m_label.size());
 
-    tag.cnt++;
+    tag.count++;
 
-    if (tag.enabled)
+    if (tag.enabled | tag.highlighted)
         m_draws.push_back(tag.toDraw(r));
+}
+
+void DebugRectManager::pushRect(cstrparam label, rectf const& r)
+{
+    m_label.back() = label;
+    addRect(r);
+    m_label.emplace_back("");
+}
+
+void DebugRectManager::popRect()
+{
+    assert(m_label.size() > 1);
+    m_label.pop_back();
 }
 
 bool DebugRectManager::drawDebug()
 {
     for (auto& p: m_draws)
-        ImGui::DrawDebugRectangle(p.text, p.bound, p.col.withNormalA(m_im_alpha), (ImGuiDebugRectangleStyle_)m_im_style);
+    {
+        auto style = p.highlighted ? ImGuiDebugRectangleStyle_Full : (ImGuiDebugRectangleStyle_)m_im_style;
+        ImGui::DrawDebugRectangle(p.text, p.bound, p.color.withNormalA(m_im_alpha), style);
+    }
+
     m_draws.clear();
 
-    auto flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
-    if (ImGui::TreeNodeEx("Debug Rectangles", flags))
+    auto tree_flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
+    if (ImGui::TreeNodeEx("Debug Rectangles", tree_flags))
     {
         if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent))
             enabled = !enabled;
@@ -67,40 +95,37 @@ bool DebugRectManager::drawDebug()
 
         if (ImGui::Button("Enable All"))
         {
-            for (auto& p: m_tags)
-                p.enabled = true;
+            m_root_tag.enableAll();
         }
 
         ImGui::SameLine();
 
         if (ImGui::Button("Disable All"))
         {
-            for (auto& p: m_tags)
-                p.enabled = false;
+            m_root_tag.disableAll();
         }
 
-        ImGui::BeginChild("virt2d-rects", {0,300}, true);
+        float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+        ImGuiTableFlags table_flags =
+                ImGuiTableFlags_BordersV        |
+                ImGuiTableFlags_BordersOuterH   |
+                ImGuiTableFlags_Resizable       |
+                ImGuiTableFlags_RowBg           |
+                ImGuiTableFlags_NoBordersInBody;
 
-        for (auto& p: m_tags)
+
+        if (ImGui::BeginTable("rectangles", 2, table_flags))
         {
-            auto lbl = p.text.c_str();
-            auto nor = p.col.toNormal();
+            // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
+            ImGui::TableSetupColumn("Label"     , ImGuiTableColumnFlags_NoHide);
+            ImGui::TableSetupColumn("Enabled"   , ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 18.0f);
+            ImGui::TableHeadersRow();
 
-            ImGui::Text("%d", (int)p.cnt);
+            for (auto&& it : m_root_tag.child_tags)
+                it.draw();
 
-            ImGui::SameLine();
-
-            if (float c[3]{nor.r, nor.g, nor.b}; ImGui::ColorEdit3(lbl, c, ImGuiColorEditFlags_NoLabel|ImGuiColorEditFlags_NoInputs))
-                p.col = color::fromNormal({c[0], c[1], c[2]});
-
-            ImGui::SameLine();
-
-            ImGui::Checkbox(lbl, &p.enabled);
-
-            p.cnt = 0;
+            ImGui::EndTable();
         }
-
-        ImGui::EndChild();
 
         ImGui::TreePop();
 
@@ -110,13 +135,127 @@ bool DebugRectManager::drawDebug()
     return false;
 }
 
-DebugRectManager::RectTag& DebugRectManager::getTag(cstrparam label)
+//
+// DebugRectManager -> RectTag -> Implementation
+//
+
+void DebugRectManager::RectTag::enableAll()
 {
-    for (RectTag& x: m_tags)
-        if (x.text == label)
-            return x;
-    m_tags.push_back({true, label, RANDOM.nextColor(),0});
-    return m_tags.back();
+    enabled = true;
+    for (auto&& it : child_tags)
+        it.enableAll();
+}
+
+void DebugRectManager::RectTag::disableAll()
+{
+    enabled = false;
+    for (auto&& it : child_tags)
+        it.disableAll();
+}
+
+void DebugRectManager::RectTag::draw()
+{
+    if (child_tags.empty())
+        drawLeaf();
+    else
+        drawBranch();
+}
+
+void DebugRectManager::RectTag::drawLeaf()
+{
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
+    ImGui::PushID(this);
+
+    ImGui::TreeNodeEx(PRINTER("[%d] ", (int)count), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth);
+
+    highlighted = ImGui::IsItemHovered();
+
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_Text, color);
+    ImGui::Text("%s", text.c_str());
+    ImGui::PopStyleColor();
+
+    ImGui::TableNextColumn();
+
+    ImGui::PushID(text);
+    ImGui::PushStyleColor(ImGuiCol_Button, enabled ? colors::greenyellow : colors::orangered);
+    if (ImGui::SmallButton(enabled ? " " : "x"))
+    {
+        enabled = !enabled;
+        if (enabled)
+            enableAll();
+        else
+            disableAll();
+    }
+    ImGui::PopStyleColor();
+    ImGui::PopID();
+
+    count = 0;
+
+    ImGui::PopID();
+}
+
+void DebugRectManager::RectTag::drawBranch()
+{
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
+    ImGui::PushID(this);
+
+    bool open = ImGui::TreeNodeEx(PRINTER("[%d] ", (int)count), ImGuiTreeNodeFlags_SpanFullWidth);
+
+    highlighted = ImGui::IsItemHovered();
+
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_Text, color);
+    ImGui::Text("%s", text.c_str());
+    ImGui::PopStyleColor();
+
+    ImGui::TableNextColumn();
+
+    ImGui::PushID(text);
+    ImGui::PushStyleColor(ImGuiCol_Button, enabled ? colors::greenyellow : colors::orangered);
+    if (ImGui::SmallButton(enabled ? " " : "x"))
+    {
+        enabled = !enabled;
+        if (enabled)
+            enableAll();
+        else
+            disableAll();
+    }
+    ImGui::PopStyleColor();
+    ImGui::PopID();
+
+    count = 0;
+
+    if (open)
+    {
+        for (auto&& it : child_tags)
+            it.draw();
+        ImGui::TreePop();
+    }
+
+    ImGui::PopID();
+}
+
+DebugRectManager::RectTag& DebugRectManager::RectTag::getChildTag(ut::cstrview const* begin, ut::cstrview const* end)
+{
+    assert(begin <= end);
+
+    if (begin == end)
+        return *this;
+
+    auto key = *begin;
+    for (auto&& it: child_tags)
+    {
+        if (it.text == key)
+            return it.getChildTag(begin+1, end);
+    }
+
+    child_tags.push_back({true, false, key, RANDOM.nextColor(), 0});
+    return child_tags.back();
 }
 
 #if 0

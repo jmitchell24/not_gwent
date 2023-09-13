@@ -865,7 +865,7 @@ struct TankDemo
 
     void draw()
     {
-        gb.drawDebug();
+
     }
 
     static constexpr cstrview DEBUG_LABEL= "CardTank Demo";
@@ -874,6 +874,8 @@ struct TankDemo
         ImGui::LabelText("slots", "%zu", tank.m_slots.size());
         ImGui::LabelText("slots_open", "%zu", tank.m_slots_open.size());
         ImGui::LabelText("slots_draw", "%zu", tank.m_slots_draw.size());
+
+        gb.drawDebug();
     }
 };
 
@@ -893,14 +895,10 @@ int main()
 
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    game_t gg;
-
     auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
+
+    game_t gg;
     gg.layout(window_bounds);
-
-//    GameBoard gb;
-//    gb.layout(window_bounds);
-
 
 //    lua_State* L = luaL_newstate();
 //    luaL_openlibs(L); // Open standard Lua libraries
@@ -942,6 +940,8 @@ int main()
         rlImGuiBegin();
         {
             ImGui::RenderDockspace();
+
+            ImGui::ShowDemoWindow();
 
             ImGui::Begin("main_window");
             VIRT.drawDebug();

@@ -8,6 +8,10 @@
 
 #define VIRT_DEBUG(r_) ( gfx::VIRT.drawRectDebug(#r_, r_) )
 
+#define DRECT(r_)       ( gfx::VIRT.drawRectDebug(#r_, r_) )
+#define DRECT_PUSH(s_, r_)  ( gfx::VIRT.pushRectDebug(#s_, r_) )
+#define DRECT_POP()     ( gfx::VIRT.popRectDebug() )
+
 namespace gfx
 {
     ///
@@ -71,6 +75,12 @@ UT_ENUM_RECT_ALIGNMENTS
 
         inline void drawRectDebug(ut::cstrparam lbl, ut::rectf const& r)
         { m_debug.addRect(lbl, realRect(r)); }
+
+        inline void pushRectDebug(ut::cstrparam lbl, ut::rectf const& r)
+        { m_debug.pushRect(lbl, realRect(r)); }
+
+        inline void popRectDebug()
+        { m_debug.popRect(); }
 
         inline bool drawDebug()
         { return m_debug.drawDebug(); }
