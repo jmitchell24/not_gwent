@@ -10,11 +10,17 @@ using namespace ut;
 //
 
 DebugRectManager::DebugRectManager() :
-    m_root_tag      {},
-    m_draws         {},
-    m_im_style      {ImGuiDebugRectangleStyle_Simple},
-    m_im_alpha      {1}
+    m_root_tag      {true, false, "", {}, 0},
+    m_label         {""},
+    m_draws         { },
+    m_im_style      {ImGuiDebugRectangleStyle_Simple}
 {}
+
+DebugRectManager& DebugRectManager::instance()
+{
+    static DebugRectManager x;
+    return x;
+}
 
 void DebugRectManager::addRect(cstrparam label, rectf const& r)
 {
@@ -32,12 +38,11 @@ void DebugRectManager::addRect(rectf const& r)
     if (!enabled)
         return;
 
-    RectTag& tag = m_root_tag.getChildTag(m_label.data(), m_label.data()+m_label.size());
+    Tag& tag = m_root_tag.getChildTag(m_label.data(), m_label.data() + m_label.size());
 
-    tag.count++;
-
+    tag.overlay_count++;
     if (tag.enabled | tag.highlighted)
-        m_draws.push_back(tag.toDraw(r));
+        m_draws.push_back(tag.toOverlay(r));
 }
 
 void DebugRectManager::pushRect(cstrparam label, rectf const& r)
@@ -53,45 +58,25 @@ void DebugRectManager::popRect()
     m_label.pop_back();
 }
 
-bool DebugRectManager::drawDebug()
+void DebugRectManager::drawDebug()
 {
     for (auto& p: m_draws)
     {
-        auto style = p.highlighted ? ImGuiDebugRectangleStyle_Full : (ImGuiDebugRectangleStyle_)m_im_style;
-        ImGui::DrawDebugRectangle(p.text, p.bound, p.color.withNormalA(m_im_alpha), style);
+        auto draw_flags = p.highlighted ? ImGuiDebugRectangleStyle_Full : (ImGuiDebugRectangleStyle_)m_im_style;
+        ImGui::DrawDebugRectangle(p.text, p.bound, p.color.withNormalA(0.5f), draw_flags);
     }
 
     m_draws.clear();
 
     auto tree_flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
-    if (ImGui::TreeNodeEx("Debug Rectangles", tree_flags))
+    enabled = ImGui::TreeNodeEx("Debug Rectangles", tree_flags);
+
+    if (enabled)
     {
-        if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent))
-            enabled = !enabled;
-
-
-
-        ImGui::Checkbox("Enable Debug", &enabled);
-
-
-        ImGui::Separator();
-        ImGui::Text("Bounds");
-
-
-        if (ImGui::Button("100%")) m_im_alpha = 1.00f;
-        ImGui::SameLine();
-        if (ImGui::Button("75%")) m_im_alpha = 0.75f;
-        ImGui::SameLine();
-        if (ImGui::Button("50%")) m_im_alpha = 0.50f;
-        ImGui::SameLine();
-        if (ImGui::Button("25%")) m_im_alpha = 0.25f;
-
-        ImGui::DragFloat("Alpha", &m_im_alpha, 0.003, 0.25, 1);
         ImGui::RadioButton("Default", &m_im_style, ImGuiDebugRectangleStyle_Default);
         ImGui::SameLine();
-        ImGui::RadioButton("Full", &m_im_style, ImGuiDebugRectangleStyle_Full);
+        ImGui::RadioButton("No Label", &m_im_style, ImGuiDebugRectangleStyle_Simple);
         ImGui::SameLine();
-        ImGui::RadioButton("Simple", &m_im_style, ImGuiDebugRectangleStyle_Simple);
 
         if (ImGui::Button("Enable All"))
         {
@@ -128,39 +113,114 @@ bool DebugRectManager::drawDebug()
         }
 
         ImGui::TreePop();
-
-        return true;
     }
-
-    return false;
 }
 
 //
 // DebugRectManager -> RectTag -> Implementation
 //
 
-void DebugRectManager::RectTag::enableAll()
+void DebugRectManager::Tag::enableAll()
 {
     enabled = true;
     for (auto&& it : child_tags)
         it.enableAll();
 }
 
-void DebugRectManager::RectTag::disableAll()
+void DebugRectManager::Tag::disableAll()
 {
     enabled = false;
     for (auto&& it : child_tags)
         it.disableAll();
 }
 
-void DebugRectManager::RectTag::draw()
+void DebugRectManager::Tag::draw()
 {
     if (child_tags.empty())
-        drawLeaf();
-    else
-        drawBranch();
+    {
+        draw(true);
+    }
+    else if (draw(false))
+    {
+        for (auto&& it : child_tags)
+            it.draw();
+        ImGui::TreePop();
+    }
 }
 
+bool DebugRectManager::Tag::draw(bool is_leaf)
+{
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+
+    ImGui::PushID(this);
+
+    int flags = ImGuiTreeNodeFlags_SpanFullWidth;
+    if (is_leaf)
+    {
+        flags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
+    bool open = ImGui::TreeNodeEx(PRINTER("[%d] ", (int)overlay_count), flags);
+
+    highlighted = ImGui::IsItemHovered();
+
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_Text, color);
+    ImGui::Text("%s", text.c_str());
+    ImGui::PopStyleColor();
+
+    ImGui::TableNextColumn();
+
+    ImGui::PushID(text);
+    ImGui::PushStyleColor(ImGuiCol_Button, enabled ? colors::greenyellow : colors::orangered);
+    if (ImGui::SmallButton(enabled ? " " : "x"))
+    {
+        enabled = !enabled;
+        if (enabled)
+            enableAll();
+        else
+            disableAll();
+    }
+    ImGui::PopStyleColor();
+    ImGui::PopID();
+
+    overlay_count = 0;
+
+    ImGui::PopID();
+
+    return open;
+}
+
+static color nextColor()
+{
+    static size_t counter=0;
+
+    auto hue = float(counter++) * 100.0f + 120.0f;
+    hue = fmodf(hue, 360.0f);
+
+    return color(color::hsluv{hue, 80.0f, 80.0f, 1.0f});
+}
+
+DebugRectManager::Tag& DebugRectManager::Tag::getChildTag(cstrview const* begin, cstrview const* end)
+{
+    assert(begin <= end);
+
+    if (begin == end)
+        return *this;
+
+    auto key = *begin;
+    for (auto&& it: child_tags)
+    {
+        if (it.text == key)
+            return it.getChildTag(begin+1, end);
+    }
+
+    child_tags.push_back({true, false, key, nextColor(), 0});
+    return child_tags.back();
+}
+
+#if 0
 void DebugRectManager::RectTag::drawLeaf()
 {
     ImGui::TableNextRow();
@@ -240,25 +300,6 @@ void DebugRectManager::RectTag::drawBranch()
     ImGui::PopID();
 }
 
-DebugRectManager::RectTag& DebugRectManager::RectTag::getChildTag(ut::cstrview const* begin, ut::cstrview const* end)
-{
-    assert(begin <= end);
-
-    if (begin == end)
-        return *this;
-
-    auto key = *begin;
-    for (auto&& it: child_tags)
-    {
-        if (it.text == key)
-            return it.getChildTag(begin+1, end);
-    }
-
-    child_tags.push_back({true, false, key, RANDOM.nextColor(), 0});
-    return child_tags.back();
-}
-
-#if 0
 struct Gizmo
 {
     enum Mode

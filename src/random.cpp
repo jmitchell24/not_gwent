@@ -1,5 +1,6 @@
 #include "random.hpp"
 
+#include <ut/algo.hpp>
 using namespace ut;
 
 #include <random>
@@ -35,7 +36,10 @@ RandomManager& RandomManager::instance()
 
 RandomManager::color RandomManager::nextColor()
 {
-    return m_colors[ m_color_counter++ % m_colors.size() ];
+    auto hue = float(m_color_counter++) * 100.0f + 120.0f;
+    hue = fmodf(hue, 360.0f);
+
+    return color(color::hsluv{hue, 80.0f, 80.0f, 1.0f});
 }
 
 RandomManager::color RandomManager::nextColor(size_t seed)

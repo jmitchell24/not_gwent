@@ -41,10 +41,10 @@ void CombatRow::layout(rect const& b)
 
 void CombatRow::drawDebug()
 {
-    DRECT_PUSH(CombatRow,bounds);
-    DRECT(score);
-    DRECT(special);
-    DRECT(units);
+    DRECT_PUSH2(CombatRow,bounds);
+    DRECT1(score);
+    DRECT1(special);
+    DRECT1(units);
     DRECT_POP();
 }
 
@@ -62,10 +62,10 @@ void PlayerRow::layout(rect const& b)
 
 void PlayerRow::drawDebug()
 {
-    DRECT_PUSH(PlayerRow,bounds);
-    DRECT(hand);
-    DRECT(deck);
-    DRECT(graveyard);
+    DRECT_PUSH2(PlayerRow,bounds);
+    DRECT1(hand);
+    DRECT1(deck);
+    DRECT1(graveyard);
     DRECT_POP();
 }
 
@@ -80,7 +80,7 @@ void WeatherBoard::layout(rect const& b)
 
 void WeatherBoard::drawDebug()
 {
-    DRECT(WeatherBoard::bounds);
+    DRECT2(WeatherBoard,bounds);
 }
 
 //
@@ -110,17 +110,17 @@ void StatsBoard::layout(rect const& b)
 
 void StatsBoard::drawDebug()
 {
-    DRECT_PUSH(StatsBoard,bounds);
-    DRECT(name);
-    DRECT(deck_name);
-    DRECT(gems_label);
-    DRECT(hand_count_label);
-    DRECT(score_label);
-    DRECT(gems);
-    DRECT(hand_count);
-    DRECT(score);
-    DRECT(avatar);
-    DRECT(leader);
+    DRECT_PUSH2(StatsBoard,bounds);
+    DRECT1(name);
+    DRECT1(deck_name);
+    DRECT1(gems_label);
+    DRECT1(hand_count_label);
+    DRECT1(score_label);
+    DRECT1(gems);
+    DRECT1(hand_count);
+    DRECT1(score);
+    DRECT1(avatar);
+    DRECT1(leader);
     DRECT_POP();
 }
 
@@ -150,7 +150,7 @@ void GameBoard::layout(rect const& b)
 
 void GameBoard::drawDebug()
 {
-    DRECT_PUSH(GameBoard,bounds);
+    DRECT_PUSH2(GameBoard,bounds);
     player_cpu       .drawDebug();
     combat_cpu_siege .drawDebug();
     combat_cpu_ranged.drawDebug();

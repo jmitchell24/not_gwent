@@ -941,8 +941,6 @@ int main()
         {
             ImGui::RenderDockspace();
 
-            ImGui::ShowDemoWindow();
-
             ImGui::Begin("main_window");
             VIRT.drawDebug();
             ImGui::End();

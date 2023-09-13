@@ -25,12 +25,7 @@ namespace gfx
     class DebugRectManager
     {
     public:
-
-
-        bool            enabled          = false;
-        bool            show_rect_labels = true;
-
-        DebugRectManager();
+        bool enabled = false;
 
         void addRect(ut::cstrparam label, ut::rectf const& r);
         void pushRect(ut::cstrparam label, ut::rectf const& r);
@@ -38,10 +33,12 @@ namespace gfx
         void addRect(ut::rectf const& r);
         void popRect();
 
-        bool drawDebug();
+        void drawDebug();
+
+        static DebugRectManager& instance();
 
     private:
-        struct RectDraw
+        struct Overlay
         {
             ut::cstrview    text;
             ut::color       color;
@@ -49,18 +46,18 @@ namespace gfx
             bool            highlighted;
         };
 
-        struct RectTag
+        struct Tag
         {
-            using taglist_type = std::vector<RectTag>;
+            using taglist_type = std::vector<Tag>;
 
             bool                enabled;
             bool                highlighted;
             ut::cstrview        text;
             ut::color           color;
-            size_t              count;
+            size_t              overlay_count;
             taglist_type        child_tags;
 
-            inline RectDraw toDraw(ut::rectf const& r) const
+            inline Overlay toOverlay(ut::rectf const& r) const
             {
                 return { text, color, r, highlighted };
             }
@@ -69,20 +66,19 @@ namespace gfx
             void disableAll();
 
             void draw();
-            void drawLeaf();
-            void drawBranch();
+            bool draw(bool is_leaf);
 
-            RectTag& getChildTag(ut::cstrview const* begin, ut::cstrview const* end);
+            Tag& getChildTag(ut::cstrview const* begin, ut::cstrview const* end);
         };
 
         using label_type = std::vector<ut::cstrview>;
-        using draws_type = std::vector<RectDraw>;
+        using draws_type = std::vector<Overlay>;
 
-        RectTag                 m_root_tag{true, false, "", {}, 0};
-        label_type              m_label{""};
-        draws_type              m_draws;
+        DebugRectManager();
 
-        int                     m_im_style;
-        float                   m_im_alpha;
+        Tag         m_root_tag;
+        label_type  m_label;
+        draws_type  m_draws;
+        int         m_im_style;
     };
 }
