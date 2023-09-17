@@ -8,10 +8,57 @@
 #include "game/layout/row_layout.hpp"
 #include "game/layout/card_row.hpp"
 #include "game/card_tank.hpp"
+#include "game/assets.hpp"
+
 #include "gfx/gfx_spinner.hpp"
+#include "gfx/gfx_draw.hpp"
 
 namespace game
 {
+    class CardStack2
+    {
+    public:
+        ut::rect bounds;
+
+        Texture2D card_back = textures::card_back_neutral();
+
+        ng::cardlist_t cards;
+
+        gfx::Spinner spinner{gfx::Spinner::HORZ, ut::colors::burlywood};
+
+        void layout(Texture2D t, ut::rect const& b)
+        {
+            card_back = t;
+            bounds = layout::CardLayout::fromRect(b).getRect();
+            spinner.layout(b.anchorBCtoBC(b.size()/3));
+        }
+
+        void update(float dt)
+        {
+            spinner.update(dt);
+        }
+
+        void draw()
+        {
+            auto r = bounds;
+            auto t = card_back;
+            auto o = 2.5f;
+            gfx::drawTexture(t, r.withOffset({ o, o}));
+            gfx::drawTexture(t, r.withOffset({-o,-o}));
+            gfx::drawTexture(t, r);
+
+            gfx::drawRectangleGradientEx(r,
+                                         ut::colors::transparent,
+                                         ut::colors::black.withNormalA(0.5f),
+                                         ut::colors::black.withNormalA(0.5f),
+                                         ut::colors::transparent);
+
+            spinner.draw();
+        }
+    private:
+
+    };
+
     class CardRow
     {
     public:
@@ -20,6 +67,8 @@ namespace game
         cardidlist_t        ids;
         layout::RowLayout   layout_row;
         layout::RowLayout   layout_row_next;
+
+
 
         inline bool containsID(cardid_t id) { return getIdx(id) >= 0; }
 
@@ -81,6 +130,9 @@ namespace game
         CardRow         row1;
         gfx::Spinner    spinner;
         CardRow         row2;
+
+        CardStack2 card_stack_deck;
+        CardStack2 card_stack_graveyard;
 
         layout::GameBoard gb;
 

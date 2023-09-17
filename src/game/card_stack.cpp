@@ -62,7 +62,7 @@ void CardStack::update()
 
 void CardStack::draw()
 {
-    auto tex = textures::card_back();
+    auto tex = textures::card_back_neutral();
     auto font = fonts::smallburgRegular128();
 
     drawShadow(m_bounds_cards, {5,5}, 5);

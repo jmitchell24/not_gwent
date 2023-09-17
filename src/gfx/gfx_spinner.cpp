@@ -32,7 +32,7 @@ void Spinner::anim(int value)
 
 void Spinner::layout(rect const& bounds)
 {
-    m_bounds = bounds.shrunk(20);
+    m_bounds = bounds;
     updateValues(float(m_value));
 }
 
@@ -57,7 +57,7 @@ void Spinner::draw()
 
 void Spinner::updateValues(float f)
 {
-    switch (m_orientation)
+    switch (orientation)
     {
 
         case HORZ: updateValuesHorz(f); break;
@@ -89,8 +89,8 @@ void Spinner::updateValuesHorz(float f)
     m_bounds_b = m_bounds_a.withOffsetX(w);
 
     n = easings::expoIn(n, 0, 1, 1);
-    m_color_a  = colors::white.withNormalA(1.0f-n);
-    m_color_b  = colors::white.withNormalA(n);
+    m_color_a  = color.withNormalA(1.0f-n);
+    m_color_b  = color.withNormalA(n);
 }
 
 void Spinner::updateValuesVert(float f)
@@ -116,6 +116,6 @@ void Spinner::updateValuesVert(float f)
     m_bounds_b = m_bounds_a.withOffsetY(h);
 
     n = easings::expoIn(n, 0, 1, 1);
-    m_color_a  = colors::white.withNormalA(1.0f-n);
-    m_color_b  = colors::white.withNormalA(n);
+    m_color_a  = color.withNormalA(1.0f-n);
+    m_color_b  = color.withNormalA(n);
 }

@@ -50,6 +50,8 @@ UT_ENUM_RECT_ALIGNMENTS
         drawTexture(texture, rect.anchorCCtoCC(sz), color);
     }
 
+
+
     inline void drawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4)
     {
         Texture2D texShapes = { 1, 1, 1, 1, 7 };                // Texture used on shapes drawing (usually a white pixel)
@@ -80,6 +82,11 @@ UT_ENUM_RECT_ALIGNMENTS
         rlEnd();
 
         rlSetTexture(0);
+    }
+
+    inline void drawRectangleGradientEx(_rect rec, _color col1, _color col2, _color col3, _color col4)
+    {
+        drawRectangleGradientEx(torl(rec), torl(col1), torl(col2), torl(col3), torl(col4));
     }
 
     inline void drawTriangle(_vec2 v1, _vec2 v2, _vec2 v3, _color c1, _color c2, _color c3)

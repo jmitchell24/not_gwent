@@ -11,9 +11,14 @@ namespace gfx
     class Spinner
     {
     public:
-        enum Orientation { HORZ, VERT };
+        enum Orientation { HORZ, VERT } orientation;
+        ut::color color = ut::colors::white;
 
         inline int value() const { return m_value; }
+
+        Spinner(Orientation o = VERT, ut::color c = ut::colors::white)
+            : orientation{o}, color{c}
+        {}
 
         void set(int value);
         void anim(int value);
@@ -22,8 +27,6 @@ namespace gfx
         void draw();
 
     private:
-        Orientation m_orientation = VERT;
-
         int             m_value=0;
         TweenReal       m_tween_target{easings::elasticOut, 2.0f};
 

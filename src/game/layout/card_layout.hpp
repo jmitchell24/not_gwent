@@ -41,10 +41,26 @@ namespace game::layout
         inline void setPSize    (ut::psize  const& v) { setPSize(v.width, v.height, v.x, v.y); }
         inline void setRect     (ut::rect   const& v) { return setPSize(v.psize()); }
 
+        static CardLayout fromRect(ut::rect const& r, float z = 1.0f)
+        {
+            auto w=r.width(), h=r.height();
+
+            auto lr = r.anchorCCtoCC( w>h ? sizeFromHeight(h) : sizeFromWidth(w) );
+            return fromPSize(lr.psize());
+        }
+
+        static CardLayout fromPSize(ut::psize const& p, float z = 1.0f)
+        {
+            return { p.width, p.height, p.x, p.y, z };
+        }
+
         static CardLayout fromWidth (float w) { return { w, heightFromWidth(w), 0.0f, 0.0f, 0.0f }; }
         static CardLayout fromHeight(float h) { return { widthFromHeight(h), h, 0.0f, 0.0f, 0.0f }; }
 
         static float widthFromHeight(float h) { return h * ASPECT_RATIO_INV; }
         static float heightFromWidth(float w) { return w * ASPECT_RATIO; }
+
+        static ut::vec2 sizeFromWidth (float w) { return { w, heightFromWidth(w) }; }
+        static ut::vec2 sizeFromHeight(float h) { return { widthFromHeight(h), h }; }
     };
 }
