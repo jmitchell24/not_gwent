@@ -32,7 +32,7 @@ void Spinner::anim(int value)
 
 void Spinner::layout(rect const& bounds)
 {
-    m_bounds = bounds;
+    m_bounds = bounds.shrunk(20);
     updateValues(float(m_value));
 }
 
@@ -45,15 +45,28 @@ void Spinner::update(float dt)
 void Spinner::draw()
 {
     auto font = game::fonts::smallburgRegular128();
-    VIRT.drawTextCCtoCC(font, m_bounds_a, PRINTER("%d", m_integer_a), m_color_a);
-    VIRT.drawTextCCtoCC(font, m_bounds_b, PRINTER("%d", m_integer_b), m_color_b);
+    VIRT.drawTextCCtoCC(font, m_bounds_a, m_bounds_a.height(), PRINTER("%d", m_integer_a), m_color_a);
+    VIRT.drawTextCCtoCC(font, m_bounds_b, m_bounds_b.height(), PRINTER("%d", m_integer_b), m_color_b);
 
-    VIRT_DEBUG(m_bounds);
-    VIRT_DEBUG(m_bounds_a);
-    VIRT_DEBUG(m_bounds_b);
+    DRECT_PUSH2(Spinner, m_bounds);
+    DRECT1(m_bounds_a);
+    DRECT1(m_bounds_b);
+    DRECT_POP();
+
 }
 
 void Spinner::updateValues(float f)
+{
+    switch (m_orientation)
+    {
+
+        case HORZ: updateValuesHorz(f); break;
+        case VERT: updateValuesVert(f); break;
+        default:assert_case(Orientation);
+    }
+}
+
+void Spinner::updateValuesHorz(float f)
 {
     int   i = int(f);
     float w = m_bounds.width();
@@ -74,6 +87,33 @@ void Spinner::updateValues(float f)
 
     m_bounds_a = m_bounds.withOffsetX(-w*n);
     m_bounds_b = m_bounds_a.withOffsetX(w);
+
+    n = easings::expoIn(n, 0, 1, 1);
+    m_color_a  = colors::white.withNormalA(1.0f-n);
+    m_color_b  = colors::white.withNormalA(n);
+}
+
+void Spinner::updateValuesVert(float f)
+{
+    int   i = int(f);
+    float h = m_bounds.height();
+    float n;
+
+    if (f < 0.0f)
+    {
+        n = 1.0f - (float(i) - f);
+        m_integer_a = i-1;
+        m_integer_b = i;
+    }
+    else
+    {
+        n = f - float(i);
+        m_integer_a = i;
+        m_integer_b = i+1;
+    }
+
+    m_bounds_a = m_bounds.withOffsetY(-h*n);
+    m_bounds_b = m_bounds_a.withOffsetY(h);
 
     n = easings::expoIn(n, 0, 1, 1);
     m_color_a  = colors::white.withNormalA(1.0f-n);

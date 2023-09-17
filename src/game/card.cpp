@@ -145,19 +145,29 @@ using namespace gfx;
 //    return b;
 //}
 
+bool Card::update(float dt)
+{
+    if (spring.isAtDst())
+        return false;
+
+    spring.update(dt);
+    layout.setPosition3(spring.now());
+    return true;
+}
+
 void Card::draw()
 {
     assert(layout.isValid());
 
-    auto r = getDrawRect();
+    auto r = layout.getRect();//getDrawRect();
     auto c = getDrawColor();
     auto r_pad = r.min.distance(r.max) / 20;
 
     auto outer = assets.color.toHSLUV();
     auto inner = outer.withL(outer.l / 2).withA(0.25f);
 
-    auto shadow_sz  = ( (getElevation() - ELEVATION_DROP) / (ELEVATION_GRAB - ELEVATION_DROP) ) * r_pad;
-    drawShadow(r, vec2(shadow_sz), shadow_sz + r_pad/2);
+    //auto shadow_sz  = ( (layout.getElevation() - layout.ELEVATION_DROP) / (layout.ELEVATION_GRAB - layout.ELEVATION_DROP) ) * r_pad;
+    //drawShadow(r, vec2(shadow_sz), shadow_sz + r_pad/2);
 
     VIRT.drawTexturePro(assets.artwork, r, c);
 
@@ -185,11 +195,16 @@ void Card::draw()
     VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
 
     //rlPopMatrix();
-    VIRT_DEBUG(r);
-    VIRT_DEBUG(r_stats);
-    VIRT_DEBUG(r_stat_row);
-    VIRT_DEBUG(r_stat_ability);
-    VIRT_DEBUG(r_stat_strength);
+
+    DRECT_PUSH2(Card, r);
+    DRECT1(r_stats);
+    DRECT1(r_stat_row);
+    DRECT1(r_stat_ability);
+    DRECT1(r_stat_strength);
+    DRECT_POP();
+
+
+
 }
 
 //RenderTexture2D Card::drawTexture()
@@ -210,23 +225,7 @@ void Card::draw()
 //    assert_impl();
 //}
 
-Card Card::createTestCard()
-{
-    static rangen rg;
 
-    auto id = (ng::CardID)rg.nexti((int)ng::CARD_COUNT_-1);
-    auto ng = ng::getCard(id);
-
-    return Card{ {}, Assets::fromNgCard(ng), ng };
-}
-
-cardlist_t Card::createTestCards(size_t n)
-{
-    cardlist_t cards;
-    for (size_t i = 0; i < n; ++i)
-        cards.push_back(createTestCard());
-    return cards;
-}
 
 
 

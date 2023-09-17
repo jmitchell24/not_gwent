@@ -7,6 +7,11 @@
 #include "game/card_container.hpp"
 #include "gfx/gfx_spring.hpp"
 
+//
+// std
+//
+#include <optional>
+
 namespace game
 {
     class CardMover

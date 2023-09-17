@@ -61,8 +61,8 @@ void CardList::layout(rect const &bounds)
     for (size_t i = 0; i < m_slots.size(); ++i)
     {
         auto &&it = m_slots[i].card;
-        it.setSize(m_card_width, m_card_height);
-        it.setPosition2(m_layout_hovered.getPos(i));
+        it.layout.setSize(m_card_width, m_card_height);
+        it.layout.setPosition2(m_layout_hovered.getPos(i));
     }
 }
 
@@ -162,7 +162,7 @@ void CardList::clearHover()
 
 void CardList::throwCard(size_t idx, const game::Card &card)
 {
-    auto src = card.getPosition2();
+    auto src = card.layout.getPosition2();
     auto dst = layoutHovered().getPos(idx);
 
     auto& slot = addCard(idx, card);

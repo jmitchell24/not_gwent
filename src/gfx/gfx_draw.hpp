@@ -99,10 +99,9 @@ UT_ENUM_RECT_ALIGNMENTS
         auto r_shadowr  = r.anchorRCtoLC(thickness, r.height());
         auto r_shadowb  = r.anchorBCtoTC(r.width(), thickness);
 
-        VIRT_DEBUG(r_shadowl);
-        VIRT_DEBUG(r_shadowr);
-        VIRT_DEBUG(r_shadowt);
-        VIRT_DEBUG(r_shadowb);
+
+
+
 
         // tl, bl, br, tr
         auto blk = torl(ut::colors::black.withNormalA(0.5));
@@ -121,6 +120,13 @@ UT_ENUM_RECT_ALIGNMENTS
         drawTriangle(r.br(), r_shadowb.br(), r_shadowr.br(), tout(blk), tout(clr), tout(clr));
 
         drawRect(r, tout(blk));
+
+        DRECT_PUSH2(drawShadow(), r);
+        DRECT1(r_shadowl);
+        DRECT1(r_shadowr);
+        DRECT1(r_shadowt);
+        DRECT1(r_shadowb);
+        DRECT_POP();
     }
 
 

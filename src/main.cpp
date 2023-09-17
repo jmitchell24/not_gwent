@@ -20,7 +20,8 @@
 #include "game/conv.hpp"
 #include "game/game.hpp"
 #include "game/card_tank.hpp"
-#include "game/cards_layout.hpp"
+#include "game/layout/board_layout.hpp"
+#include "game/game2.hpp"
 
 #include "game/assets.hpp"
 
@@ -786,7 +787,7 @@ struct ShadowDemo
     }
 };
 
-#endif
+
 
 struct CardDemo
 {
@@ -847,35 +848,32 @@ struct CardDemo
     }
 };
 
+#endif
+
 struct TankDemo
 {
-    CardTank tank;
-
-    layout::GameBoard gb;
+    GameBoard2 gb2;
 
     void layout(ut::rect const& bounds)
     {
-        gb.layout(bounds);
+        gb2.layout(bounds);
     }
 
     void update()
     {
 
+        gb2.update(GetFrameTime());
     }
 
     void draw()
     {
-
+        gb2.draw();
     }
 
     static constexpr cstrview DEBUG_LABEL= "CardTank Demo";
     void drawDebug(cstrparam lbl)
     {
-        ImGui::LabelText("slots", "%zu", tank.m_slots.size());
-        ImGui::LabelText("slots_open", "%zu", tank.m_slots_open.size());
-        ImGui::LabelText("slots_draw", "%zu", tank.m_slots_draw.size());
-
-        gb.drawDebug();
+        gb2.drawDebug();
     }
 };
 

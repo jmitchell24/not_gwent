@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "game/layout/row_layout.hpp"
+
 #include <ut/math.hpp>
 
 namespace game::layout

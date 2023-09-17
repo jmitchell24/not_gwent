@@ -4,12 +4,27 @@
 // Created by james on 8/16/23.
 //
 
+#include "gfx/gfx_tween.hpp"
 #include "game/card_container.hpp"
-#include "game/card_layout.hpp"
 
 namespace game
 {
+    struct CardLayout
+    {
+        enum Direction { DIR_LEFT, DIR_CENTER };
 
+        ut::rect    bounds;
+
+        size_t      card_count;
+        float       card_width;
+        float       card_gap;
+
+        static CardLayout create(Direction direction, ut::rect const& bounds, float card_width, size_t card_count);
+        bool tryGetIndex(ut::vec2 const& mp, size_t& idx) const;
+
+        ut::vec2 getPos(size_t idx) const;
+        ut::rect getRect(size_t idx) const;
+    };
 
     struct CardListSlot
     {
@@ -26,31 +41,31 @@ namespace game
         void animDrop()
         {
             m_tween_drop.set(&gfx::easings::bounceOut  , 0.5f);
-            m_tween_drop.anim(card.getElevation(), ELEVATION_DROP);
+            m_tween_drop.anim(card.layout.getElevation(), ELEVATION_DROP);
         }
 
         void animPeek()
         {
             m_tween_drop.set(&gfx::easings::expoOut, 0.5f);
-            m_tween_drop.anim(card.getElevation(), ELEVATION_PEEK);
+            m_tween_drop.anim(card.layout.getElevation(), ELEVATION_PEEK);
         }
 
         void animGrab()
         {
             m_tween_drop.set(&gfx::easings::expoOut, 0.5f);
-            m_tween_drop.anim(card.getElevation(), ELEVATION_GRAB);
+            m_tween_drop.anim(card.layout.getElevation(), ELEVATION_GRAB);
         }
 
         void animNudge(ut::vec2f const& p)
         {
             m_tween_nudge.set(&gfx::easings::expoOut , 1.0f);
-            m_tween_nudge.anim(card.getPosition2(), p);
+            m_tween_nudge.anim(card.layout.getPosition2(), p);
         }
 
         void animThrow(ut::vec2f const& src, ut::vec2f  const& dst)
         {
 
-            card.setPosition2(src);
+            card.layout.setPosition2(src);
             m_tween_nudge.set(&gfx::easings::expoOut , 0.75f);
             m_tween_nudge.anim(src, dst);
 
@@ -63,8 +78,8 @@ namespace game
             auto dt = GetFrameTime();
             auto b = false;
 
-            if (m_tween_nudge.update(dt)) { b = true; card.setPosition2(m_tween_nudge.now()); }
-            if (m_tween_drop     .update(dt)) { b = true; card.setElevation(m_tween_drop.now()); }
+            if (m_tween_nudge.update(dt)) { b = true; card.layout.setPosition2(m_tween_nudge.now()); }
+            if (m_tween_drop     .update(dt)) { b = true; card.layout.setElevation(m_tween_drop.now()); }
 
             return b;
         }
@@ -74,6 +89,8 @@ namespace game
             card.draw();
         }
     };
+
+    using cardlist_t = std::vector<Card>;
 
     class CardList : public CardContainer
     {

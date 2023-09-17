@@ -2,7 +2,7 @@
 // Created by james on 9/11/23.
 //
 
-#include "game/cards_layout.hpp"
+#include "board_layout.hpp"
 using namespace game::layout;
 
 
@@ -55,9 +55,9 @@ void CombatRow::drawDebug()
 void PlayerRow::layout(rect const& b)
 {
     bounds    = b;
-    hand      = b.row(7, 0, {.inner_pad=VIRT_PAD});
-    deck      = b.row(7, 6, {.inner_pad=VIRT_PAD});
-    graveyard = b.row(7, 1, {.w=5, .inner_pad=VIRT_PAD});
+    deck      = b.row(7, 0, {.inner_pad=VIRT_PAD});
+    hand      = b.row(7, 1, {.w=5, .inner_pad=VIRT_PAD});
+    graveyard = b.row(7, 6, {.inner_pad=VIRT_PAD});
 }
 
 void PlayerRow::drawDebug()
