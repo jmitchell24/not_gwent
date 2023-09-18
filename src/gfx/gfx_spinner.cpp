@@ -34,6 +34,7 @@ void Spinner::layout(rect const& bounds)
 {
     m_bounds = bounds;
     updateValues(float(m_value));
+    font = game::fonts::smallburgRegular128();
 }
 
 void Spinner::update(float dt)
@@ -44,7 +45,7 @@ void Spinner::update(float dt)
 
 void Spinner::draw()
 {
-    auto font = game::fonts::smallburgRegular128();
+
     VIRT.drawTextCCtoCC(font, m_bounds_a, m_bounds_a.height(), PRINTER("%d", m_integer_a), m_color_a);
     VIRT.drawTextCCtoCC(font, m_bounds_b, m_bounds_b.height(), PRINTER("%d", m_integer_b), m_color_b);
 

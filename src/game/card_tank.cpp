@@ -144,9 +144,7 @@ void CardTank::reorderCards()
 
 Card& CardTank::addTestCard()
 {
-    static rangen rg;
-
-    auto ng_id = (ng::CardID)rg.nexti((int)ng::CARD_COUNT_-1);
+    auto ng_id = (ng::CardID)RNG.nexti((int)ng::CARD_COUNT_);
 
     Card card;
     card.ng = ng::getCard(ng_id);

@@ -41,7 +41,7 @@ namespace game
 
             if (auto x = load(k); isReady(x))
             {
-                v = m_assets[k] = x;
+                v = (m_assets[k] = x);
                 return true;
             }
 
@@ -52,11 +52,13 @@ namespace game
         {
             if (auto it = m_assets.find(k); it != m_assets.end())
             {
+                TraceLog(LOG_INFO, "ASSET STORE GET CACHE");
                 return it->second;
             }
 
             if (auto x = load(k); isReady(x))
             {
+                TraceLog(LOG_INFO, "ASSET STORE GET FRESH");
                 return (m_assets[k] = x);
             }
 

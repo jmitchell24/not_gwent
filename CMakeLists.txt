@@ -60,35 +60,35 @@ target_link_libraries(${GAME_EXECUTABLE} PRIVATE ut)
 #
 # yaml-cpp
 #
-option(YAML_CPP_BUILD_CONTRIB   OFF)
-option(YAML_CPP_BUILD_TOOLS     OFF)
-option(YAML_BUILD_SHARED_LIBS   OFF)
-FetchContent_Declare(
-    yaml-cpp
-    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-    GIT_TAG yaml-cpp-0.7.0)
-FetchContent_MakeAvailable(yaml-cpp)
-target_link_libraries(${GAME_EXECUTABLE} PRIVATE yaml-cpp)
+#option(YAML_CPP_BUILD_CONTRIB   OFF)
+#option(YAML_CPP_BUILD_TOOLS     OFF)
+#option(YAML_BUILD_SHARED_LIBS   OFF)
+#FetchContent_Declare(
+#    yaml-cpp
+#    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+#    GIT_TAG yaml-cpp-0.7.0)
+#FetchContent_MakeAvailable(yaml-cpp)
+#target_link_libraries(${GAME_EXECUTABLE} PRIVATE yaml-cpp)
 
 #
 # sqlite3
 #
-FetchContent_Declare(
-		sqlite3
-		GIT_REPOSITORY https://github.com/tamaskenez/sqlite3-cmake.git)
-FetchContent_MakeAvailable(sqlite3)
-target_link_libraries(${GAME_EXECUTABLE} PRIVATE sqlite3)
+#FetchContent_Declare(
+#		sqlite3
+#		GIT_REPOSITORY https://github.com/tamaskenez/sqlite3-cmake.git)
+#FetchContent_MakeAvailable(sqlite3)
+#target_link_libraries(${GAME_EXECUTABLE} PRIVATE sqlite3)
 
 
 #
 # lua
 #
-FetchContent_Declare(
-		lua
-		GIT_REPOSITORY https://github.com/walterschell/Lua.git
-		GIT_TAG v5.4.5)
-FetchContent_MakeAvailable(lua)
-target_link_libraries(${GAME_EXECUTABLE} PRIVATE lua_static)
+#FetchContent_Declare(
+#		lua
+#		GIT_REPOSITORY https://github.com/walterschell/Lua.git
+#		GIT_TAG v5.4.5)
+#FetchContent_MakeAvailable(lua)
+#target_link_libraries(${GAME_EXECUTABLE} PRIVATE lua_static)
 
 
 #find_package(SQLite3 REQUIRED)

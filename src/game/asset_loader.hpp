@@ -16,12 +16,13 @@
 //
 // std
 //
+#include <string>
 
 namespace game::asset_loaders
 {
     struct Texture2DLoader
     {
-        using key_type = ut::cstrview;
+        using key_type = std::string;
         using value_type = Texture2D;
         static value_type load(key_type const& k);
         static bool isReady(value_type const& v);

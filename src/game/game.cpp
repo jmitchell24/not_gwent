@@ -137,7 +137,7 @@ void CombatRow::layout(rect const &bounds)
     special.layout(b_special);
 
     m_bounds_score = b_score;
-    m_score = rangen().nexti(100);
+    m_score = RNG.nexti(100);
 
 #ifndef NDEBUG
     m_is_layout_ready = true;

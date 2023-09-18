@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <raylib.h>
 #include "gfx/gfx_tween.hpp"
 
 namespace gfx
@@ -13,6 +14,7 @@ namespace gfx
     public:
         enum Orientation { HORZ, VERT } orientation;
         ut::color color = ut::colors::white;
+        Font font;
 
         inline int value() const { return m_value; }
 

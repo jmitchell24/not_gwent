@@ -264,7 +264,8 @@ Texture2D rowBadge(ng::UnitCard::Row x)
 
 Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
 {
-    Texture2D artwork = TEXTURES.get(PRINTER("data/cards/%s", card.filename.c_str()));
+    auto k = PRINTER("data/cards/%s", card.filename.c_str());
+    Texture2D artwork = TEXTURES.get(k.c_str());
 
     if (card.isUnitCard())
     {
