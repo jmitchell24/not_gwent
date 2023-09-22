@@ -30,7 +30,7 @@ namespace gfx
 
     private:
         int             m_value=0;
-        TweenReal       m_tween_target{easings::elasticOut, 2.0f};
+        TweenReal       m_tween_target{easings::elasticOut, 1.0f};
 
         ut::rectf       m_bounds;
         ut::rectf       m_bounds_a;

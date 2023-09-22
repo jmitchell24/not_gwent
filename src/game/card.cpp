@@ -2,9 +2,8 @@
 // Created by james on 8/16/23.
 //
 
-#include "random.hpp"
-
 #include "game/card.hpp"
+#include "game/card_tank.hpp"
 #include "game/assets.hpp"
 using namespace game;
 
@@ -13,10 +12,10 @@ using namespace game;
 //
 #include "ng/ng_card_data.hpp"
 
+
 //
 // ut
 //
-#include <ut/random.hpp>
 using namespace ut;
 
 //
@@ -148,10 +147,14 @@ using namespace gfx;
 bool Card::update(float dt)
 {
     if (spring.isAtDst())
+    {
+        m_is_animated = false;
         return false;
+    }
 
     spring.update(dt);
     layout.setPosition3(spring.now());
+    m_is_animated = true;
     return true;
 }
 
@@ -205,6 +208,13 @@ void Card::draw()
 
 
 
+}
+
+void Card::move2(ut::vec2 const& p)
+{
+    spring.setNow(layout.getPosition3());
+    spring.setDst({p.x, p.y, layout.getElevation()});
+    m_is_animated = true;
 }
 
 //RenderTexture2D Card::drawTexture()
@@ -262,6 +272,16 @@ Texture2D rowBadge(ng::UnitCard::Row x)
     return {};
 }
 
+static color nextColor()
+{
+    static size_t counter=0;
+
+    auto hue = float(counter++) * 100.0f + 120.0f;
+    hue = fmodf(hue, 360.0f);
+
+    return color(color::hsluv{hue, 80.0f, 80.0f, 1.0f});
+}
+
 Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
 {
     auto k = PRINTER("data/cards/%s", card.filename.c_str());
@@ -277,7 +297,7 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
             rowBadge(unit.row),
             abilityBadge(unit.ability),
             fonts::smallburgRegular64(),
-            RANDOM.nextColor()
+            nextColor()
         };
     }
 
@@ -287,7 +307,7 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
         {},
         {},
         fonts::smallburgRegular64(),
-        RANDOM.nextColor()
+        nextColor()
     };
 }
 
@@ -298,3 +318,15 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
 //
 //    return card;
 //}
+
+//
+// CardRef -> Implementation
+//
+
+bool CardRef::inTank() const { return TANK.hasCard(id); }
+
+Card& CardRef::operator*() { return TANK.getCard(id); }
+Card const& CardRef::operator*() const { return TANK.getCard(id); }
+
+Card* CardRef::operator->() { return &TANK.getCard(id); }
+Card const* CardRef::operator->() const { return &TANK.getCard(id); }

@@ -31,7 +31,7 @@ namespace game::asset_loaders
 
     struct FontKey
     {
-        ut::cstrview filename; size_t font_size;
+        std::string filename; size_t font_size;
         RECORD_DECLS(FontKey, filename, font_size);
     };
 

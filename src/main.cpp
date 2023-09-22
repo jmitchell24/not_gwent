@@ -859,10 +859,10 @@ struct TankDemo
         gb2.layout(bounds);
     }
 
-    void update()
+    void update(float dt)
     {
 
-        gb2.update(GetFrameTime());
+        gb2.update(dt);
     }
 
     void draw()
@@ -924,8 +924,12 @@ int main()
         VIRT.layout(real_viewport, VIRT_WIDTH, VIRT_HEIGHT);
         VIRT.begin();
 
-        gg.update();
+        float dt = GetFrameTime();///10;
+        gg.update(dt);
+        TANK.update(dt);
+
         gg.draw();
+        TANK.draw();
 
         VIRT.end();
 
@@ -945,6 +949,10 @@ int main()
 
             ImGui::Begin(game_t::DEBUG_LABEL);
             gg.drawDebug(game_t::DEBUG_LABEL);
+            ImGui::End();
+
+            ImGui::Begin("tank");
+            TANK.drawDebug();
             ImGui::End();
         }
         rlImGuiEnd();

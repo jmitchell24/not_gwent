@@ -29,14 +29,28 @@ using namespace ut;
 // CardTank -> Implementation
 //
 
-Card& CardTank::getCard(cardid_t id)
+CardTank::CardTank()
+{}
+
+CardTank& CardTank::instance()
 {
-    return m_cards[indexFromId(id)];
+    static CardTank x;
+    return x;
+}
+
+bool CardTank::hasCard(CardID id) const
+{
+    return m_map.find(id.value) != m_map.end();
+}
+
+Card& CardTank::getCard(CardID id)
+{
+    return m_cards[getIndex(id)];
 }
 
 Card& CardTank::addCard(Card card)
 {
-    card.m_id     = nextIdValue();
+    card.m_id     = CardID{nextIdValue()};
     card.m_order  = nextOrderValue();
 
     m_map[card.m_id.value] = m_cards.size();
@@ -45,15 +59,17 @@ Card& CardTank::addCard(Card card)
     return m_cards.back();
 }
 
-void CardTank::removeCard(cardid_t id)
+void CardTank::removeCard(CardID id)
 {
-    m_cards.erase(m_cards.begin() + (ssize_t)indexFromId(id));
+    m_cards.erase(m_cards.begin() + (ssize_t)getIndex(id));
     rebuildMap();
 
-    m_old_ids.push_back(id);
+    m_old_ids.push_back(id.value);
 }
 
-void CardTank::elevateCard(cardid_t id)
+
+
+void CardTank::elevateCard(CardID id)
 {
     getCard(id).m_order = nextOrderValue();
     reorderCards();
@@ -72,18 +88,30 @@ void CardTank::draw()
         it.draw();
     }
 
-    for (auto&& it: m_cards)
+    if (VIRT.isRectDebugEnabled())
     {
-        auto r = it.layout.getRect();
-        drawTextTCtoTC(r, 15, PRINTER("%d", it.m_id.value), colors::salmon);
-        drawTextBCtoBC(r, 15, PRINTER("%d", it.m_order), colors::cyan);
+        for (auto&& it: m_cards)
+        {
+            auto r = it.layout.getRect();
+            drawTextTCtoTC(r, 15, PRINTER("%d", it.m_id.value), colors::salmon);
+            drawTextBCtoBC(r, 15, PRINTER("%d", it.m_order), colors::cyan);
+
+            if (it.isMoving())
+            {
+                drawRect(it.getDrawRect(), colors::red.withNormalA(0.33f));
+            }
+        }
+
+
     }
+
+
 }
 
 void CardTank::drawDebug()
 {
     ImGui::LabelText("m_next_order_value", "%zu", m_next_order_value);
-    ImGui::LabelText("m_next_id_value", "%zu", m_next_id_value.value);
+    ImGui::LabelText("m_next_id_value", "%zu", m_next_id_value);
 
     ImGui::LabelText("m_cards.size()", "%zu", m_cards.size());
     ImGui::LabelText("m_map.size()", "%zu", m_map.size());
@@ -92,10 +120,8 @@ void CardTank::drawDebug()
 
 }
 
-size_t CardTank::indexFromId(cardid_t id)
+size_t CardTank::getIndex(CardID id)
 {
-    assert(id.isValid());
-
     auto it = m_map.find(id.value);
 
     assert(it != m_map.end());
@@ -104,16 +130,26 @@ size_t CardTank::indexFromId(cardid_t id)
     return it->second;
 }
 
+bool CardTank::tryGetIndex(CardID id, size_t &idx)
+{
+    if (auto it = m_map.find(id.value); it != m_map.end())
+    {
+        idx = it->second;
+        return true;
+    }
+    return false;
+}
+
 size_t CardTank::nextOrderValue()
 {
     return m_next_order_value++;
 }
 
-cardid_t CardTank::nextIdValue()
+CardTank::id_type CardTank::nextIdValue()
 {
     if (m_old_ids.empty())
         return m_next_id_value++;
-    cardid_t id = m_old_ids.back();
+    auto id = m_old_ids.back();
     m_old_ids.pop_back();
     return id;
 }
@@ -153,10 +189,10 @@ Card& CardTank::addTestCard()
     return addCard(card);
 }
 
-cardidlist_t CardTank::addTestCards(size_t n)
+cardrefs_t CardTank::addTestCards(size_t n)
 {
-    cardidlist_t cardids;
+    cardrefs_t list;
     for (size_t i = 0; i < n; ++i)
-        cardids.push_back(addTestCard().m_id);
-    return cardids;
+        list.emplace_back(addTestCard().ref());
+    return list;
 }

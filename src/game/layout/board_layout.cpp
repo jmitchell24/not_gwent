@@ -2,7 +2,8 @@
 // Created by james on 9/11/23.
 //
 
-#include "board_layout.hpp"
+#include "game/layout/board_layout.hpp"
+#include "game/layout/card_layout.hpp"
 using namespace game::layout;
 
 
@@ -135,33 +136,37 @@ void GameBoard::layout(rect const& b)
     auto [b_stats_cpu, b_weather, b_stats_usr] = b_stats.splitNV<3>(VIRT_PAD);
 
     bounds = b;
-    player_cpu       .layout(b_cards.col(8, 0, {.inner_pad=VIRT_PAD}));
-    combat_cpu_siege .layout(b_cards.col(8, 1, {.inner_pad=VIRT_PAD}));
-    combat_cpu_ranged.layout(b_cards.col(8, 2, {.inner_pad=VIRT_PAD}));
-    combat_cpu_melee .layout(b_cards.col(8, 3, {.inner_pad=VIRT_PAD}));
-    combat_usr_siege .layout(b_cards.col(8, 4, {.inner_pad=VIRT_PAD}));
-    combat_usr_ranged.layout(b_cards.col(8, 5, {.inner_pad=VIRT_PAD}));
-    combat_usr_melee .layout(b_cards.col(8, 6, {.inner_pad=VIRT_PAD}));
-    player_usr       .layout(b_cards.col(8, 7, {.inner_pad=VIRT_PAD}));
-    stats_cpu        .layout(b_stats_cpu);
-    weather          .layout(b_weather);
-    stats_usr        .layout(b_stats_usr);
+
+    cpu.player.layout(b_cards.col(8, 0, {.inner_pad=VIRT_PAD}));
+    cpu.siege .layout(b_cards.col(8, 1, {.inner_pad=VIRT_PAD}));
+    cpu.ranged.layout(b_cards.col(8, 2, {.inner_pad=VIRT_PAD}));
+    cpu.melee .layout(b_cards.col(8, 3, {.inner_pad=VIRT_PAD}));
+    usr.melee .layout(b_cards.col(8, 4, {.inner_pad=VIRT_PAD}));
+    usr.ranged.layout(b_cards.col(8, 5, {.inner_pad=VIRT_PAD}));
+    usr.siege .layout(b_cards.col(8, 6, {.inner_pad=VIRT_PAD}));
+    usr.player.layout(b_cards.col(8, 7, {.inner_pad=VIRT_PAD}));
+
+    cpu.stats .layout(b_stats_cpu);
+    weather   .layout(b_weather);
+    usr.stats .layout(b_stats_usr);
+
+    card_size = CardLayout::sizeFromHeight(usr.player.bounds.height());
 }
 
 void GameBoard::drawDebug()
 {
     DRECT_PUSH2(GameBoard,bounds);
-    player_cpu       .drawDebug();
-    combat_cpu_siege .drawDebug();
-    combat_cpu_ranged.drawDebug();
-    combat_cpu_melee .drawDebug();
-    combat_usr_siege .drawDebug();
-    combat_usr_ranged.drawDebug();
-    combat_usr_melee .drawDebug();
-    player_usr       .drawDebug();
-    stats_cpu        .drawDebug();
-    weather          .drawDebug();
-    stats_usr        .drawDebug();
+    cpu.player.drawDebug();
+    cpu.siege .drawDebug();
+    cpu.ranged.drawDebug();
+    cpu.melee .drawDebug();
+    usr.melee .drawDebug();
+    usr.ranged.drawDebug();
+    usr.siege .drawDebug();
+    usr.player.drawDebug();
+    cpu.stats .drawDebug();
+    weather   .drawDebug();
+    usr.stats .drawDebug();
     DRECT_POP();
 }
 

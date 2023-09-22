@@ -107,6 +107,9 @@ namespace gfx
         inline void drawDebug()
         { DebugRectManager::instance().drawDebug(); }
 
+        inline bool isRectDebugEnabled()
+        { return DebugRectManager::instance().enabled; }
+
         //
         // Singleton accessor
         //

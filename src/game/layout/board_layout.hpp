@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "game/layout/row_layout.hpp"
-
 #include <ut/math.hpp>
 
 namespace game::layout
@@ -35,6 +33,7 @@ namespace game::layout
     struct WeatherBoard
     {
         ut::rect bounds;
+
         void layout(ut::rect const& b);
         void drawDebug();
     };
@@ -60,21 +59,20 @@ namespace game::layout
 
     struct GameBoard
     {
+        struct Player
+        {
+            CombatRow   siege;
+            CombatRow   ranged;
+            CombatRow   melee;
+            PlayerRow   player;
+            StatsBoard  stats;
+        };
+
         ut::rect bounds;
 
-        CombatRow combat_cpu_siege;
-        CombatRow combat_cpu_ranged;
-        CombatRow combat_cpu_melee;
+        ut::vec2 card_size;
 
-        CombatRow combat_usr_siege;
-        CombatRow combat_usr_ranged;
-        CombatRow combat_usr_melee;
-
-        PlayerRow player_cpu;
-        PlayerRow player_usr;
-
-        StatsBoard stats_cpu;
-        StatsBoard stats_usr;
+        Player usr, cpu;
 
         WeatherBoard weather;
 

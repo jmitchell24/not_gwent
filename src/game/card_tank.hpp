@@ -6,8 +6,9 @@
 
 #include "record.hpp"
 
-#include "game/card_mover.hpp"
-#include "game/layout/row_layout.hpp"
+#include "game/card.hpp"
+
+#include <functional>
 
 #define ENUM_GAME_CARD_TANK_TARGETS \
     CASE(cpu_hand           , CPU_HAND          ) \
@@ -44,40 +45,93 @@ namespace game
     // - Use a single spring to control both position / elevation
     // - maintain an optional curve for automatic movement
 
-    using cardid_t      = Card::ID;
-    using cardlist_t    = std::vector<Card>;
-    using cardidlist_t  = std::vector<cardid_t >;
-    using cardidmap_t   = std::unordered_map<cardid_t::value_type, size_t>;
+    using cardrefs_t = std::vector<CardRef>;
 
     class CardTank
     {
     public:
+        static CardTank& instance();
+
+        bool    hasCard     (CardID id) const;
+        Card&   getCard     (CardID id);
+
         Card&   addCard     (Card card);
-        Card&   getCard     (cardid_t id);
-        void    removeCard  (cardid_t id);
-        void    elevateCard (cardid_t id);
+        void    removeCard  (CardID id);
+        void    elevateCard (CardID id);
+
+        Card&       addTestCard();
+        cardrefs_t  addTestCards(size_t n);
 
         void update(float dt);
         void draw();
         void drawDebug();
 
-        Card&           addTestCard();
-        cardidlist_t    addTestCards(size_t n);
+        template <typename T> void forEachCard(T&& callback)
+        {
+            for (auto&& it: m_cards)
+                std::invoke(callback, it.ref());
+        }
+
+        template <typename T> bool ifAllCards(T&& callback)
+        {
+            for (auto&& it : m_cards)
+                if (!static_cast<bool>(std::invoke(callback, it.ref())))
+                    return false;
+            return true;
+        }
+
+        template <typename T> bool ifAnyCard(T&& callback)
+        {
+            for (auto&& it : m_cards)
+                if (static_cast<bool>(std::invoke(callback, it.ref())))
+                    return true;
+            return false;
+        }
+
+        template <typename T> bool ifNoCard(T&& callback)
+        {
+            for (auto&& it : m_cards)
+                if (static_cast<bool>(std::invoke(callback, it.ref())))
+                    return false;
+            return true;
+        }
+
+        template <typename T> size_t countIfCard(T&& callback)
+        {
+            size_t cnt=0;
+            for (auto&& it: m_cards)
+            {
+                if (static_cast<bool>(std::invoke(callback, it.ref())))
+                    ++cnt;
+            }
+            return cnt;
+        }
 
     private:
-        size_t              m_next_order_value  = 0;
-        cardid_t            m_next_id_value     = cardid_t{1};
+        using cardlist_type = std::vector<Card>;
+        using id_type       = CardID::value_type;
+        using idlist_type   = std::vector<id_type>;
+        using idmap_type    = std::unordered_map<id_type, size_t>;
 
-        cardlist_t          m_cards;
-        cardidmap_t         m_map;
-        cardidlist_t        m_old_ids;
+        size_t          m_next_order_value  = 0;
+        id_type         m_next_id_value = 1;
 
-        size_t      indexFromId(cardid_t id);
-        size_t      nextOrderValue();
-        cardid_t    nextIdValue();
-        void        rebuildMap();
-        void        reorderCards();
+        cardlist_type   m_cards;
+        idmap_type      m_map;
+        idlist_type     m_old_ids;
+
+        CardTank();
+
+        size_t          getIndex(CardID id);
+        bool            tryGetIndex(CardID id, size_t& idx);
+
+        size_t          nextOrderValue();
+        id_type         nextIdValue();
+        void            rebuildMap();
+        void            reorderCards();
     };
+
+    static CardTank& TANK = CardTank::instance();
 }
 
 
