@@ -1,7 +1,12 @@
 #include "gfx/gfx_dbg.hpp"
-#include "rlImGui/imgui/imgui_extra.hpp"
+#include "rlImGui/imgui/imgui_mods.hpp"
 using namespace gfx;
 
+#include "rlImGui/imgui/imgui_mods.hpp"
+
+//
+//
+//
 using namespace ut;
 
 //
@@ -12,7 +17,7 @@ DebugRectManager::DebugRectManager() :
     m_root_tag      {true, false, "", {}, 0},
     m_label         {""},
     m_draws         { },
-    m_im_style      {ImGuiDebugRectangleStyle_Simple}
+    m_im_style      {ImGuiDRECTStyle_NoText}
 {}
 
 DebugRectManager& DebugRectManager::instance()
@@ -61,8 +66,9 @@ void DebugRectManager::drawDebug()
 {
     for (auto& p: m_draws)
     {
-        auto draw_flags = p.highlighted ? ImGuiDebugRectangleStyle_Full : (ImGuiDebugRectangleStyle_)m_im_style;
-        ImGui::DrawDebugRectangle(p.text, p.bound, p.color.withNormalA(0.5f), draw_flags);
+        auto c = p.color.withNormalA(p.highlighted ? 0.5f : 0.0f);
+        auto f = p.highlighted ? m_im_style : ImGuiDRECTStyle_NoText;
+        ImGui::DrawDRECT(p.text, p.bound, c, f);
     }
 
     m_draws.clear();
@@ -72,10 +78,13 @@ void DebugRectManager::drawDebug()
 
     if (enabled)
     {
-        ImGui::RadioButton("Default", &m_im_style, ImGuiDebugRectangleStyle_Default);
-        ImGui::SameLine();
-        ImGui::RadioButton("No Label", &m_im_style, ImGuiDebugRectangleStyle_Simple);
-        ImGui::SameLine();
+        ImGui::RadioButton("NoText", &m_im_style, ImGuiDRECTStyle_NoText);
+        ImGui::SameLine(125);
+        ImGui::RadioButton("LabelOnly", &m_im_style, ImGuiDRECTStyle_LabelOnly);
+
+        ImGui::RadioButton("ValueOnly", &m_im_style, ImGuiDRECTStyle_ValueOnly);
+        ImGui::SameLine(125);
+        ImGui::RadioButton("FullText", &m_im_style, ImGuiDRECTStyle_FullText);
 
         if (ImGui::Button("Enable All"))
         {
@@ -89,7 +98,6 @@ void DebugRectManager::drawDebug()
             m_root_tag.disableAll();
         }
 
-        float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
         ImGuiTableFlags table_flags =
                 ImGuiTableFlags_BordersV        |
                 ImGuiTableFlags_BordersOuterH   |
@@ -97,12 +105,10 @@ void DebugRectManager::drawDebug()
                 ImGuiTableFlags_RowBg           |
                 ImGuiTableFlags_NoBordersInBody;
 
-
         if (ImGui::BeginTable("rectangles", 2, table_flags))
         {
-            // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
-            ImGui::TableSetupColumn("Label"     , ImGuiTableColumnFlags_NoHide);
-            ImGui::TableSetupColumn("Enabled"   , ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 18.0f);
+            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
 
             for (auto&& it : m_root_tag.child_tags)

@@ -33,7 +33,6 @@ using namespace std;
 #include "gfx/gfx_easings.hpp"
 #include "gfx/gfx_draw.hpp"
 #include "conv.hpp"
-
 using namespace gfx;
 
 //
@@ -172,7 +171,12 @@ void Card::draw()
     //auto shadow_sz  = ( (layout.getElevation() - layout.ELEVATION_DROP) / (layout.ELEVATION_GRAB - layout.ELEVATION_DROP) ) * r_pad;
     //drawShadow(r, vec2(shadow_sz), shadow_sz + r_pad/2);
 
-    VIRT.drawTexturePro(assets.artwork, r, c);
+    VIRT.drawTexturePro(assets.card, r, colors::white);
+    VIRT.drawTexturePro(assets.artwork,
+                        r.anchorCCtoCC(r.size()*.85), colors::white);
+
+
+
 
     auto r_stats            = r.col(10, 7, {.h=3});
     auto r_stat_strength    = r_stats.row(3,0, {.inner_pad=r_pad, .outer_pad=r_pad});
@@ -181,23 +185,19 @@ void Card::draw()
 
 
 
-    VIRT.drawRectangle(r_stats, outer.withL(15).withA(0.85).toColor());
+    //VIRT.drawRectangle(r_stats, outer.withL(15).withA(0.85).toColor());
 
     if (ng.isUnitCard())
     {
         auto& unit = ng.asUnitCard();
-        VIRT.drawTextBCtoBC(assets.font, r_stat_strength, PRINTER("%d", unit.strength), outer.toColor());
+        drawTextBCtoBC(assets.font, r_stat_strength, PRINTER("%d", unit.strength), outer.toColor());
     }
 
     if (assets.hasRow())
-        gfx::drawTextureFit(assets.row, r_stat_row, c);
+        drawTextureFit(assets.row, r_stat_row, c);
 
     if (assets.hasAbility())
-        gfx::drawTextureFit(assets.ability, r_stat_ability, c);
-
-    VIRT.drawRectangleLines(r, 2.0f, outer.toColor());
-
-    //rlPopMatrix();
+        drawTextureFit(assets.ability, r_stat_ability, c);
 
     DRECT_PUSH2(Card, r);
     DRECT1(r_stats);
@@ -205,8 +205,10 @@ void Card::draw()
     DRECT1(r_stat_ability);
     DRECT1(r_stat_strength);
     DRECT_POP();
+}
 
-
+void Card::drawDebug()
+{
 
 }
 
@@ -285,7 +287,7 @@ static color nextColor()
 Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
 {
     auto k = PRINTER("data/cards/%s", card.filename.c_str());
-    Texture2D artwork = TEXTURES.get(k.c_str());
+    Texture2D artwork = CARD_TEXTURES.get(k.c_str());
 
     if (card.isUnitCard())
     {
@@ -294,6 +296,7 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
         return
         {
             artwork,
+            game::textures::card_back_neutral(),
             rowBadge(unit.row),
             abilityBadge(unit.ability),
             fonts::smallburgRegular64(),
@@ -304,6 +307,7 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
     return
     {
         artwork,
+        game::textures::card_back_neutral(),
         {},
         {},
         fonts::smallburgRegular64(),

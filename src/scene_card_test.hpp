@@ -8,7 +8,7 @@
 #include "game/card.hpp"
 #include "ng/ng_card_data.hpp"
 
-#include "rlImGui/imgui/imgui_extra.hpp"
+#include "rlImGui/imgui/imgui.h"
 
 
 class SceneCardTest : public Scene
@@ -21,7 +21,8 @@ public:
     void layout(ut::rect const& b) override
     {
         card.layout = game::layout::CardLayout::fromRect(b.anchorCCtoCC(b.size() * .8));
-        card.assets = game::Card::Assets::fromNgCard(ng::cards::neutral_avallach);
+        card.ng     = ng::cards::neutral_avallach;
+        card.assets = game::Card::Assets::fromNgCard(card.ng);
     }
 
     void update(float dt) override

@@ -10,7 +10,7 @@
 
 using namespace game;
 
-#include "rlImGui/imgui/imgui_extra.hpp"
+#include "rlImGui/imgui/imgui.h"
 
 //
 // gfx

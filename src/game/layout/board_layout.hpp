@@ -25,6 +25,7 @@ namespace game::layout
         ut::rect hand;
         ut::rect deck;
         ut::rect yard;
+        ut::rect lead;
 
         void layout(ut::rect const& b);
         void drawDebug();
@@ -46,12 +47,10 @@ namespace game::layout
         ut::rect deck_name;
         ut::rect gems;
         ut::rect gems_label;
-        ut::rect hand_count;
-        ut::rect hand_count_label;
         ut::rect score;
         ut::rect score_label;
         ut::rect avatar;
-        ut::rect leader;
+
 
         void layout(ut::rect const& b);
         void drawDebug();
@@ -70,7 +69,7 @@ namespace game::layout
 
         ut::rect bounds;
 
-        ut::vec2 card_size;
+        //ut::vec2 card_size;
 
         Player usr, cpu;
 

@@ -38,12 +38,15 @@
     CASE(card_back_syndicate      ,     "data/board/card_back_syndicate.png")
 
 
+#define GAME_ENUM_TEXTURES_MISC \
+    CASE(card_blank_sm, "data/board/card_blank_sm.png")
 
 
-#define GAME_ENUM_TEXTURES      \
-    GAME_ENUM_TEXTURES_BADGES   \
-    GAME_ENUM_TEXTURES_CARD_BACKS
 
+#define GAME_ENUM_TEXTURES        \
+    GAME_ENUM_TEXTURES_BADGES     \
+    GAME_ENUM_TEXTURES_CARD_BACKS \
+    GAME_ENUM_TEXTURES_MISC
 
 namespace game::textures
 {

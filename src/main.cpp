@@ -27,8 +27,9 @@ using namespace gfx;
 #include "raylib.h"
 #include "rlgl.h"
 #include "rlImGui/rlImGui.h"
-#include "rlImGui/imgui/imgui_extra.hpp"
 #include "rlImGui/extras/IconsFontAwesome5.h"
+
+#include "rlImGui/imgui/imgui_mods.hpp"
 
 //
 // ut
@@ -105,8 +106,8 @@ private:
 };
 
 #define ENUM_SCENES \
-    CASE(SceneCardTest, scene1) \
-    CASE(SceneGameBoard2Test      , scene2)
+    CASE(SceneGameBoard2Test, scene1) \
+    CASE(SceneCardTest      , scene2)
 
 int main()
 {

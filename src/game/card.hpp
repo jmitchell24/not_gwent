@@ -86,6 +86,7 @@ namespace game
         struct Assets
         {
             Texture2D   artwork {};
+            Texture2D   card    {};
             Texture2D   row     {};
             Texture2D   ability {};
             Font        font    {};
@@ -119,8 +120,8 @@ namespace game
 
         void move2(ut::vec2 const& p);
 
-        void draw();
         bool update(float dt);
+        void draw();
         void drawDebug();
 
     private:

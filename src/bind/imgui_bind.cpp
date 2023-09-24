@@ -2,7 +2,7 @@
 using namespace bind;
 
 #include "rlImGui/extras/IconsFontAwesome5.h"
-#include "rlImGui/imgui/imgui_extra.hpp"
+#include "rlImGui/imgui/imgui.h"
 
 #include <cassert>
 using namespace std;

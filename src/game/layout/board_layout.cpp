@@ -56,9 +56,10 @@ void CombatRow::drawDebug()
 void PlayerRow::layout(rect const& b)
 {
     bounds  = b;
-    deck    = b.row(7, 0, {.inner_pad=VIRT_PAD});
-    hand    = b.row(7, 1, {.w=5, .inner_pad=VIRT_PAD});
-    yard    = b.row(7, 6, {.inner_pad=VIRT_PAD});
+    lead    = b.row(8, 0, {.inner_pad=VIRT_PAD});
+    deck    = b.row(8, 1, {.inner_pad=VIRT_PAD});
+    hand    = b.row(8, 2, {.w=5, .inner_pad=VIRT_PAD});
+    yard    = b.row(8, 7, {.inner_pad=VIRT_PAD});
 }
 
 void PlayerRow::drawDebug()
@@ -67,6 +68,7 @@ void PlayerRow::drawDebug()
     DRECT1(hand);
     DRECT1(deck);
     DRECT1(yard);
+    DRECT1(lead);
     DRECT_POP();
 }
 
@@ -97,15 +99,12 @@ void StatsBoard::layout(rect const& b)
     deck_name           = CELL(0,1, 3,1);
 
     gems_label          = CELL(0,2, 1,1);
-    hand_count_label    = CELL(1,2, 1,1);
     score_label         = CELL(2,2, 1,1);
 
     gems                = CELL(0,3, 1,1);
-    hand_count          = CELL(1,3, 1,1);
     score               = CELL(2,3, 1,1);
 
     avatar              = CELL(0,4, 1,2);
-    leader              = CELL(2,4, 1,2);
 #undef CELL
 }
 
@@ -115,13 +114,10 @@ void StatsBoard::drawDebug()
     DRECT1(name);
     DRECT1(deck_name);
     DRECT1(gems_label);
-    DRECT1(hand_count_label);
     DRECT1(score_label);
     DRECT1(gems);
-    DRECT1(hand_count);
     DRECT1(score);
     DRECT1(avatar);
-    DRECT1(leader);
     DRECT_POP();
 }
 
@@ -150,7 +146,7 @@ void GameBoard::layout(rect const& b)
     weather   .layout(b_weather);
     usr.stats .layout(b_stats_usr);
 
-    card_size = CardLayout::sizeFromHeight(usr.player.bounds.height());
+    //card_size = CardLayout::sizeFromHeight(usr.player.bounds.height());
 }
 
 void GameBoard::drawDebug()

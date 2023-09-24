@@ -78,6 +78,9 @@ namespace game
     [[maybe_unused]] static AssetStoreX<asset_loaders::Texture2DLoader>& TEXTURES =
             AssetStoreX<asset_loaders::Texture2DLoader>::instance();
 
+    [[maybe_unused]] static AssetStoreX<asset_loaders::CardTextureLoader>& CARD_TEXTURES =
+            AssetStoreX<asset_loaders::CardTextureLoader>::instance();
+
     [[maybe_unused]] static AssetStoreX<asset_loaders::FontLoader>& FONTS =
             AssetStoreX<asset_loaders::FontLoader>::instance();
 }

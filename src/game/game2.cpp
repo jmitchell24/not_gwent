@@ -8,7 +8,7 @@ using namespace game;
 
 #include "ng/ng_card_data.hpp"
 
-#include "rlImGui/imgui/imgui_extra.hpp"
+#include "rlImGui/imgui/imgui_mods.hpp"
 
 #include "game/assets.hpp"
 

@@ -1,4 +1,4 @@
-#include "imgui_extra.hpp"
+#include "imgui_mods.hpp"
 #include "rlImGui/imgui/imgui.h"
 #include "rlImGui/imgui/imgui_internal.h"
 
@@ -6,6 +6,10 @@
 using namespace ut;
 
 #include "assert.hpp"
+
+#define lbl_    ut::cstrparam
+#define rect_   ut::rectf const&
+#define color_  ut::color const&
 
 //
 // Struct
@@ -100,57 +104,64 @@ ImU32 ToU32(color::hsv      const& hsv  ) { return ToU32(hsv.toNormal()); }
 ImU32 ToU32(color::hsluv    const& hsluv) { return ToU32(hsluv.toNormal()); }
 ImU32 ToU32(color           const& col  ) { return ToU32(col.toNormal()); }
 
-void ImGui::DrawDebugRectangle(cstrparam lbl, rectf const& rect, color const& col, ImGuiDebugRectangleStyle style, cstrparam format)
+void ImGui::DrawDRECT(lbl_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
 {
-    ImGuiContext&   g = *GImGui;
+    //ImGuiContext&   g = *GImGui;
     ImGuiStyle&     s = ImGui::GetStyle();
 
-    auto hsluv = col.toHSLUV();
+    auto hsluv      = col.toHSLUV();
+    ImU32 c_border  = ToU32(hsluv.opaque().withL(85.0f));
+    ImU32 c_text    = ToU32(hsluv.opaque().withL(100.0f));
+    ImU32 c_bg      = ToU32(hsluv.withA(0.5f).withL(50.0f));
 
-    ImU32 c_border  = ToU32(hsluv.opaque().withL(85.0f));          //GetColorU32(ImGuiCol_Border);
-    ImU32 c_text    = ToU32(hsluv.opaque().withL(100.0f));         //GetColorU32(ImGuiCol_Text);
-    ImU32 c_bg      = ToU32(hsluv.withL(50.0f));                   //GetColorU32(ImGuiCol_TableHeaderBg);
-
-    strview sv
-    {
-        g.TempBuffer,
-        g.TempBuffer + ImFormatString(g.TempBuffer, IM_ARRAYSIZE(g.TempBuffer),
-            format.c_str(), lbl.c_str(), rect.min.x, rect.min.y, rect.width(), rect.height())
-    };
-
-    auto [txt_w, txt_h] = ImGui::CalcTextSize(sv.begin(), sv.end());
-
-    txt_w += s.CellPadding.x*2;
-    txt_h += s.CellPadding.y*2;
-
-    auto dl = ImGui::GetForegroundDrawList();
-    auto r = rect.round();
-
+    cstrview sv;
     switch (style)
     {
-        case ImGuiDebugRectangleStyle_Default:
-            dl->AddRect({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_border);
-
-            r.size(txt_w, txt_h);
-            dl->AddRectFilled({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_bg);
-            dl->AddRect({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_border);
-
-            dl->AddText({r.min.x+s.CellPadding.x, r.min.y+s.CellPadding.y}, c_text, sv.begin(), sv.end());
+        case ImGuiDRECTStyle_NoText:
+            sv = ""_sv;
             break;
-
-        case ImGuiDebugRectangleStyle_Full:
-            dl->AddRect({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_border);
-            dl->AddRectFilled({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_bg);
-            dl->AddRect({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_border);
-
-            dl->AddText({r.min.x+s.CellPadding.x, r.min.y+s.CellPadding.y}, c_text, sv.begin(), sv.end());
+        case ImGuiDRECTStyle_LabelOnly:
+            sv = lbl;
             break;
-
-        case ImGuiDebugRectangleStyle_Simple:
-            dl->AddRect({r.min.x, r.min.y}, {r.max.x, r.max.y}, c_border);
+        case ImGuiDRECTStyle_ValueOnly:
+            sv = PRINTER("%.0f,%.0f [%.0fx%.0f]", r.x(), r.y(), r.width(), r.height());
             break;
+        case ImGuiDRECTStyle_FullText:
+            sv = PRINTER("%s - %.0f,%.0f [%.0fx%.0f]", lbl.c_str(), r.x(), r.y(), r.width(), r.height());
+            break;
+        default:assert_case(ImGuiDRECTStyle_);
+    }
 
-        default: assert_case(ImGuiDebugRectangleStyle_);
+    auto dl = ImGui::GetForegroundDrawList();
+    auto rr = r.round();
+
+    auto has_fill   = col.a > 0;
+    auto has_text   = style != ImGuiDRECTStyle_NoText;
+
+    if (has_fill)
+    {
+        dl->AddRect         (rr.min, rr.max, c_border);
+        dl->AddRectFilled   (rr.min, rr.max, c_bg);
+        dl->AddRect         (rr.min, rr.max, c_border);
+
+        if (has_text)
+        {
+            dl->AddText(r.min + s.CellPadding, c_text, sv.begin(), sv.end());
+        }
+    }
+    else
+    {
+        dl->AddRect(rr.min, rr.max, c_border);
+
+        if (has_text)
+        {
+            auto txt_sz = ( vec2f(s.CellPadding) * 2 ) + ImGui::CalcTextSize(sv.begin(), sv.end());
+
+            rr.size(txt_sz);
+            dl->AddRectFilled(rr.min, rr.max, c_bg);
+            dl->AddRect(rr.min, rr.max, c_border);
+            dl->AddText(r.min + s.CellPadding, c_text, sv.begin(), sv.end());
+        }
     }
 }
 
@@ -165,3 +176,7 @@ void ImGui::PopItemDisabled()
     ImGui::PopItemFlag();
     ImGui::PopStyleVar();
 }
+
+#undef lbl_
+#undef rect_
+#undef color_

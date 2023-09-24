@@ -12,21 +12,26 @@
 #define STRUCT_FIELD(__x__) ImGui::StructFieldFmt(#__x__, "{}", __y__.__x__);
 #define STRUCT_END          ImGui::EndStruct(); }
 
-//#define IM_DEBUG_RECTANGLE_FORMAT "\"%s\" %.0f,%.0f [%.0fx%.0f]"
-#define IM_DEBUG_RECTANGLE_FORMAT "%s"
+//#define IM_DEBUG_RECTANGLE_FORMAT "%s - %.0f,%.0f [%.0fx%.0f]"
+//#define IM_DEBUG_RECTANGLE_FORMAT "%s"
 
 //
 // enums
 //
 
-enum ImGuiDebugRectangleStyle_
+enum ImGuiDRECTStyle_
 {
-    ImGuiDebugRectangleStyle_Default,
-    ImGuiDebugRectangleStyle_Full,
-    ImGuiDebugRectangleStyle_Simple
+    ImGuiDRECTStyle_NoText,
+    ImGuiDRECTStyle_LabelOnly,
+    ImGuiDRECTStyle_ValueOnly,
+    ImGuiDRECTStyle_FullText
 };
 
-using ImGuiDebugRectangleStyle = int;
+using ImGuiDRECTStyle = int;
+
+#define lbl_    ut::cstrparam
+#define rect_   ut::rectf const&
+#define color_  ut::color const&
 
 namespace ImGui
 {
@@ -63,10 +68,9 @@ namespace ImGui
     void PopItemDisabled();
 
 
-
-    void DrawDebugRectangle(ut::cstrparam lbl, ut::rectf const& r, ut::color const& col,
-        ImGuiDebugRectangleStyle style = ImGuiDebugRectangleStyle_Full,
-        ut::cstrparam format = IM_DEBUG_RECTANGLE_FORMAT);
-
-
+    void DrawDRECT(lbl_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style = ImGuiDRECTStyle_NoText);
 }
+
+#undef lbl_
+#undef rect_
+#undef color_

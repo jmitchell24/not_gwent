@@ -29,6 +29,19 @@ namespace game::asset_loaders
         static value_type errorValue();
     };
 
+    struct CardTextureLoader
+    {
+        using key_type = std::string;
+        using value_type = Texture2D;
+        static value_type load(key_type const& k);
+        static bool isReady(value_type const& v);
+        static value_type errorValue();
+
+    private:
+        static Image paperImage();
+        static Image paperMaskImage();
+    };
+
     struct FontKey
     {
         std::string filename; size_t font_size;

@@ -37,7 +37,7 @@ void BoardBoss::stackToRow(BoardStack& stack, BoardRow& row, size_t idx)
         return;
 
     CardRef ref = stack.popCard();
-    row.addCard(0, ref);
+    row.addCard(idx, ref);
     TANK.elevateCard(ref.id);
 }
 
