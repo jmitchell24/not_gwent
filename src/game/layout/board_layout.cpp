@@ -55,10 +55,10 @@ void CombatRow::drawDebug()
 
 void PlayerRow::layout(rect const& b)
 {
-    bounds    = b;
-    deck      = b.row(7, 0, {.inner_pad=VIRT_PAD});
-    hand      = b.row(7, 1, {.w=5, .inner_pad=VIRT_PAD});
-    graveyard = b.row(7, 6, {.inner_pad=VIRT_PAD});
+    bounds  = b;
+    deck    = b.row(7, 0, {.inner_pad=VIRT_PAD});
+    hand    = b.row(7, 1, {.w=5, .inner_pad=VIRT_PAD});
+    yard    = b.row(7, 6, {.inner_pad=VIRT_PAD});
 }
 
 void PlayerRow::drawDebug()
@@ -66,7 +66,7 @@ void PlayerRow::drawDebug()
     DRECT_PUSH2(PlayerRow,bounds);
     DRECT1(hand);
     DRECT1(deck);
-    DRECT1(graveyard);
+    DRECT1(yard);
     DRECT_POP();
 }
 

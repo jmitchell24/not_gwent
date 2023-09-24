@@ -6,58 +6,42 @@
     TODO: lookup how to do vertex arrays in rlgl. Use to build shadow shape.
     TODO: implement ng::Card as the data for game::Card
     TODO: Compound Tween (like spline segments but built out of easings)
+    TODO: https://github.com/Rabios/awesome-raylib
 */
 
-
 //
-// ng
+// scene
 //
-#include "ng/ng_game_solver.hpp"
-
-//
-// game
-//
-#include "game/conv.hpp"
-#include "game/game.hpp"
-#include "game/card_tank.hpp"
-#include "game/layout/board_layout.hpp"
-#include "game/game2.hpp"
-
-#include "game/assets.hpp"
-
-using namespace game;
+#include "scene_game.hpp"
+#include "scene_card_test.hpp"
 
 //
 // gfx
 //
 #include "gfx/gfx_virt2d.hpp"
-#include "gfx/gfx_draw.hpp"
-#include "gfx/gfx_curves.hpp"
-#include "gfx/gfx_spring.hpp"
-#include "gfx/gfx_tween.hpp"
-#include "gfx/gfx_spinner.hpp"
-
 using namespace gfx;
 
 //
-// ut
+// raylib
 //
-using namespace ut;
-
-//
-// std
-//
-#include <optional>
-
-using namespace std;
-
 #include "raylib.h"
 #include "rlgl.h"
 #include "rlImGui/rlImGui.h"
 #include "rlImGui/imgui/imgui_extra.hpp"
 #include "rlImGui/extras/IconsFontAwesome5.h"
 
-//#include <lua.hpp>
+//
+// ut
+//
+#include <ut/math.hpp>
+using namespace ut;
+
+//
+// std
+//
+#include <memory>
+#include <vector>
+using namespace std;
 
 size_t constexpr static SCREEN_WIDTH = 1920;
 size_t constexpr static SCREEN_HEIGHT = 1080;
@@ -66,6 +50,143 @@ size_t constexpr static VIRT_WIDTH = 1280;
 size_t constexpr static VIRT_HEIGHT = 720;
 size_t constexpr static VIRT_PAD = 10;
 
+class Stage
+{
+public:
+    using scenelist_type = std::vector<Scene*>;
+
+    Stage(initializer_list<Scene*> const& scenes)
+        : m_scenes{scenes}, m_selected{m_scenes.front()}
+    { assert(!m_scenes.empty()); }
+
+    void layout(rect const& b)
+    {
+        for (auto&& it : m_scenes)
+            it->layout(b);
+    }
+
+    void update()
+    {
+        m_selected->update(GetFrameTime());
+    }
+
+    void draw()
+    {
+        m_selected->draw();
+    }
+
+    void drawDebug()
+    {
+        ImGui::Begin("Stage");
+        ImGui::Value("FPS", GetFPS());
+        ImGui::Value("Frame MS", GetFrameTime());
+        ImGui::End();
+
+        ImGui::Begin("Scene");
+
+        for (auto&& it : m_scenes)
+        {
+            ImGui::SameLine();
+            if (ImGui::RadioButton(it->name(), m_selected == it))
+                m_selected = it;
+
+        }
+
+        ImGui::BeginChild(m_selected->name(), {0,0}, true);
+        m_selected->drawDebug();
+        ImGui::EndChild();
+
+        ImGui::End();
+    }
+
+private:
+    scenelist_type  m_scenes;
+    Scene*          m_selected;
+};
+
+#define ENUM_SCENES \
+    CASE(SceneCardTest, scene1) \
+    CASE(SceneGameBoard2Test      , scene2)
+
+int main()
+{
+    SetTargetFPS(120);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Definitely not Gwent");
+
+    rlImGuiBeginInitImGui();
+    rlImGuiAddFontAwesomeIconFonts(9);
+    rlImGuiReloadFonts();
+    rlImGuiEndInitImGui();
+
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+#define CASE(x_, y_) x_ y_;
+ENUM_SCENES
+#undef CASE
+
+    Stage stage
+    {
+#define CASE(x_, y_) &y_,
+ENUM_SCENES
+#undef CASE
+    };
+
+    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
+    stage.layout(window_bounds);
+
+//    lua_State* L = luaL_newstate();
+//    luaL_openlibs(L); // Open standard Lua libraries
+//
+//    int result = luaL_dofile(L, "data/scripts/myscript.lua");
+//    if (result != 0) {
+//        // Handle error
+//    }
+//
+//    lua_close(L);
+
+
+
+
+    while (!WindowShouldClose())
+    {
+        BeginDrawing();
+        ClearBackground(GRAY);
+
+        auto real_viewport = ImGui::GetDockspaceViewport();
+
+        VIRT.layout(real_viewport, VIRT_WIDTH, VIRT_HEIGHT);
+        VIRT.begin();
+
+        stage.update();
+        stage.draw();
+
+        VIRT.end();
+
+        rlDrawRenderBatchActive();
+
+        rlImGuiBegin();
+
+        {
+            ImGui::RenderDockspace();
+
+            ImGui::Begin("Graphics");
+            VIRT.drawDebug();
+            ImGui::End();
+
+            stage.drawDebug();
+        }
+        rlImGuiEnd();
+
+        EndDrawing();
+
+        //SwapScreenBuffer();
+    }
+
+    return EXIT_SUCCESS;
+}
+
+#if 0
 
 struct NgDemo
 {
@@ -127,8 +248,6 @@ struct NgDemo
 
     }
 };
-
-#if 0
 
 struct NgDemo
 {
@@ -849,118 +968,3 @@ struct CardDemo
 };
 
 #endif
-
-struct TankDemo
-{
-    GameBoard2 gb2;
-
-    void layout(ut::rect const& bounds)
-    {
-        gb2.layout(bounds);
-    }
-
-    void update(float dt)
-    {
-
-        gb2.update(dt);
-    }
-
-    void draw()
-    {
-        gb2.draw();
-    }
-
-    static constexpr cstrview DEBUG_LABEL= "CardTank Demo";
-    void drawDebug(cstrparam lbl)
-    {
-        gb2.drawDebug();
-    }
-};
-
-// https://github.com/Rabios/awesome-raylib
-using game_t = TankDemo;
-
-int main()
-{
-    SetTargetFPS(120);
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "not gwent");
-
-    rlImGuiBeginInitImGui();
-    rlImGuiAddFontAwesomeIconFonts(9);
-    rlImGuiReloadFonts();
-    rlImGuiEndInitImGui();
-
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
-
-    game_t gg;
-    gg.layout(window_bounds);
-
-//    lua_State* L = luaL_newstate();
-//    luaL_openlibs(L); // Open standard Lua libraries
-//
-//    int result = luaL_dofile(L, "data/scripts/myscript.lua");
-//    if (result != 0) {
-//        // Handle error
-//    }
-//
-//    lua_close(L);
-
-
-
-
-    while (!WindowShouldClose())
-    {
-        BeginDrawing();
-
-        ClearBackground(GRAY);
-
-
-
-        auto real_viewport = ImGui::GetDockspaceViewport();
-
-        VIRT.layout(real_viewport, VIRT_WIDTH, VIRT_HEIGHT);
-        VIRT.begin();
-
-        float dt = GetFrameTime();///10;
-        gg.update(dt);
-        TANK.update(dt);
-
-        gg.draw();
-        TANK.draw();
-
-        VIRT.end();
-
-
-
-        DrawFPS(10, 10);
-
-        rlDrawRenderBatchActive();
-
-        rlImGuiBegin();
-        {
-            ImGui::RenderDockspace();
-
-            ImGui::Begin("main_window");
-            VIRT.drawDebug();
-            ImGui::End();
-
-            ImGui::Begin(game_t::DEBUG_LABEL);
-            gg.drawDebug(game_t::DEBUG_LABEL);
-            ImGui::End();
-
-            ImGui::Begin("tank");
-            TANK.drawDebug();
-            ImGui::End();
-        }
-        rlImGuiEnd();
-
-        EndDrawing();
-
-        //SwapScreenBuffer();
-    }
-
-    return EXIT_SUCCESS;
-}

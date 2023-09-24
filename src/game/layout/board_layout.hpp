@@ -24,7 +24,7 @@ namespace game::layout
         ut::rect bounds;
         ut::rect hand;
         ut::rect deck;
-        ut::rect graveyard;
+        ut::rect yard;
 
         void layout(ut::rect const& b);
         void drawDebug();

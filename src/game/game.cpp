@@ -4,7 +4,6 @@
 
 using namespace game;
 
-#include "random.hpp"
 #include "assert.hpp"
 
 //

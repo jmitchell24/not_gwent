@@ -41,10 +41,6 @@ namespace game
 //    };
 
 
-    //TODO: Animation
-    // - Use a single spring to control both position / elevation
-    // - maintain an optional curve for automatic movement
-
     using cardrefs_t = std::vector<CardRef>;
 
     class CardTank
