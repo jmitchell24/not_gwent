@@ -28,7 +28,8 @@ void GameBoard2::layout(ut::rect const& bounds)
     usr.layout(gb.usr.player,
                gb.usr.melee,
                gb.usr.ranged,
-               gb.usr.siege);
+               gb.usr.siege,
+               gb.usr.stats);
 
     usr.deck.setTestCards(50);
 }

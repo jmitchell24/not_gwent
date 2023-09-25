@@ -56,10 +56,10 @@ void CombatRow::drawDebug()
 void PlayerRow::layout(rect const& b)
 {
     bounds  = b;
-    lead    = b.row(8, 0, {.inner_pad=VIRT_PAD});
-    deck    = b.row(8, 1, {.inner_pad=VIRT_PAD});
+    lead    = b.row(8, 0, {      .inner_pad=VIRT_PAD});
+    deck    = b.row(8, 1, {      .inner_pad=VIRT_PAD});
     hand    = b.row(8, 2, {.w=5, .inner_pad=VIRT_PAD});
-    yard    = b.row(8, 7, {.inner_pad=VIRT_PAD});
+    yard    = b.row(8, 7, {      .inner_pad=VIRT_PAD});
 }
 
 void PlayerRow::drawDebug()
@@ -94,32 +94,31 @@ void StatsBoard::layout(rect const& b)
 {
     bounds = b;
 
-#define CELL(x_, y_, w_, h_) ( b.cell(3,6, x_,y_,  { .w=w_, .h=h_, .inner_pad=VIRT_PAD, .outer_pad=VIRT_PAD}) )
-    name                = CELL(0,0, 3,1);
-    deck_name           = CELL(0,1, 3,1);
-
-    gems_label          = CELL(0,2, 1,1);
-    score_label         = CELL(2,2, 1,1);
-
-    gems                = CELL(0,3, 1,1);
-    score               = CELL(2,3, 1,1);
-
-    avatar              = CELL(0,4, 1,2);
+#define CELL(x_, y_, w_, h_) ( bounds.cell(10,10, x_,y_,  { .w=w_, .h=h_, .inner_pad=5, .outer_pad=5}) )
+    name                = CELL(0,0, 6,2);
+    deck_name           = CELL(0,2, 6,1);
+    lead_name           = CELL(0,3, 6,1);
+    avatar              = CELL(0,4, 6,6);
+    gems                = CELL(6,0, 4,5);
+    score               = CELL(6,5, 4,5);
 #undef CELL
 }
 
 void StatsBoard::drawDebug()
 {
     DRECT_PUSH2(StatsBoard,bounds);
+
     DRECT1(name);
     DRECT1(deck_name);
-    DRECT1(gems_label);
-    DRECT1(score_label);
+    DRECT1(lead_name);
     DRECT1(gems);
     DRECT1(score);
     DRECT1(avatar);
+
     DRECT_POP();
 }
+
+
 
 //
 // GameBoard

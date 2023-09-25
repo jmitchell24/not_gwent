@@ -43,10 +43,7 @@ namespace game::layout
 
         static CardLayout fromRect(ut::rect const& r, float z = 1.0f)
         {
-            auto w=r.width(), h=r.height();
-
-            auto lr = r.anchorCCtoCC( w>h ? sizeFromHeight(h) : sizeFromWidth(w) );
-            return fromPSize(lr.psize());
+            return fromPSize(rectFromRect(r).psize(), z);
         }
 
         static CardLayout fromPSize(ut::psize const& p, float z = 1.0f)
@@ -62,5 +59,10 @@ namespace game::layout
 
         static ut::vec2 sizeFromWidth (float w) { return { w, heightFromWidth(w) }; }
         static ut::vec2 sizeFromHeight(float h) { return { widthFromHeight(h), h }; }
+
+        static ut::rect rectFromRect(ut::rect const& r)
+        {
+            return r.fitAspect(ASPECT_RATIO_INV);
+        }
     };
 }

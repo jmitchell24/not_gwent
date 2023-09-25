@@ -4,5 +4,4 @@
 
 #include "game/board/board_stats.hpp"
 using namespace game::board;
-using namespace board;
 

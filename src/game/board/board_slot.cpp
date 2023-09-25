@@ -1,4 +1,5 @@
 #include "game/board/board_slot.hpp"
+#include "game/layout/card_layout.hpp"
 using namespace game::board;
 using namespace game;
 
@@ -23,7 +24,7 @@ void BoardSlot::takeCard(CardRef ref)
     assert(ref.inTank());
 
     m_card = ref;
-    m_card->move2(m_bounds.pos());
+    m_card->move2(m_bounds_card.pos());
 }
 
 CardRef BoardSlot::giveCard()
@@ -37,6 +38,7 @@ CardRef BoardSlot::giveCard()
 void BoardSlot::layout(rect const& b)
 {
     m_bounds = b;
+    m_bounds_card = layout::CardLayout::rectFromRect(m_bounds);
 }
 
 void BoardSlot::drawAboveCards() { }

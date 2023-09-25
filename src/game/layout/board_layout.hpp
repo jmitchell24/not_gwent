@@ -45,12 +45,10 @@ namespace game::layout
 
         ut::rect name;
         ut::rect deck_name;
+        ut::rect lead_name;
         ut::rect gems;
-        ut::rect gems_label;
         ut::rect score;
-        ut::rect score_label;
         ut::rect avatar;
-
 
         void layout(ut::rect const& b);
         void drawDebug();

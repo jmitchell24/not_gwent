@@ -25,6 +25,7 @@ namespace game::board
         void drawDebug     ();
     private:
         ut::rect    m_bounds;
+        ut::rect    m_bounds_card;
         CardRef     m_card;
     };
 }

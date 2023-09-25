@@ -14,6 +14,7 @@
 //
 #include "scene_game.hpp"
 #include "scene_card_test.hpp"
+#include "scene_math_test.hpp"
 
 //
 // gfx
@@ -106,8 +107,9 @@ private:
 };
 
 #define ENUM_SCENES \
-    CASE(SceneGameBoard2Test, scene1) \
-    CASE(SceneCardTest      , scene2)
+        CASE(SceneGameBoard2Test, scene2) \
+        CASE(SceneMathTest      , scene1) \
+        CASE(SceneCardTest      , scene3)
 
 int main()
 {

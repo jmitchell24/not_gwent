@@ -114,6 +114,10 @@ void BoardStack::drawAboveCards()
                                  ut::colors::transparent);
 
     m_spinner.draw();
+
+    DRECT_PUSH2(BoardStack, m_bounds);
+
+    DRECT_POP();
 }
 
 void BoardStack::drawUnderCards()

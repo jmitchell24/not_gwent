@@ -37,6 +37,20 @@
     CASE(card_back_skellige       ,     "data/board/card_back_skellige.png") \
     CASE(card_back_syndicate      ,     "data/board/card_back_syndicate.png")
 
+#define GAME_ENUM_TEXTURES_AVATARS \
+    CASE(avatar_caranthir,      "data/avatars/avatar_caranthir.png") \
+    CASE(avatar_dandelion,      "data/avatars/avatar_dandelion.png") \
+    CASE(avatar_giant,          "data/avatars/avatar_giant.png") \
+    CASE(avatar_triss,          "data/avatars/avatar_triss.png") \
+    CASE(avatar_ciri,           "data/avatars/avatar_ciri.png") \
+    CASE(avatar_emhyr,          "data/avatars/avatar_emhyr.png") \
+    CASE(avatar_imlerith,       "data/avatars/avatar_imlerith.png") \
+    CASE(avatar_vesemir,        "data/avatars/avatar_vesemir.png") \
+    CASE(avatar_crache,         "data/avatars/avatar_crache.png") \
+    CASE(avatar_eredin,         "data/avatars/avatar_eredin.png") \
+    CASE(avatar_leshen,         "data/avatars/avatar_leshen.png") \
+    CASE(avatar_yenn,           "data/avatars/avatar_yenn.png")
+
 
 #define GAME_ENUM_TEXTURES_MISC \
     CASE(card_blank_sm, "data/board/card_blank_sm.png")
@@ -46,6 +60,7 @@
 #define GAME_ENUM_TEXTURES        \
     GAME_ENUM_TEXTURES_BADGES     \
     GAME_ENUM_TEXTURES_CARD_BACKS \
+    GAME_ENUM_TEXTURES_AVATARS \
     GAME_ENUM_TEXTURES_MISC
 
 namespace game::textures
@@ -78,7 +93,7 @@ GAME_ENUM_TEXTURES_CARD_BACKS
         switch (id)
         {
 #define CASE(x_, y_) case CARD_TEXTURE_ID_##x_: return game::textures::x_();
-    GAME_ENUM_TEXTURES_CARD_BACKS
+GAME_ENUM_TEXTURES_CARD_BACKS
 #undef CASE
             default:assert_case(CardBackTextureID);
         }
@@ -86,7 +101,13 @@ GAME_ENUM_TEXTURES_CARD_BACKS
         return game::asset_loaders::Texture2DLoader::errorValue();
     }
 
-
+    enum AvatarTextureID
+    {
+#define CASE(x_, y_) BADGE_TEXTURE_ID_##x_,
+GAME_ENUM_TEXTURES_AVATARS
+#undef CASE
+        _AVATAR_TEXTURE_ID_COUNT
+    };
 
     enum BadgeTextureID
     {
