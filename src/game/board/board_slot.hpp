@@ -18,11 +18,14 @@ namespace game::board
 
         void takeCard(CardRef ref);
         CardRef giveCard();
+        void setCard(ng::Card const& card);
+
         void layout(ut::rect const& b);
 
         void drawAboveCards();
         void drawUnderCards();
         void drawDebug     ();
+
     private:
         ut::rect    m_bounds;
         ut::rect    m_bounds_card;

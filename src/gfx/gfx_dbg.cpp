@@ -73,8 +73,17 @@ void DebugRectManager::drawDebug()
 
     m_draws.clear();
 
-    auto tree_flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
-    enabled = ImGui::TreeNodeEx("Debug Rectangles", tree_flags);
+
+
+    if (enabled)
+    {
+        auto tree_flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen;
+        enabled = ImGui::TreeNodeEx("Debug Rectangles", tree_flags);
+    }
+    else
+    {
+        enabled = ImGui::TreeNodeEx("Debug Rectangles", ImGuiTreeNodeFlags_Framed);
+    }
 
     if (enabled)
     {

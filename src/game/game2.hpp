@@ -83,7 +83,8 @@ namespace game
                     hand  .tryGetHoveredCard(mp, ref) ||
                     melee .tryGetHoveredCard(mp, ref) ||
                     ranged.tryGetHoveredCard(mp, ref) ||
-                    siege .tryGetHoveredCard(mp, ref);
+                    siege .tryGetHoveredCard(mp, ref) ||
+                    lead  .tryGetHoveredCard(mp, ref);
             }
 
             void update(float dt)

@@ -18,6 +18,120 @@ using namespace gfx;
 #include <ut/random.hpp>
 using namespace ut;
 
+#include <algorithm>
+using namespace std;
+
+//
+//
+//
+
+ng::Card getNGTestLeader()
+{
+    ng::cardlist_t leaders =
+    {
+        ng::cards::monsters_eredin_1,
+        ng::cards::monsters_eredin_2,
+        ng::cards::monsters_eredin_3,
+        ng::cards::monsters_eredin_4,
+        ng::cards::monsters_eredin_5,
+    };
+
+    return leaders[RNG.nextu(leaders.size())];
+}
+
+ng::cardlist_t getNGTestDeck()
+{
+    ng::cardlist_t deck =
+    {
+        ng::cards::monsters_draug,
+        ng::cards::monsters_imlerith,
+        ng::cards::monsters_kayran,
+        ng::cards::monsters_leshan,
+        ng::cards::monsters_arachas_1,
+        ng::cards::monsters_arachas_2,
+        ng::cards::monsters_arachas_3,
+        ng::cards::monsters_arachas_behemoth,
+        ng::cards::monsters_botchling,
+        ng::cards::monsters_celaeno_harpy,
+        ng::cards::monsters_cockatrice,
+        ng::cards::monsters_crone_1,
+        ng::cards::monsters_crone_2,
+        ng::cards::monsters_crone_3,
+        ng::cards::monsters_earth_elemental,
+        ng::cards::monsters_endrega,
+        ng::cards::monsters_fiend,
+        ng::cards::monsters_fire_elemental,
+        ng::cards::monsters_foglet,
+        ng::cards::monsters_frightener,
+        ng::cards::monsters_gargoyle,
+        ng::cards::monsters_ghoul_1,
+        ng::cards::monsters_ghoul_2,
+        ng::cards::monsters_ghoul_3,
+        ng::cards::monsters_gravehag,
+        ng::cards::monsters_gryffin,
+        ng::cards::monsters_harpy,
+        ng::cards::monsters_frost_giant,
+        ng::cards::monsters_toad,
+        ng::cards::monsters_nekker_1,
+        ng::cards::monsters_nekker_1,
+        ng::cards::monsters_nekker_3,
+        ng::cards::monsters_plague_maiden,
+        ng::cards::monsters_vamp_bruxa,
+        ng::cards::monsters_vamp_ekimmara,
+        ng::cards::monsters_vamp_fleder,
+        ng::cards::monsters_vamp_garkain,
+        ng::cards::monsters_vamp_katakan,
+        ng::cards::monsters_werewolf,
+        ng::cards::monsters_wyvern,
+        ng::cards::neutral_ciri_1,
+        ng::cards::neutral_dandelion,
+        ng::cards::neutral_geralt,
+        ng::cards::neutral_avallach,
+        ng::cards::neutral_triss,
+        ng::cards::neutral_yennefer,
+        ng::cards::neutral_emiel,
+        ng::cards::neutral_vesemir,
+        ng::cards::neutral_villen,
+        ng::cards::neutral_zoltan,
+        ng::cards::neutral_cow,
+        ng::cards::neutral_gaunter,
+        ng::cards::neutral_gaunter_darkness_1,
+        ng::cards::neutral_gaunter_darkness_2,
+        ng::cards::neutral_gaunter_darkness_3,
+        ng::cards::neutral_olgierd,
+        ng::cards::special_frost_1,
+        ng::cards::special_frost_2,
+        ng::cards::special_frost_3,
+        ng::cards::special_clearsky_1,
+        ng::cards::special_clearsky_2,
+        ng::cards::special_clearsky_3,
+        ng::cards::special_horn_1,
+        ng::cards::special_horn_2,
+        ng::cards::special_horn_3,
+        ng::cards::special_dummy_1,
+        ng::cards::special_dummy_2,
+        ng::cards::special_dummy_3,
+        ng::cards::special_fog_1,
+        ng::cards::special_fog_2,
+        ng::cards::special_fog_3,
+        ng::cards::special_scorch_1,
+        ng::cards::special_scorch_2,
+        ng::cards::special_scorch_3,
+        ng::cards::special_rain_1,
+        ng::cards::special_rain_2,
+        ng::cards::special_rain_3,
+        ng::cards::special_skellige_storm_1,
+        ng::cards::special_skellige_storm_2,
+        ng::cards::special_skellige_storm_3,
+    };
+
+    random_shuffle(deck.begin(), deck.end());
+
+    deck.resize(22);
+
+    return deck;
+}
+
 //
 // GameBoard2
 //
@@ -28,6 +142,8 @@ GameBoard2::GameBoard2()
     usr.stats.deck_name = "Northern Realms";
     usr.stats.lead_name = "Foltest";
     usr.stats.avatar_texture = textures::avatar_triss();
+
+
 
     cpu.stats.name = "Leshen";
     cpu.stats.deck_name = "Monsters";
@@ -45,15 +161,24 @@ void GameBoard2::layout(ut::rect const& bounds)
                gb.usr.ranged,
                gb.usr.siege,
                gb.usr.stats);
-    usr.deck.setTestCards(50);
 
     cpu.layout(gb.cpu.player,
                gb.cpu.melee,
                gb.cpu.ranged,
                gb.cpu.siege,
                gb.cpu.stats);
-    cpu.deck.setTestCards(50);
 
+    usr.deck.setCards(getNGTestDeck());
+    usr.lead.setCard(getNGTestLeader());
+
+    cpu.deck.setCards(getNGTestDeck());
+    cpu.lead.setCard(getNGTestLeader());
+
+    for (int i = 0; i < 10; ++i)
+    {
+        boss.stackToRow(usr.deck, usr.hand, i);
+        boss.stackToRow(cpu.deck, cpu.hand, i);
+    }
 
 
 }

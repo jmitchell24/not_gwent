@@ -36,6 +36,8 @@ namespace game::board
         void setTestCards(size_t n);
         void clearTestCards() { setTestCards(0); }
 
+        void setCards(ng::cardlist_t cards);
+
         void layout(ut::rect const& b);
         void update(float dt);
 

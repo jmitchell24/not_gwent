@@ -87,6 +87,12 @@ void BoardStack::setTestCards(size_t n)
     m_spinner.anim(m_card_ngs.size());
 }
 
+void BoardStack::setCards(ng::cardlist_t cards)
+{
+    m_card_ngs = std::move(cards);
+    m_spinner.anim(m_card_ngs.size());
+}
+
 void BoardStack::layout(ut::rect const& b)
 {
     m_bounds = layout::CardLayout::fromRect(b).getRect();
