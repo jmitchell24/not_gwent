@@ -26,7 +26,17 @@ namespace game
             {
                 special.layout(l.special);
                 units.layout(l.units);
-                score.layout(l.score);
+                score.layout(l.score.anchorCCtoCC(l.score.size()/2));
+            }
+
+            void update(float dt)
+            {
+                score.update(dt);
+            }
+
+            void draw()
+            {
+                score.draw();
             }
 
             bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref)
@@ -83,6 +93,9 @@ namespace game
                 hand.update(dt);
                 stats.update(dt);
 
+                melee.update(dt);
+                ranged.update(dt);
+                siege.update(dt);
             }
 
             void drawAboveCards()
@@ -99,6 +112,10 @@ namespace game
                 yard.drawUnderCards();
                 hand.drawUnderCards();
                 stats.drawUnderCards();
+
+                melee.draw();
+                ranged.draw();
+                siege.draw();
             }
 
             void drawDebug()
@@ -117,6 +134,7 @@ namespace game
         layout::GameBoard gb;
         board::BoardBoss boss;
 
+        GameBoard2();
 
         void layout(ut::rect const& bounds);
         void update(float dt);

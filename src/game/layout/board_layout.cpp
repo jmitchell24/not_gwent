@@ -98,7 +98,7 @@ void StatsBoard::layout(rect const& b)
     name                = CELL(0,0, 6,2);
     deck_name           = CELL(0,2, 6,1);
     lead_name           = CELL(0,3, 6,1);
-    avatar              = CELL(0,4, 6,6);
+    avatar              = CELL(0,4, 6,6).fitAspect(1);
     gems                = CELL(6,0, 4,5);
     score               = CELL(6,5, 4,5);
 #undef CELL

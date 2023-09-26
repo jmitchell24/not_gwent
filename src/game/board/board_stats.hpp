@@ -14,25 +14,24 @@ namespace game::board
     class BoardStats
     {
     public:
-        Font font;
-        Texture2D avatar_texture;
+        std::string name            = "Triss";
+        std::string deck_name       = "Northern Realms";
+        std::string lead_name       = "Foltest";
 
-        void layout (layout::StatsBoard const& b)
+        Font        font            = fonts::smallburgRegular128();
+        Texture2D   avatar_texture  = textures::avatar_triss();
+
+        BoardStats()
         {
-            m_bound             = b.bounds;
-            m_bound_name        = b.name;
-            m_bound_deck_name   = b.deck_name;
-            m_bound_lead_name   = b.lead_name;
-            m_bound_avatar      = b.avatar.fitAspect(1).shrunk(10);
-
-            m_spin_gems.layout(b.gems.anchorCCtoCC(b.gems.size()/2));
-            m_spin_score.layout(b.score.anchorCCtoCC(b.score.size()/2));
-
-            font = fonts::smallburgRegular128();
-            avatar_texture = textures::avatar_triss();
-
             m_spin_score.anim(23);
             m_spin_gems.anim(1);
+        }
+
+        void layout (layout::StatsBoard const& layout)
+        {
+            m_layout = layout;
+            m_spin_gems.layout(layout.gems.anchorCCtoCC(layout.gems.size()/2));
+            m_spin_score.layout(layout.score.anchorCCtoCC(layout.score.size()/2));
         }
         void update (float dt)
         {
@@ -53,18 +52,18 @@ namespace game::board
         void drawUnderCards()
         {
 
-            drawBg(m_bound, ut::colors::chocolate);
-            drawBg(m_bound_avatar, ut::colors::darkseagreen);
+            drawBg(m_layout.bounds, ut::color(102, 71, 39));
+            drawBg(m_layout.avatar, ut::colors::darkseagreen);
 
 
-            gfx::drawTextTCtoTC(font, m_bound_name, "Triss", ut::colors::white);
-            gfx::drawTextTCtoTC(font, m_bound_deck_name, "Northern Realms", ut::colors::white);
-            gfx::drawTextTCtoTC(font, m_bound_lead_name, "Foltest", ut::colors::white);
+            gfx::drawTextTCtoTC(font, m_layout.name     , name, ut::color(134, 106, 68));
+            gfx::drawTextTCtoTC(font, m_layout.deck_name, deck_name, ut::color(134, 106, 68));
+            gfx::drawTextTCtoTC(font, m_layout.lead_name, lead_name, ut::color(134, 106, 68));
 
             m_spin_gems.draw();
             m_spin_score.draw();
 
-            gfx::drawTexture(avatar_texture, m_bound_avatar, ut::colors::white);
+            gfx::drawTexture(avatar_texture, m_layout.avatar, ut::colors::white);
 
         }
 
@@ -74,19 +73,13 @@ namespace game::board
         }
 
     //private:
-        ut::rect m_bound;
-        ut::rect m_bound_name;
-        ut::rect m_bound_deck_name;
-        ut::rect m_bound_lead_name;
-        ut::rect m_bound_avatar;
+        layout::StatsBoard m_layout;
 
 
 
-        std::string m_name;
-        std::string m_deck_name;
-        std::string m_lead_name;
 
-        gfx::Spinner m_spin_gems{ gfx::Spinner::HORZ, ut::colors::burlywood };
-        gfx::Spinner m_spin_score{ gfx::Spinner::HORZ, ut::colors::burlywood };
+
+        gfx::Spinner m_spin_gems{ gfx::Spinner::HORZ, ut::color(134, 106, 68) };
+        gfx::Spinner m_spin_score{ gfx::Spinner::HORZ, ut::color(134, 106, 68) };
     };
 }

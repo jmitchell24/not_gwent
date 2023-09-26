@@ -22,21 +22,46 @@ using namespace ut;
 // GameBoard2
 //
 
+GameBoard2::GameBoard2()
+{
+    usr.stats.name = "Triss";
+    usr.stats.deck_name = "Northern Realms";
+    usr.stats.lead_name = "Foltest";
+    usr.stats.avatar_texture = textures::avatar_triss();
+
+    cpu.stats.name = "Leshen";
+    cpu.stats.deck_name = "Monsters";
+    cpu.stats.lead_name = "Eredin";
+    cpu.stats.avatar_texture = textures::avatar_leshen();
+
+}
+
 void GameBoard2::layout(ut::rect const& bounds)
 {
     gb.layout(bounds);
+
     usr.layout(gb.usr.player,
                gb.usr.melee,
                gb.usr.ranged,
                gb.usr.siege,
                gb.usr.stats);
-
     usr.deck.setTestCards(50);
+
+    cpu.layout(gb.cpu.player,
+               gb.cpu.melee,
+               gb.cpu.ranged,
+               gb.cpu.siege,
+               gb.cpu.stats);
+    cpu.deck.setTestCards(50);
+
+
+
 }
 
 void GameBoard2::update(float dt)
 {
     usr.update(dt);
+    cpu.update(dt);
 
     auto mp = tout(GetMousePosition());
 
@@ -57,6 +82,7 @@ void GameBoard2::update(float dt)
 void GameBoard2::drawAboveCards()
 {
     usr.drawAboveCards();
+    cpu.drawAboveCards();
 
     if (card_hover)
     {
@@ -71,6 +97,7 @@ void GameBoard2::drawAboveCards()
 void GameBoard2::drawUnderCards()
 {
     usr.drawUnderCards();
+    cpu.drawUnderCards();
 }
 
 void GameBoard2::drawDebug()
@@ -138,5 +165,7 @@ void GameBoard2::drawDebug()
     }
 
     gb.drawDebug();
+    usr.drawDebug();
+    cpu.drawDebug();
 
 }
