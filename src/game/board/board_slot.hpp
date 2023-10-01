@@ -16,9 +16,12 @@ namespace game::board
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
 
-        void takeCard(CardRef ref);
+        void setHighlight();
+        void clearHighlight();
+
+        void    takeCard(CardRef ref);
         CardRef giveCard();
-        void setCard(ng::Card const& card);
+        void    setCard(ng::Card const& card);
 
         void layout(ut::rect const& b);
 
@@ -26,9 +29,13 @@ namespace game::board
         void drawUnderCards();
         void drawDebug     ();
 
+        bool isTargeted(ut::vec2 const& mp) const;
+
     private:
         ut::rect    m_bounds;
         ut::rect    m_bounds_card;
         CardRef     m_card;
+
+        bool        m_highlighted = false;
     };
 }

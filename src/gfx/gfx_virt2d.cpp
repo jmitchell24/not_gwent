@@ -2,7 +2,7 @@
 
 using namespace gfx;
 
-#include "game/conv.hpp"
+#include "conv.hpp"
 
 #include <raymath.h>
 #include <raylib.h>

@@ -4,7 +4,7 @@
 
 #include "gfx/gfx_spinner.hpp"
 #include "gfx/gfx_virt2d.hpp"
-#include "game/assets.hpp"
+#include "game/asset/assets.hpp"
 using namespace gfx;
 
 //
@@ -63,7 +63,7 @@ void Spinner::updateValues(float f)
 
         case HORZ: updateValuesHorz(f); break;
         case VERT: updateValuesVert(f); break;
-        default:assert_case(Orientation);
+        default:nopath_case(Orientation);
     }
 }
 

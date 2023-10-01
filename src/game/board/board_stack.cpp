@@ -1,5 +1,5 @@
 #include "game/board/board_stack.hpp"
-#include "game/assets.hpp"
+#include "game/asset/assets.hpp"
 using namespace game::board;
 using namespace game;
 
@@ -54,8 +54,9 @@ void BoardStack::pushCard(CardRef ref)
 CardRef BoardStack::popCard()
 {
     Card c;
-    c.layout = layout::CardLayout::fromRect(m_bounds);
-    c.assets = Card::Assets::fromNgCard(popNgCard());
+    c.ng         = popNgCard();
+    c.assets     = Card::Assets::fromNgCard(c.ng);
+    c.layout     = layout::CardLayout::fromRect(m_bounds);
     return TANK.addCard(c).ref();
 }
 

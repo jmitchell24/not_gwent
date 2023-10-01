@@ -2,6 +2,8 @@
 // Created by james on 9/15/23.
 //
 
+#include "assert_msg.hpp"
+
 #include <ut/random.hpp>
 #include "game/game2.hpp"
 using namespace game;
@@ -10,7 +12,7 @@ using namespace game;
 
 #include "rlImGui/imgui/imgui_mods.hpp"
 
-#include "game/assets.hpp"
+#include "game/asset/assets.hpp"
 
 #include "gfx/gfx_draw.hpp"
 using namespace gfx;
@@ -183,6 +185,13 @@ void GameBoard2::layout(ut::rect const& bounds)
 
 }
 
+bool GameBoard2::tryGetHoveredCard(const ut::vec2 &mp, CardRef &ref)
+{
+    return
+        usr.tryGetHoveredCard(mp, ref) ||
+        cpu.tryGetHoveredCard(mp, ref);
+}
+
 void GameBoard2::update(float dt)
 {
     usr.update(dt);
@@ -190,7 +199,7 @@ void GameBoard2::update(float dt)
 
     auto mp = tout(GetMousePosition());
 
-    if (CardRef ref; usr.tryGetHoveredCard(mp, ref))
+    if (CardRef ref; tryGetHoveredCard(mp, ref))
     {
         if (ref != card_hover)
         {
@@ -202,6 +211,85 @@ void GameBoard2::update(float dt)
     {
         card_hover.reset();
     }
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        if (Cast cast; usr.tryCast(mp, cast))
+        {
+            std::visit(DoCastingThing{*this}, cast);
+            updateScores(usr);
+        }
+    }
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+    {
+        usr.cancelCast();
+    }
+}
+
+
+
+//void GameBoard2::playCard(Player& player, size_t idx)
+//{
+//    CardRef ref = player.hand.getCard(idx);
+//    ng::Card ng = ref->ng;
+//
+//    switch (ng.type)
+//    {
+//        case ng::Card::TYPE_SPECIAL:
+//        {
+//            auto special = ng.asSpecialCard();
+//            break;
+//        }
+//
+//        case ng::Card::TYPE_UNIT:
+//        {
+//            auto unit = ng.asUnitCard();
+//
+//            break;
+//        }
+//
+//        default:
+//            nopath_case(ng::Card::Type);
+//            break;
+//    }
+//    if (ng.isUnitCard())
+//    {
+//        auto unit = ref->ng.asUnitCard();
+//        switch (unit.row)
+//        {
+//
+//            case ng::UnitCard::ROW_MELEE    : boss.rowToRow(player.hand, player.melee.units , idx, 0); updateScores(player); break;
+//            case ng::UnitCard::ROW_RANGED   : boss.rowToRow(player.hand, player.ranged.units, idx, 0); updateScores(player); break;
+//            case ng::UnitCard::ROW_SIEGE    : boss.rowToRow(player.hand, player.siege.units, idx, 0); updateScores(player); break;
+//
+//            //default:assert_case(ng::UnitCard::Row);
+//        }
+//
+//
+//    }
+//    else if (ng.isSpecialCard())
+//    {
+//        if (ref->ng.asSpecialCard().type == ng::SpecialCard::SPECIAL_CMDR_HORN)
+//        {
+//            //boss.rowToSlot(player.hand, )
+//        }
+//    }
+//}
+
+int GameBoard2::updatePlayerScore(Player& player)
+{
+    int score =
+        player.melee.updateScore() +
+        player.ranged.updateScore() +
+        player.siege.updateScore();
+    player.stats.updateScore(score);
+    return score;
+}
+
+void GameBoard2::updateScores(Player& player)
+{
+    updatePlayerScore(player);
 }
 
 void GameBoard2::drawAboveCards()
@@ -243,54 +331,111 @@ void GameBoard2::drawDebug()
 
     ImGui::SameLine();
 
-    auto& a = usr.siege.units;
-    auto& b = usr.hand;
-
-    if (a.isEmpty() && b.isEmpty())
-    {
-        ImGui::PushItemDisabled();
-        ImGui::Button("Swap");
-        ImGui::PopItemDisabled();
-    }
-    else if (ImGui::Button("RowToRow"))
-    {
-        if (a.numCards() < b.numCards())
-        {
-            boss.rowToRow(b, a,
-                          RNG.nextu(b.numCards()),
-                          RNG.nextu(a.numCards()+1));
-        }
-        else
-        {
-
-            boss.rowToRow(a, b,
-                          RNG.nextu(a.numCards()),
-                          RNG.nextu(b.numCards()+1));
-        }
-    }
-
-    auto& c = usr.siege.special;
-
-    if (b.isEmpty())
-    {
-        ImGui::PushItemDisabled();
-        ImGui::Button("RowToSpot");
-        ImGui::PopItemDisabled();
-    }
-    else if (ImGui::Button("RowToSpot"))
-    {
-        if (c.isEmpty())
-        {
-            boss.rowToSlot(b, c, RNG.nextu(b.numCards()));
-        }
-        else
-        {
-            boss.slotToRow(c, b, RNG.nextu(b.numCards()+1));
-        }
-    }
-
     gb.drawDebug();
     usr.drawDebug();
     cpu.drawDebug();
 
+
+    if (card_hover)
+    {
+        auto& ng = card_hover->ng;
+
+        ImGui::BeginTooltip();
+
+
+
+
+        ImGui::BeginStruct(ng.name);
+
+        ImGui::StructField("id"         , PRINTER("%d", ng.id));
+        ImGui::StructField("type"       , ng::toString(ng.type));
+        ImGui::StructField("deck"       , ng::toString(ng.deck));
+        ImGui::StructField("expansion"  , ng::toString(ng.expansion));
+        ImGui::StructField("filename"   , ng.filename);
+
+        ImGui::EndStruct();
+
+        struct V
+        {
+            void operator()(ng::NilCard const& c) { }
+
+            void operator()(ng::SpecialCard const& c)
+            {
+                ImGui::BeginStruct("Special");
+                ImGui::StructField("type", ng::toString(c.type));
+                ImGui::EndStruct();
+            }
+
+            void operator()(ng::UnitCard const& c)
+            {
+                ImGui::BeginStruct("Unit");
+                ImGui::StructField("strength"   , PRINTER("%d", c.strength));
+                ImGui::StructField("is_hero"    , c.is_hero ? "yes" : "no");
+                ImGui::StructField("ability"    , ng::toString(c.ability));
+                ImGui::StructField("row"        , ng::toString(c.row));
+                ImGui::EndStruct();
+            }
+
+            void operator()(ng::LeaderCard const& c)
+            {
+                ImGui::BeginStruct("Leader");
+                ImGui::StructField("type", ng::toString(c.type));
+                ImGui::EndStruct();
+            }
+        };
+
+        ng.visit(V{});
+
+
+
+
+        ImGui::EndTooltip();
+    }
+}
+
+//
+// DoCastingThing
+//
+
+void DoCastingThing::operator() (CastUnit const& c)
+{
+    switch (c.row)
+    {
+
+        case CastUnit::MELEE : gb.boss.rowToRow(gb.usr.hand, gb.usr.melee.units , c.hand_idx, 0); break;
+        case CastUnit::RANGED: gb.boss.rowToRow(gb.usr.hand, gb.usr.ranged.units, c.hand_idx, 0); break;
+        case CastUnit::SIEGE : gb.boss.rowToRow(gb.usr.hand, gb.usr.siege.units , c.hand_idx, 0); break;
+        default:nopath_case(CastUnit::Row);
+    }
+}
+
+void DoCastingThing::operator() (CastSpy const& c)
+{
+    nopath_impl;
+}
+
+void DoCastingThing::operator() (CastCommanderHorn const& c)
+{
+    switch (c.row)
+    {
+        case CastCommanderHorn::MELEE : gb.boss.rowToSlot(gb.usr.hand, gb.usr.melee.cmdr_horn , c.hand_idx); break;
+        case CastCommanderHorn::RANGED: gb.boss.rowToSlot(gb.usr.hand, gb.usr.ranged.cmdr_horn, c.hand_idx); break;
+        case CastCommanderHorn::SIEGE : gb.boss.rowToSlot(gb.usr.hand, gb.usr.siege.cmdr_horn , c.hand_idx); break;
+
+        default:
+            nopath_case(CastCommanderHorn::Row);
+    }
+}
+
+void DoCastingThing::operator() (CastScorch const& c)
+{
+    nopath_impl;
+}
+void DoCastingThing::operator() (CastLeaderAbility const& c)
+{
+    nopath_impl;
+}
+void DoCastingThing::operator() (CastWeather const& c)
+{
+    nopath_impl;
 }

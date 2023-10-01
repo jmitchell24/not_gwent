@@ -9,17 +9,21 @@
     TODO: https://github.com/Rabios/awesome-raylib
 */
 
+#include "assert_msg.hpp"
+
 //
 // scene
 //
 #include "scene_game.hpp"
 #include "scene_card_test.hpp"
 #include "scene_math_test.hpp"
+#include "scene_proto_test.hpp"
 
 //
 // gfx
 //
 #include "gfx/gfx_virt2d.hpp"
+#include "gfx/gfx_prototype.hpp"
 using namespace gfx;
 
 //
@@ -107,9 +111,14 @@ private:
 };
 
 #define ENUM_SCENES \
-        CASE(SceneGameBoard2Test, scene2) \
-        CASE(SceneMathTest      , scene1) \
-        CASE(SceneCardTest      , scene3)
+    CASE(SceneProtoTest     )  \
+    CASE(SceneGameBoard2Test)  \
+    CASE(SceneCardTest      )  \
+    CASE(SceneMathTest      )  \
+
+
+
+
 
 int main()
 {
@@ -124,13 +133,13 @@ int main()
 
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-#define CASE(x_, y_) x_ y_;
+#define CASE(x_) x_ obj_##x_;
 ENUM_SCENES
 #undef CASE
 
     Stage stage
     {
-#define CASE(x_, y_) &y_,
+#define CASE(x_) &obj_##x_,
 ENUM_SCENES
 #undef CASE
     };
@@ -147,9 +156,6 @@ ENUM_SCENES
 //    }
 //
 //    lua_close(L);
-
-
-
 
     while (!WindowShouldClose())
     {
@@ -175,6 +181,7 @@ ENUM_SCENES
 
             ImGui::Begin("Graphics");
             VIRT.drawDebug();
+            PROTO.drawDebug();
             ImGui::End();
 
             stage.drawDebug();

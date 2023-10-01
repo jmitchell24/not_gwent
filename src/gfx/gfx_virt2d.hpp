@@ -95,19 +95,19 @@ namespace gfx
         // debug
         //
 
-        inline void drawRectDebug(ut::cstrparam lbl, ut::rectf const &r)
+        inline void drawRectDebug(ut::cstrparam lbl, ut::rectf const &r) const
         { DebugRectManager::instance().addRect(lbl, realRect(r)); }
 
-        inline void pushRectDebug(ut::cstrparam lbl, ut::rectf const &r)
+        inline void pushRectDebug(ut::cstrparam lbl, ut::rectf const &r) const
         { DebugRectManager::instance().pushRect(lbl, realRect(r)); }
 
-        inline void popRectDebug()
+        inline void popRectDebug() const
         { DebugRectManager::instance().popRect(); }
 
-        inline void drawDebug()
+        inline void drawDebug() const
         { DebugRectManager::instance().drawDebug(); }
 
-        inline bool isRectDebugEnabled()
+        inline bool isRectDebugEnabled() const
         { return DebugRectManager::instance().enabled; }
 
         //
@@ -132,10 +132,4 @@ namespace gfx
     };
 
     [[maybe_unused]] static Virt2DManager &VIRT = Virt2DManager::instance();
-
-    //
-    // misc
-    //
-
-    ut::color GetDebugColor(size_t seed);
 }

@@ -2,13 +2,20 @@
 using namespace game::board;
 using namespace game;
 
+#include "gfx/gfx_draw.hpp"
+using namespace gfx;
+
+//
+// ut
+//
+using namespace ut;
 
 //
 // CardRow2 -> Implementation
 //
 
 
-bool BoardRow::tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref)
+bool BoardRow::tryGetHoveredCard(vec2 const& mp, CardRef& ref)
 {
     if (size_t idx; m_layout_row.tryGetIndex(mp,idx))
     {
@@ -16,6 +23,11 @@ bool BoardRow::tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref)
         return true;
     }
     return false;
+}
+
+bool BoardRow::tryGetHoveredIndex(vec2 const& mp, size_t& idx)
+{
+    return m_layout_row.tryGetIndex(mp, idx);
 }
 
 CardRef BoardRow::giveCard(size_t idx)
@@ -32,10 +44,28 @@ void BoardRow::layout(ut::rect const& b)
     rebuildLayout();
 }
 
-void BoardRow::update (float dt) { }
-void BoardRow::drawAboveCards() { }
-void BoardRow::drawUnderCards() { }
-void BoardRow::drawDebug     () { }
+void BoardRow::update(float dt)
+{
+
+}
+
+void BoardRow::drawAboveCards()
+{
+    if (m_highlighted)
+    {
+        drawRectOutline(m_bounds, 2.0f, ut::colors::red);
+    }
+}
+
+void BoardRow::drawUnderCards()
+{
+
+}
+
+void BoardRow::drawDebug()
+{
+
+}
 
 void BoardRow::addCard(size_t idx, CardRef ref)
 {
@@ -61,6 +91,12 @@ void BoardRow::removeCard(CardRef ref)
     ssize_t idx = getIdx(ref);
     assert(idx >= 0);
     removeCard(size_t(idx));
+}
+
+CardRef BoardRow::getCard(size_t idx) const
+{
+    assert(idx < m_card_refs.size());
+    return m_card_refs[idx];
 }
 
 ssize_t BoardRow::getIdx(CardRef ref) const
@@ -91,4 +127,17 @@ void BoardRow::arrangeRow()
     {
         m_card_refs[i]->move2(m_layout_row.getPos(i));
     }
+}
+
+int BoardRow::getTotalStrength()
+{
+    int sum=0;
+    for (auto&& it : m_card_refs)
+        sum += (int)it->ng.asUnitCard().strength;
+    return sum;
+}
+
+bool BoardRow::isTargeted(vec2 const& mp)
+{
+    return m_bounds.contains(mp);
 }

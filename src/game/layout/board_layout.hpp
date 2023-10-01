@@ -12,7 +12,8 @@ namespace game::layout
     {
         ut::rect bounds;
         ut::rect score;
-        ut::rect special;
+        ut::rect cmdr_horn;
+        ut::rect weather;
         ut::rect units;
 
         void layout(ut::rect const& b);
@@ -31,13 +32,13 @@ namespace game::layout
         void drawDebug();
     };
 
-    struct WeatherBoard
-    {
-        ut::rect bounds;
-
-        void layout(ut::rect const& b);
-        void drawDebug();
-    };
+//    struct WeatherBoard
+//    {
+//        ut::rect bounds;
+//
+//        void layout(ut::rect const& b);
+//        void drawDebug();
+//    };
 
     struct StatsBoard
     {
@@ -58,6 +59,8 @@ namespace game::layout
     {
         struct Player
         {
+            ut::rect bounds;
+
             CombatRow   siege;
             CombatRow   ranged;
             CombatRow   melee;
@@ -71,7 +74,7 @@ namespace game::layout
 
         Player usr, cpu;
 
-        WeatherBoard weather;
+//        WeatherBoard weather;
 
         void layout(ut::rect const& b);
         void drawDebug();

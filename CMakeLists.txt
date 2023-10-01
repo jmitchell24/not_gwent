@@ -11,7 +11,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(${GAME_EXECUTABLE})
+add_executable(${GAME_EXECUTABLE} src/game/game_combat_row.hpp src/game/game_combat_row.cpp)
 
 #
 # Sources needed to build the game

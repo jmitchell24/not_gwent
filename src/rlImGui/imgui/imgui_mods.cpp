@@ -7,7 +7,7 @@ using namespace ut;
 
 #include "assert.hpp"
 
-#define lbl_    ut::cstrparam
+#define text_   ut::cstrparam
 #define rect_   ut::rectf const&
 #define color_  ut::color const&
 
@@ -15,7 +15,9 @@ using namespace ut;
 // Struct
 //
 
-bool ImGui::BeginStruct(char const* lbl)
+static bool in_struct = false;
+
+bool ImGui::BeginStruct(text_ lbl)
 {
     ImGuiTableFlags table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX;
     ImGuiTreeNodeFlags tree_flags = ImGuiTreeNodeFlags_DefaultOpen;
@@ -28,7 +30,7 @@ void ImGui::EndStruct()
     ImGui::TreePop();
 }
 
-void ImGui::StructField(std::string_view name, strparam value)
+void ImGui::StructField(text_ name, text_ value)
 {
     TableNextColumn();
     TextUnformatted(name.data(), name.data() + name.size());
@@ -104,7 +106,7 @@ ImU32 ToU32(color::hsv      const& hsv  ) { return ToU32(hsv.toNormal()); }
 ImU32 ToU32(color::hsluv    const& hsluv) { return ToU32(hsluv.toNormal()); }
 ImU32 ToU32(color           const& col  ) { return ToU32(col.toNormal()); }
 
-void ImGui::DrawDRECT(lbl_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
+void ImGui::DrawDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
 {
     //ImGuiContext&   g = *GImGui;
     ImGuiStyle&     s = ImGui::GetStyle();
@@ -177,6 +179,6 @@ void ImGui::PopItemDisabled()
     ImGui::PopStyleVar();
 }
 
-#undef lbl_
+#undef text_
 #undef rect_
 #undef color_

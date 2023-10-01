@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "asset_loader.hpp"
+#include "game/asset/asset_loader.hpp"
 
 //
 // std

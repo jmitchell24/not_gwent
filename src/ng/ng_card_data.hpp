@@ -113,17 +113,17 @@ namespace ng
 namespace cards
 {
 #define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6, _p7, _p8, _p9, _p10) \
-    static const Card _p4 = Card::makeUnit(_p0, _p5, _p6, Card::EXPANSION_##_p1, Card::DECK_##_p2, { _p7, _p8, UnitCard::ABILITY_##_p10, UnitCard::ROW_##_p9 });
+    static const Card _p4 = Card::makeUnit(_p0, _p5, _p6, EXPANSION_##_p1, DECK_##_p2, { _p7, _p8, ABILITY_##_p10, ROW_##_p9 });
 NG_ENUM_CARDS_UNITS
 #undef CASE
 
 #define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6, _p7) \
-    static const Card _p4 = Card::makeSpecial(_p0, _p5, _p6, Card::EXPANSION_##_p1, Card::DECK_##_p2, { SpecialCard::SPECIAL_##_p7 });
+    static const Card _p4 = Card::makeSpecial(_p0, _p5, _p6, EXPANSION_##_p1, DECK_##_p2, { SPECIAL_##_p7 });
 NG_ENUM_CARDS_SPECIALS
 #undef CASE
 
 #define CASE(_p0, _p1, _p2, _p3, _p4, _p5, _p6, _p7) \
-    static const Card _p4 = Card::makeLeader(_p0, _p5, _p6, Card::EXPANSION_##_p1, Card::DECK_##_p2, { LeaderCard::LEADER_##_p7 });
+    static const Card _p4 = Card::makeLeader(_p0, _p5, _p6, EXPANSION_##_p1, DECK_##_p2, { LEADER_##_p7 });
 NG_ENUM_CARDS_LEADERS_MONSTERS
 #undef CASE
 }
@@ -161,7 +161,7 @@ NG_ENUM_CARDS_SPECIALS
 NG_ENUM_CARDS_UNITS
 #undef CASE
 
-            default:assert_case(CardID);
+            default:nopath_case(CardID);
         }
 
         return Card::makeNil();

@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "game/asset_store.hpp"
-#include "assert.hpp"
+#include "assert_msg.hpp"
+#include "game/asset/asset_store.hpp"
 
 #define GAME_ENUM_FONTS \
     CASE(smallburgRegular32, "data/font/smallburg-Regular.ttf", 32) \
@@ -95,7 +95,7 @@ GAME_ENUM_TEXTURES_CARD_BACKS
 #define CASE(x_, y_) case CARD_TEXTURE_ID_##x_: return game::textures::x_();
 GAME_ENUM_TEXTURES_CARD_BACKS
 #undef CASE
-            default:assert_case(CardBackTextureID);
+            default:nopath_case(CardBackTextureID);
         }
 
         return game::asset_loaders::Texture2DLoader::errorValue();
@@ -124,7 +124,7 @@ GAME_ENUM_TEXTURES_BADGES
 #define CASE(x_, y_) case BADGE_TEXTURE_ID_##x_: return game::textures::x_();
 GAME_ENUM_TEXTURES_BADGES
 #undef CASE
-            default:assert_case(BadgeTextureID);
+            default:nopath_case(BadgeTextureID);
         }
 
         return game::asset_loaders::Texture2DLoader::errorValue();

@@ -19,33 +19,34 @@ using namespace std;
 // Card -> Implementation
 //
 
-string Card::toString() const
-{
-    return name.c_str();
-}
-
 Card Card::makeNil()
 {
-    return Card{0, "nil"_sv, {}, EXPANSION_BASE_GAME, DECK_NEUTRAL, TYPE_NIL};
+    return Card{0, "nil"_sv, {}, CARD_NIL, DECK_NEUTRAL, EXPANSION_BASE_GAME };
 }
 
-Card Card::makeUnit(unsigned id, cstrparam name, cstrparam filename, Expansion expansion, Deck deck, UnitCard unit)
+Card Card::makeUnit(unsigned id, cstrparam name, cstrparam filename, ExpansionType expansion, DeckType deck, UnitCard unit)
 {
-    Card card{ .id=id, .name=name, .filename=filename, .expansion=expansion, .deck=deck, .type=TYPE_UNIT};
-    card.value.u_unit = unit;
+    Card card{ .id=id, .name=name, .filename=filename, .type=CARD_UNIT, .deck=deck, .expansion=expansion };
+    card.value.UNIT = unit;
     return card;
 }
 
-Card Card::makeLeader(unsigned id, cstrparam name, cstrparam filename, Expansion expansion, Deck deck, LeaderCard leader)
+Card Card::makeLeader(unsigned id, cstrparam name, cstrparam filename, ExpansionType expansion, DeckType deck, LeaderCard leader)
 {
-    Card card{ .id=id, .name=name, .filename=filename, .expansion=expansion, .deck=deck, .type=TYPE_LEADER};
-    card.value.u_leader = leader;
+    Card card{ .id=id, .name=name, .filename=filename, .type=CARD_LEADER, .deck=deck, .expansion=expansion };
+    card.value.LEADER = leader;
     return card;
 }
 
-Card Card::makeSpecial(unsigned id, cstrparam name, cstrparam filename, Expansion expansion, Deck deck, SpecialCard special)
+Card Card::makeSpecial(unsigned id, cstrparam name, cstrparam filename, ExpansionType expansion, DeckType deck, SpecialCard special)
 {
-    Card card{ .id=id, .name=name, .filename=filename, .expansion=expansion, .deck=deck, .type=TYPE_SPECIAL};
-    card.value.u_special = special;
+    Card card{ .id=id, .name=name, .filename=filename, .type=CARD_SPECIAL, .deck=deck, .expansion=expansion };
+    card.value.SPECIAL = special;
     return card;
 }
+
+
+
+
+
+

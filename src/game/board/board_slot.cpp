@@ -4,6 +4,12 @@ using namespace game::board;
 using namespace game;
 
 //
+// gfx
+//
+#include "gfx/gfx_draw.hpp"
+using namespace gfx;
+
+//
 // ut
 //
 using namespace ut;
@@ -29,12 +35,22 @@ void BoardSlot::takeCard(CardRef ref)
 
 void BoardSlot::setCard(ng::Card const& ng)
 {
-    Card card;
-    card.ng         = ng;
-    card.assets     = Card::Assets::fromNgCard(card.ng);
-    card.layout     = layout::CardLayout::fromRect(m_bounds_card);
+    Card c;
+    c.ng         = ng;
+    c.assets     = Card::Assets::fromNgCard(c.ng);
+    c.layout     = layout::CardLayout::fromRect(m_bounds_card);
 
-    m_card = TANK.addCard(card).ref();
+    m_card = TANK.addCard(c).ref();
+}
+
+void BoardSlot::setHighlight()
+{
+    m_highlighted = true;
+}
+
+void BoardSlot::clearHighlight()
+{
+    m_highlighted = false;
 }
 
 CardRef BoardSlot::giveCard()
@@ -51,8 +67,19 @@ void BoardSlot::layout(rect const& b)
     m_bounds_card = layout::CardLayout::rectFromRect(m_bounds);
 }
 
-void BoardSlot::drawAboveCards() { }
+void BoardSlot::drawAboveCards()
+{
+    if (m_highlighted)
+    {
+        drawRectOutline(m_bounds_card, 2.0f, ut::colors::red);
+    }
+}
 void BoardSlot::drawUnderCards() { }
 void BoardSlot::drawDebug     () { }
+
+bool BoardSlot::isTargeted(vec2 const& mp) const
+{
+    return m_bounds.contains(mp);
+}
 
 
