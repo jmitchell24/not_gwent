@@ -12,8 +12,8 @@ namespace game::layout
     {
         ut::rect bounds;
         ut::rect score;
-        ut::rect cmdr_horn;
-        ut::rect weather;
+        ut::rect buff;
+        ut::rect nerf;
         ut::rect units;
 
         void layout(ut::rect const& b);

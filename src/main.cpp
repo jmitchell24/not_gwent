@@ -18,6 +18,8 @@
 #include "scene_card_test.hpp"
 #include "scene_math_test.hpp"
 #include "scene_proto_test.hpp"
+#include "scene_grid_editor.hpp"
+#include "scene_demo_window.hpp"
 
 //
 // gfx
@@ -35,6 +37,13 @@ using namespace gfx;
 #include "rlImGui/extras/IconsFontAwesome5.h"
 
 #include "rlImGui/imgui/imgui_mods.hpp"
+
+//
+// lua
+//
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 
 //
 // ut
@@ -90,13 +99,21 @@ public:
 
         ImGui::Begin("Scene");
 
-        for (auto&& it : m_scenes)
-        {
-            ImGui::SameLine();
-            if (ImGui::RadioButton(it->name(), m_selected == it))
-                m_selected = it;
 
+        if (ImGui::BeginCombo("Scene", m_selected->name()))
+        {
+            for (auto&& it : m_scenes)
+            {
+                if (ImGui::Selectable(it->name(), m_selected == it))
+                {
+                    m_selected = it;
+                }
+            }
+            ImGui::EndCombo();
         }
+
+
+
 
         ImGui::BeginChild(m_selected->name(), {0,0}, true);
         m_selected->drawDebug();
@@ -111,12 +128,12 @@ private:
 };
 
 #define ENUM_SCENES \
+    CASE(SceneLayoutEditor  )  \
+    CASE(SceneMathTest      )  \
     CASE(SceneProtoTest     )  \
     CASE(SceneGameBoard2Test)  \
     CASE(SceneCardTest      )  \
-    CASE(SceneMathTest      )  \
-
-
+    CASE(SceneDemoWindow    )  \
 
 
 
@@ -147,15 +164,7 @@ ENUM_SCENES
     auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
     stage.layout(window_bounds);
 
-//    lua_State* L = luaL_newstate();
-//    luaL_openlibs(L); // Open standard Lua libraries
-//
-//    int result = luaL_dofile(L, "data/scripts/myscript.lua");
-//    if (result != 0) {
-//        // Handle error
-//    }
-//
-//    lua_close(L);
+
 
     while (!WindowShouldClose())
     {
@@ -176,6 +185,8 @@ ENUM_SCENES
 
         rlImGuiBegin();
 
+
+
         {
             ImGui::RenderDockspace();
 
@@ -191,6 +202,8 @@ ENUM_SCENES
         EndDrawing();
 
         //SwapScreenBuffer();
+
+
     }
 
     return EXIT_SUCCESS;

@@ -43,8 +43,8 @@ int CombatRow::updateScore()
 
 void CombatRow::layout(layout::CombatRow const& l)
 {
-    cmdr_horn.layout(l.cmdr_horn);
-    weather.layout(l.weather);
+    cmdr_horn.layout(l.buff);
+    weather.layout(l.nerf);
     units.layout(l.units);
     m_score.layout(l.score.anchorCCtoCC(l.score.size()/2));
 }

@@ -16,6 +16,8 @@
 #define rect_       ut::rectf const&
 #define color_      ut::color const&
 #define text_       ut::cstrparam
+#define quad_       Quad const&
+#define vert_       Vertex const&
 
 namespace gfx
 {
@@ -42,13 +44,55 @@ UT_ENUM_RECT_ALIGNMENTS
 
     void drawShadow(rect_ rect, vec2_ offset, flt_ thickness);
 
-    struct Vertex { ut::vec2 p; ut::color c=ut::colors::white; };
-    struct Quad { Vertex v1, v2, v3, v4; };
+    struct Vertex
+    {
+        ut::vec2 p;
+        ut::color c=ut::colors::white;
+    };
+
+    struct Triangle
+    {
+        ut::vec2 v1,v2,v3;
+    };
+
+    struct Quad
+    {
+        Vertex tl, bl, br, tr;
+
+        Quad()=default;
+
+        explicit Quad(rect_ r) :
+            tl{ r.tl() },
+            bl{ r.bl() },
+            br{ r.br() },
+            tr{ r.tr() }
+        {}
+
+        Quad(rect_ r, color_ tl, color_ bl, color_ br, color_ tr) :
+            tl{ r.tl(), tl },
+            bl{ r.bl(), bl },
+            br{ r.br(), br },
+            tr{ r.tr(), tr }
+        {}
+
+        Quad(rect_ r, color_ c) :
+            tl{ r.tl(), c },
+            bl{ r.bl(), c },
+            br{ r.br(), c },
+            tr{ r.tr(), c }
+        {}
+
+        Quad(vert_ tl, vert_ bl, vert_ br, vert_ tr)
+            : tl{tl}, bl{bl}, br{br}, tr{tr}
+        {}
+    };
+
     void drawQuad(Quad const& q);
+    void drawFrame(Quad const& outer, Quad const& inner);
 
 
 
-    struct Triangle { ut::vec2 v1,v2,v3; };
+
     void drawTriangle(vec2_ v1, vec2_ v2, vec2_ v3, color_ c1, color_ c2, color_ c3);
 }
 
@@ -57,3 +101,5 @@ UT_ENUM_RECT_ALIGNMENTS
 #undef rect_
 #undef color_
 #undef text_
+#undef quad_
+#undef vert_

@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "raylib.h"
+#include "rlNanoVG/nanovg.h"
 
 #define VIRT_DEBUG(r_)      ( gfx::VIRT.drawRectDebug(#r_, r_) )
 
@@ -90,6 +91,22 @@ namespace gfx
                             float rotation,
                             ut::color const &c);   // Draw a part of a texture defined by a rectangle with 'pro' parameters
 
+
+        //
+        // nanovg
+        //
+
+        void setNanoVGViewport(NVGcontext* ctx)
+        {
+            auto [fit_sz, fit_scale] = m_real_viewport.fitScale(m_virt_viewport.width(), m_virt_viewport.height());
+            auto fit_rect = m_real_viewport.anchorCCtoCC(fit_sz);
+
+            //auto mx_scale = MatrixScale(fit_scale,fit_scale, 1.0);
+            //auto mx_trans = MatrixTranslate(fit_rect.x(), fit_rect.y(), 0.0);
+
+            nvgTranslate(ctx, fit_rect.x(), fit_rect.y());
+            nvgScale(ctx, fit_scale, fit_scale);
+        }
 
         //
         // debug

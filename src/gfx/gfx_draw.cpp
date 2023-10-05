@@ -59,9 +59,8 @@ void ::gfx::drawRectOutline(rect_ rect, flt_ thickness, color_ color)
 
 void ::gfx::drawTexture(Texture2D texture, rect_ rect, color_ color)
 {
-    Rectangle source    = { 0,0,(float)texture.width,(float)texture.height };
-    Vector2 origin      = { 0, 0};
-    //Color color         = WHITE;
+    Rectangle source = { 0,0,(float)texture.width,(float)texture.height };
+    Vector2 origin   = { 0, 0 };
     DrawTexturePro(texture, source, torl(rect), origin, 0, torl(color));
 }
 
@@ -124,12 +123,24 @@ void ::gfx::drawTriangle(vec2_ v1, vec2_ v2, vec2_ v3, color_ c1, color_ c2, col
 
 void ::gfx::drawQuad(Quad const& q)
 {
+    rlSetTexture(1);
+
     rlBegin(RL_QUADS);
-    rlColor4ub(q.v1.c.r, q.v1.c.g, q.v1.c.b, q.v1.c.a); rlVertex2f(q.v1.p.x, q.v1.p.y);
-    rlColor4ub(q.v2.c.r, q.v2.c.g, q.v2.c.b, q.v2.c.a); rlVertex2f(q.v2.p.x, q.v2.p.y);
-    rlColor4ub(q.v3.c.r, q.v3.c.g, q.v3.c.b, q.v3.c.a); rlVertex2f(q.v3.p.x, q.v3.p.y);
-    rlColor4ub(q.v4.c.r, q.v4.c.g, q.v4.c.b, q.v4.c.a); rlVertex2f(q.v4.p.x, q.v4.p.y);
+    rlColor4ub(q.tl.c.r, q.tl.c.g, q.tl.c.b, q.tl.c.a); rlVertex2f(q.tl.p.x, q.tl.p.y);
+    rlColor4ub(q.bl.c.r, q.bl.c.g, q.bl.c.b, q.bl.c.a); rlVertex2f(q.bl.p.x, q.bl.p.y);
+    rlColor4ub(q.br.c.r, q.br.c.g, q.br.c.b, q.br.c.a); rlVertex2f(q.br.p.x, q.br.p.y);
+    rlColor4ub(q.tr.c.r, q.tr.c.g, q.tr.c.b, q.tr.c.a); rlVertex2f(q.tr.p.x, q.tr.p.y);
     rlEnd();
+
+    rlSetTexture(0);
+}
+
+void ::gfx::drawFrame(Quad const& outer, Quad const& inner)
+{
+    drawQuad({ outer.tl, inner.tl, inner.tr, outer.tr });
+    drawQuad({ outer.tl, outer.bl, inner.bl, inner.tl });
+    drawQuad({ inner.bl, outer.bl, outer.br, inner.br });
+    drawQuad({ inner.tr, inner.br, outer.br, outer.tr });
 }
 
 void ::gfx::drawShadow(rect_ rect, vec2_ offset, flt_ thickness)

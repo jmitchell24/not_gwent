@@ -34,7 +34,7 @@ void Spinner::layout(rect const& bounds)
 {
     m_bounds = bounds;
     updateValues(float(m_value));
-    font = game::fonts::smallburgRegular128();
+    font = game::fonts::steelfish128();
 }
 
 void Spinner::update(float dt)

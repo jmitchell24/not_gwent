@@ -21,7 +21,7 @@ namespace gfx
     class DebugRectManager
     {
     public:
-        bool enabled = false;
+        bool enabled = true;
 
         void addRect(ut::cstrparam label, ut::rectf const& r);
         void pushRect(ut::cstrparam label, ut::rectf const& r);

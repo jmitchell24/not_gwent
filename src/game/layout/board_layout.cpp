@@ -31,21 +31,29 @@ size_t constexpr static VIRT_PAD        = 10;
 
 void CombatRow::layout(rect const& b)
 {
-    auto [b_score, b_cards] = b.splitLeft(50, VIRT_PAD);
+    //auto [b_score, b_cards] = b.splitLeft(50, VIRT_PAD);
 
     bounds = b;
-    score       = b_score;
-    cmdr_horn   = b_cards.row(8, 0, {       .inner_pad=VIRT_PAD });
-    units       = b_cards.row(8, 1, { .w=6, .inner_pad=VIRT_PAD });
-    weather     = b_cards.row(8, 7, {       .inner_pad=VIRT_PAD });
+//    score       = b_score;
+//    cmdr_horn   = b_cards.row(8, 0, {       .inner_pad=VIRT_PAD });
+//    units       = b_cards.row(8, 1, { .w=6, .inner_pad=VIRT_PAD });
+//    weather     = b_cards.row(8, 7, {       .inner_pad=VIRT_PAD });
+
+
+    score     = bounds.row(8, 0, {       .inner_pad=30 }).fitAspect(1);
+    units     = bounds.row(8, 1, { .w=6, .inner_pad=30 });
+
+    auto mods = bounds.row(8, 7, {       .inner_pad=30 }).fitAspect(1);
+    buff    = mods.col(2, 0);
+    nerf    = mods.col(2, 1);
 }
 
 void CombatRow::drawDebug()
 {
     DRECT_PUSH2(CombatRow,bounds);
     DRECT1(score);
-    DRECT1(cmdr_horn);
-    DRECT1(weather);
+    DRECT1(buff);
+    DRECT1(nerf);
     DRECT1(units);
     DRECT_POP();
 }
@@ -127,9 +135,9 @@ void StatsBoard::drawDebug()
 
 void GameBoard::layout(rect const& b)
 {
-    auto [b_stats, b_cards_decks] = b.shrunk(0, 0, 0, 30).splitLeft(b.width() / 4, VIRT_PAD);
-    auto [b_cards, b_decks] = b_cards_decks.splitRight(b.width() / 4, VIRT_PAD);
-    auto [b_stats_cpu, b_stats_usr] = b_stats.splitNV<2>(150);
+    auto [b_stats    , b_cards_decks] = b.shrunk(VIRT_PAD).splitLeft(b.width() / 4, VIRT_PAD);
+    auto [b_cards    , b_decks      ] = b_cards_decks.splitRight(b.width() / 4, VIRT_PAD);
+    auto [b_stats_cpu, b_stats_usr  ] = b_stats.splitNV<2>(150);
 
     bounds = b;
 
