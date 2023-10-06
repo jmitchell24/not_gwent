@@ -8,6 +8,7 @@
 #include "gfx/gfx_virt2d.hpp"
 
 #include <variant>
+#include <optional>
 
 struct RootNode;
 struct LeafNode;
@@ -27,6 +28,8 @@ struct HboxNode;
 //struct HboxNode { };
 
 
+
+
 class SceneLayoutEditor : public Scene
 {
 public:
@@ -40,9 +43,17 @@ public:
     void drawDebug() override;
 
 private:
+
+
     struct GridTag
     {
-        enum Type { VBOX, HBOX };
+        enum Type { BOX, VBOX, HBOX, STACKBOX };
+        enum AnchorType
+        {
+            ANCHOR_FILL,
+
+
+        };
 
         using text_type     = std::array<char, 20>;
         using taglist_type  = std::vector<GridTag>;
@@ -52,6 +63,11 @@ private:
         ut::color   color       {};
         int         weight      = 1;
         ut::rect    bounds;
+        text_type   name;
+
+        float inner_pad =10;
+        float outer_pad =10;
+        float aspect    =0;
 
         void normalizeWeights()
         {
@@ -72,10 +88,71 @@ private:
                 it.normalizeWeights();
         }
 
+        void layoutVbox(ut::rect const& b)
+        {
+            auto sz  = child_tags.size();
+            auto h   = b.height() - ( outer_pad*2 ) - ( inner_pad * float( sz-1 ) );
+            auto sum = weightsSum();
+            auto cl  = bounds.min.x + outer_pad;
+            auto cr  = bounds.max.x - outer_pad;
+
+            auto cy  = bounds.min.y + outer_pad;
+
+            for (size_t i = 0; i < sz-1; ++i)
+            {
+                auto&& it   = child_tags[i];
+                auto   ch   = h * ( float(it.weight) / sum );
+                auto   ct = cy;
+                auto   cb = cy+ch;
+
+                it.layout( { cl, ct, cr, cb } );
+
+                cy = cb+inner_pad;
+            }
+
+            child_tags.back().layout( { cl, cy, cr, bounds.max.y - outer_pad } );
+        }
+
+        void layoutHbox(ut::rect const& b)
+        {
+            auto sz  = child_tags.size();
+            auto w   = b.width() - ( outer_pad*2 ) - ( inner_pad * float( sz-1 ) );
+            auto sum = weightsSum();
+            auto ct  = bounds.min.y + outer_pad;
+            auto cb  = bounds.max.y - outer_pad;
+
+            auto cx  = bounds.min.x + outer_pad;
+
+            for (size_t i = 0; i < sz-1; ++i)
+            {
+                auto&& it   = child_tags[i];
+                auto   cw   = w * ( float(it.weight) / sum );
+                auto   cl = cx;
+                auto   cr = cx+cw;
+
+                it.layout( { cl, ct, cr, cb } );
+
+                cx = cr+inner_pad;
+            }
+
+            child_tags.back().layout( { cx, ct, bounds.max.x - outer_pad, cb } );
+        }
+
+        void layoutStackbox(ut::rect const& b)
+        {
+            for (auto&& it: child_tags)
+            {
+                it.layout(bounds.shrunk(outer_pad));
+            }
+        }
+
+        void layoutRect()
+        {
+
+        }
+
         void layout(ut::rect const& b)
         {
-            float inner_pad = 10;
-            float outer_pad = 10;
 
             bounds = b;
 
@@ -84,76 +161,21 @@ private:
 
             if (child_tags.size() == 1)
             {
-                child_tags[0].layout(bounds);
+                child_tags[0].layout(bounds.shrunk(outer_pad));
                 return;
             }
 
             if (type == VBOX)
             {
-//                auto h   = b.height();
-//                auto sz  = child_tags.size();
-//                auto sum = weightsSum();
-//                auto cy  = bounds.min.y;
-//
-//                for (size_t i = 0; i < sz-1; ++i)
-//                {
-//                    auto&& it   = child_tags[i];
-//                    auto   ch   = h * ( float(it.weight) / sum );
-//                    auto   cmin = cy;
-//                    auto   cmax = cy+ch;
-//
-//                    it.layout(bounds.splitV(cmin, cmax));
-//
-//                    cy = cmax;
-//                }
-//
-//                child_tags.back().layout(bounds.splitV(cy, bounds.max.y));
 
-                auto sz  = child_tags.size();
-                auto h   = b.height() - ( outer_pad*2 ) - ( inner_pad * float( sz-1 ) );
-                auto sum = weightsSum();
-                auto cl  = bounds.min.x + outer_pad;
-                auto cr  = bounds.max.x - outer_pad;
-
-                auto cy  = bounds.min.y + outer_pad;
-
-                for (size_t i = 0; i < sz-1; ++i)
-                {
-                    auto&& it   = child_tags[i];
-                    auto   ch   = h * ( float(it.weight) / sum );
-                    auto   ct = cy;
-                    auto   cb = cy+ch;
-
-                    it.layout( { cl, ct, cr, cb } );
-
-                    cy = cb+inner_pad;
-                }
-
-                child_tags.back().layout( { cl, cy, cr, bounds.max.y - outer_pad } );
             }
             else if (type == HBOX)
             {
-                auto sz  = child_tags.size();
-                auto w   = b.width() - ( outer_pad*2 ) - ( inner_pad * float( sz-1 ) );
-                auto sum = weightsSum();
-                auto ct  = bounds.min.y + outer_pad;
-                auto cb  = bounds.max.y - outer_pad;
 
-                auto cx  = bounds.min.x + outer_pad;
+            }
+            else if (type == STACKBOX)
+            {
 
-                for (size_t i = 0; i < sz-1; ++i)
-                {
-                    auto&& it   = child_tags[i];
-                    auto   cw   = w * ( float(it.weight) / sum );
-                    auto   cl = cx;
-                    auto   cr = cx+cw;
-
-                    it.layout( { cl, ct, cr, cb } );
-
-                    cx = cr+inner_pad;
-                }
-
-                child_tags.back().layout( { cx, ct, bounds.max.x - outer_pad, cb } );
             }
 
         }

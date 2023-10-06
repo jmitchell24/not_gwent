@@ -4,12 +4,6 @@
 
 #include "scene_grid_editor.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
-//
-// sol
-//
-#define SOL_ALL_SAFETIES_ON 1
-
-#include "sol.hpp"
 
 //
 // ut
@@ -52,6 +46,7 @@ void SceneLayoutEditor::GridTag::drawRect()
     }
     else
     {
+        ImGui::DrawDRECT("asdf", bounds, color.withA(0));
         for (auto&& it : child_tags)
         {
             it.drawRect();
@@ -230,7 +225,7 @@ void SceneLayoutEditor::draw()
 void SceneLayoutEditor::drawDebug()
 {
     using namespace ImGui;
-    auto r = psize(620, 900).rect();
+    auto r = psize(1280, 720).rect();
 
     //m_tag_root.drawRect(r);
     m_tag_root.layout(r);
