@@ -31,7 +31,6 @@ namespace gfx
         { return m_virt_viewport; }
 
         ut::vec2f realPoint(ut::vec2f const &p) const;
-
         ut::rectf realRect(ut::rectf const &r) const;
 
         void layout(ut::rectf const &real_viewport, float virt_width, float virt_height);

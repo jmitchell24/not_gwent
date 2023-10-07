@@ -60,7 +60,16 @@ namespace ImGui
     void PopItemDisabled();
 
 
-    void DrawDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style = ImGuiDRECTStyle_NoText);
+    void DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style);
+
+    inline void DrawDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style = ImGuiDRECTStyle_NoText)
+    { DrawDRECT(GetForegroundDrawList(), lbl, r, col, style); }
+
+    inline void DrawForegroundDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style = ImGuiDRECTStyle_NoText)
+    { DrawDRECT(GetForegroundDrawList(), lbl, r, col, style); }
+
+    inline void DrawBackgroundDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style = ImGuiDRECTStyle_NoText)
+    { DrawDRECT(GetBackgroundDrawList(), lbl, r, col, style); }
 }
 
 #undef text_

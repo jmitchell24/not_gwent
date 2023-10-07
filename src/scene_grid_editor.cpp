@@ -5,6 +5,8 @@
 #include "scene_grid_editor.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
 
+#include "assert_msg.hpp"
+
 //
 // ut
 //
@@ -21,187 +23,9 @@ using namespace ut;
 //
 using namespace std;
 
-static color nextColor()
-{
-    static size_t counter = 0;
-    auto hue = float(counter++) * 100.0f + 120.0f;
-    hue = fmodf(hue, 360.0f);
-    return color(color::hsluv{hue, 80.0f, 80.0f, 1.0f});
-}
-
-SceneLayoutEditor::GridTag SceneLayoutEditor::m_tag_root   {};
-SceneLayoutEditor::GridTag SceneLayoutEditor::m_tag_pending{};
-
-SceneLayoutEditor::GridTag::GridTag()
-        : color{nextColor()}
-{
-
-}
-
-void SceneLayoutEditor::GridTag::drawRect()
-{
-    if (child_tags.empty())
-    {
-        ImGui::DrawDRECT("asdf", bounds, color);
-    }
-    else
-    {
-        ImGui::DrawDRECT("asdf", bounds, color.withA(0));
-        for (auto&& it : child_tags)
-        {
-            it.drawRect();
-        }
-    }
-}
-
-void SceneLayoutEditor::GridTag::draw()
-{
-    if (child_tags.empty())
-    {
-        draw(true);
-    }
-    else if (draw(false))
-    {
-        for (auto &&it: child_tags)
-            it.draw();
-        ImGui::TreePop();
-    }
-}
-
-//void SceneLayoutEditor::GridTag::drawRect(rect const &parent)
-//{
-//    using namespace ImGui;
-//
-//
-//    if (child_tags.empty())
-//    {
-//        DrawDRECT("node", r, color, ImGuiDRECTStyle_LabelOnly);
-//    }
-//    else
-//    {
-//        for (auto&& it: child_tags)
-//        {
-//            it.drawRect(r);
-//        }
-//    }
-//}
-
-bool SceneLayoutEditor::GridTag::draw(bool is_leaf)
-{
-    using namespace ImGui;
-
-    TableNextRow();
-    TableNextColumn();
-
-    PushID(this);
-
-    int flags =
-            ImGuiTreeNodeFlags_SpanFullWidth |
-            ImGuiTreeNodeFlags_DefaultOpen;
-
-    if (is_leaf)
-    {
-        flags =
-                ImGuiTreeNodeFlags_SpanFullWidth |
-                ImGuiTreeNodeFlags_Leaf |
-                ImGuiTreeNodeFlags_Bullet |
-                ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    }
-
-    PushStyleColor(ImGuiCol_Text, color);
-
-    char const* name = "node";
-    if (type == VBOX) name = "vbox";
-    if (type == HBOX) name = "hbox";
-
-    bool open = TreeNodeEx(name, flags);
-    highlighted = IsItemHovered();
-
-    PopStyleColor();
-
-    TableNextColumn();
-
-//    if (SmallButton("+"))
-//    {
-//        OpenPopup("add-child-node");
-//    }
-//
-//    if (BeginPopup("add-child-node"))
-//    {
-//        InputText("Name", m_tag_pending.name_buffer.data(), 20);
-//
-//        if (isNameValid(m_tag_pending.name()))
-//        {
-//            if (Button("Add"))
-//            {
-//                m_tag_pending.col = nextColor();
-//                child_tags.push_back(m_tag_pending);
-//                CloseCurrentPopup();
-//            }
-//        }
-//        else
-//        {
-//            PushItemDisabled();
-//            Button("Add");
-//            PopItemDisabled();
-//        }
-//
-//        EndPopup();
-//    }
 
 
-//    if (IsItemHovered())
-//        SetTooltip("Add Child Node");
-
-//    SameLine();
-
-    if (SmallButton("a"))
-    {
-        child_tags.emplace_back();
-    }
-
-    if (IsItemHovered())
-        SetTooltip("add");
-
-    SameLine();
-
-    if (SmallButton("f"))
-    {
-        type = type == VBOX ? HBOX : VBOX;
-    }
-
-    if (IsItemHovered())
-        SetTooltip("flip");
-
-    SameLine();
-
-    if (weight > 1)
-    {
-        if (SmallButton("-"))
-            weight--;
-    }
-    else
-    {
-        PushItemDisabled();
-        SmallButton("-");
-        PopItemDisabled();
-    }
-
-    SameLine();
-
-    if (SmallButton("+"))
-    {
-        weight++;
-    }
-
-    SameLine();
-
-    Text("%d", weight);
-
-    PopID();
-
-    return open;
-}
+ledit::box_ptr SceneLayoutEditor::m_tag_root    = ledit::Box::create();
 
 void SceneLayoutEditor::layout(rect const &b)
 {
@@ -225,19 +49,56 @@ void SceneLayoutEditor::draw()
 void SceneLayoutEditor::drawDebug()
 {
     using namespace ImGui;
-    auto r = psize(1280, 720).rect();
+    auto r = gfx::VIRT.virtViewport();
 
-    //m_tag_root.drawRect(r);
-    m_tag_root.layout(r);
-    m_tag_root.drawRect();
-    m_tag_root.normalizeWeights();
+    m_tag_root->layout(r);
+    m_tag_root->drawRect(ledit::Box::selected_box);
+
+    if (IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        if (auto box = m_tag_root->tryGetBox(GetMousePos()))
+        {
+            ledit::Box::selected_box = box;
+            //OpenPopup("m_tag_popup");
+        }
+    }
+
+//    if (BeginPopup("m_tag_popup"))
+//    {
+//        if (ledit::Box::selected_box)
+//        {
+//            ledit::Box::selected_box->drawPopup();
+//        }
+//        else
+//        {
+//            //CloseCurrentPopup();
+//        }
+//
+//        EndPopup();
+//    }
+
+    //m_tag_root.normalizeWeights();
+
+    char const* title = "Box";
+    if (ledit::Box::selected_box)
+        if (!ledit::Box::selected_box->name.empty())
+            title = ledit::Box::selected_box->name.c_str();
+
+    Begin(PRINTER("%s###selected_box", title));
+    if (ledit::Box::selected_box)
+    {
+        ledit::Box::selected_box->drawPopup();
+    }
+    End();
+
+    Begin("Box Hierarchy###box_hierarchy");
 
     ImGuiTableFlags table_flags =
-            ImGuiTableFlags_BordersV |
-            ImGuiTableFlags_BordersOuterH |
-            ImGuiTableFlags_Resizable |
-            ImGuiTableFlags_RowBg |
-            ImGuiTableFlags_NoBordersInBody;
+        ImGuiTableFlags_BordersV        |
+        ImGuiTableFlags_BordersOuterH   |
+        ImGuiTableFlags_Resizable       |
+        ImGuiTableFlags_RowBg           |
+        ImGuiTableFlags_NoBordersInBody;
 
     if (ImGui::BeginTable("grids", 2, table_flags))
     {
@@ -245,10 +106,12 @@ void SceneLayoutEditor::drawDebug()
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
 
-        m_tag_root.draw();
+        m_tag_root->drawTreeTableRow();
 
         ImGui::EndTable();
     }
+
+    End();
 }
 
 #if 0

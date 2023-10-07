@@ -106,7 +106,7 @@ ImU32 ToU32(color::hsv      const& hsv  ) { return ToU32(hsv.toNormal()); }
 ImU32 ToU32(color::hsluv    const& hsluv) { return ToU32(hsluv.toNormal()); }
 ImU32 ToU32(color           const& col  ) { return ToU32(col.toNormal()); }
 
-void ImGui::DrawDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
+void ImGui::DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
 {
     //ImGuiContext&   g = *GImGui;
     ImGuiStyle&     s = ImGui::GetStyle();
@@ -134,7 +134,6 @@ void ImGui::DrawDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
         default:assert_case(ImGuiDRECTStyle_);
     }
 
-    auto dl = ImGui::GetForegroundDrawList();
     auto rr = r.round();
 
     auto has_fill   = col.a > 0;

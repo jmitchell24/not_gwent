@@ -47,6 +47,7 @@ vec2 Virt2DManager::realPoint(vec2 const& p) const
     };
 }
 
+
 rectf Virt2DManager::realRect(rectf const& r) const
 {
     return { realPoint(r.min), realPoint(r.max) };
