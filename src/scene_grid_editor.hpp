@@ -26,9 +26,4 @@ public:
     void update(float dt) override;
     void draw() override;
     void drawDebug() override;
-
-
-
-private:
-    static ledit::box_ptr m_tag_root;
 };

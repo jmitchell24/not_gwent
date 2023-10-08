@@ -28,7 +28,7 @@ namespace ledit
     };
 
     class Box;
-    using box_ptr = std::shared_ptr<Box>;
+    using box_ptr   = std::shared_ptr<Box>;
     using boxlist_t = std::vector<box_ptr>;
 
     class Box : public std::enable_shared_from_this<Box>
@@ -50,66 +50,12 @@ namespace ledit
         Sizer           sizer;
         float           inner_pad=10;
 
-        bool mark = false;
-
-        box_ptr ptr()
-        {
-            return shared_from_this();
-        }
-
         static box_ptr root_box;
         static box_ptr selected_box;
 
-        struct RowAction
-        {
-            enum Type { REMOVE, MOVE_UP, MOVE_DOWN } type;
-            box_ptr box;
-        };
+        static box_ptr create(box_ptr const& parent);
 
-        std::optional<RowAction> row_action;
-
-        void doRowAction()
-        {
-            if (!row_action)
-                return;
-
-            auto ra = *row_action;
-            row_action.reset();
-
-            auto b = child_boxes.begin();
-            auto e = child_boxes.end();
-            for (auto it = b; it != e; ++it)
-            {
-                if (*it == ra.box)
-                {
-                    switch (ra.type)
-                    {
-
-                        case RowAction::REMOVE:
-                            child_boxes.erase(it);
-                            return;
-
-                        case RowAction::MOVE_UP:
-                            if (it != b)
-                                it->swap(*(it-1));
-                            return;
-
-                        case RowAction::MOVE_DOWN:
-                            if (auto down = it+1; down != e)
-                                it->swap(*down);
-                            return;
-                    }
-
-                    return;
-                }
-            }
-        }
-
-        void rowAction(RowAction const& ra)
-        {
-            assert(!row_action);
-            row_action = ra;
-        }
+        box_ptr ptr();
 
         box_ptr tryGetBox(ut::vec2 const& mp);
 
@@ -120,23 +66,24 @@ namespace ledit
         void layoutHbox(ut::rect const& b);
         void layoutSbox(ut::rect const& b);
 
-        void reset();
-
-        void drawPopup();
-
+        void drawProperties();
         void drawTreeTableRow();
         bool drawTreeTableRow(bool is_leaf);
         void drawRect(box_ptr box);
 
-        static box_ptr create(box_ptr const& parent = {})
-        {
-            return box_ptr { new Box(parent) };
-        }
-
     private:
-        Box(box_ptr p)
-            : parent{std::move(p)}, color{nextColor()}
-        {}
+        struct RowAction
+        {
+            enum Type { REMOVE, MOVE_UP, MOVE_DOWN } type;
+            box_ptr box;
+        };
+
+        std::optional<RowAction> m_row_action;
+
+        Box(box_ptr p);
+
+        void applyRowAction();
+        void setRowAction(RowAction const& ra);
 
         inline float weightsSum() const
         {

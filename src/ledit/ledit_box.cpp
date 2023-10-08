@@ -29,7 +29,7 @@ using namespace ut;
 using namespace std;
 
 //
-// Box -> Implementation
+// Helper Functions
 //
 
 color Box::nextColor()
@@ -38,32 +38,6 @@ color Box::nextColor()
     auto hue = float(counter++) * 100.0f + 120.0f;
     hue = fmodf(hue, 360.0f);
     return color::hsluv{hue, 80.0f, 80.0f, 1.0f}.toColor();
-}
-
-box_ptr Box::selected_box;
-
-void Box::drawRect(box_ptr box)
-{
-    if (box == ptr())
-        box = nullptr;
-
-    auto c = !box ? color : ut::colors::black ;
-
-
-
-    if (child_boxes.empty())
-    {
-        ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_inner), c, ImGuiDRECTStyle_LabelOnly);
-    }
-    else
-    {
-        for (auto&& it : child_boxes)
-        {
-            it->drawRect(box);
-        }
-    }
-
-    ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_outer), c.withA(0));
 }
 
 cstrview getBoxName(BoxType type)
@@ -79,17 +53,115 @@ cstrview getBoxName(BoxType type)
     return "";
 }
 
-void Box::drawPopup()
+//
+// Box -> Implementation
+//
+
+box_ptr Box::root_box = box_ptr { new Box({}) };
+box_ptr Box::selected_box;
+
+Box::Box(box_ptr p)
+    : parent{std::move(p)}, color{nextColor()}
+{}
+
+box_ptr Box::create(box_ptr const& parent)
 {
+    assert(parent);
+    return box_ptr { new Box(parent) };
+}
+
+box_ptr Box::ptr()
+{
+    return shared_from_this();
+}
+
+box_ptr Box::tryGetBox(vec2 const& mp)
+{
+    auto r = VIRT.realRect(bounds_outer);
+
+    for (auto&& it : child_boxes)
+    {
+        if (auto box = it->tryGetBox(mp))
+            return box;
+    }
+
+    if (r.contains(mp))
+        return ptr();
+    return nullptr;
+}
+
+void Box::drawProperties()
+{
+    using namespace ImGui;
+
     assert(ptr() == selected_box);
 
-    using namespace ImGui;
-    sizer.draw();
+    Text("Selection");
 
+    if (parent)
+    {
+        if (Button("parent"))
+        {
+            selected_box = parent;
+        }
+
+        SameLine();
+
+        if (Button("delete"))
+        {
+            selected_box = parent;
+            parent->setRowAction({RowAction::REMOVE, ptr()});
+        }
+
+        SameLine();
+
+        if (Button("--"))
+        {
+            parent->setRowAction({RowAction::MOVE_UP, ptr()});
+        }
+
+        SameLine();
+
+        if (Button("++"))
+        {
+            parent->setRowAction({RowAction::MOVE_DOWN, ptr()});
+        }
+    }
+    else
+    {
+        PushItemDisabled();
+        Button("parent"); SameLine();
+        Button("delete");
+        PopItemDisabled();
+    }
 
     Separator();
 
-    Button("R"); SameLine();
+    PushItemDisabled();
+    LabelText("outer", "%s", to_string(bounds_outer.psize()).c_str());
+    LabelText("inner", "%s", to_string(bounds_inner.psize()).c_str());
+    PopItemDisabled();
+
+    if (Button("R##name")) { name.clear(); } SameLine();
+
+    std::array<char, 20> static name_buffer;
+    ::strncpy(name_buffer.data(), name.c_str(), name_buffer.size());
+    if (InputText("name", name_buffer.data(), name_buffer.size()))
+    {
+        name = name_buffer.data();
+    }
+
+    Separator();
+
+    Text("Size and Position");
+
+    sizer.draw();
+
+    Separator();
+
+    Text("Container");
+
+    if (Button("R##type")) { type = BOX_SBOX; } SameLine();
     if (BeginCombo("Type", getBoxName(type)))
     {
         if (Selectable("vbox", type == BOX_VBOX)) { type = BOX_VBOX; }
@@ -98,47 +170,17 @@ void Box::drawPopup()
         EndCombo();
     }
 
-    Separator();
-
-    static std::array<char, 20> name_buffer;
-
-    ::strncpy(name_buffer.data(), name.c_str(), name_buffer.size());
-    Button("R"); SameLine();
-    if (InputText("name", name_buffer.data(), name_buffer.size()))
-    {
-        name = name_buffer.data();
-    }
-
-    Button("R"); SameLine();
+    if (Button("R##weight")) { weight = 1; } SameLine();
     if (int w = weight; InputInt("weight", &w, 1))
     {
         if (w > 0) weight = w;
     }
 
-    Button("R"); SameLine();
+    if (Button("R##child_boxes")) { child_boxes.clear(); } SameLine();
+
     if (Button("add"))
     {
         child_boxes.push_back(Box::create(ptr()));
-    }
-    
-    if (parent)
-    {
-        if (Button("up"))
-        {
-            selected_box = parent;
-        }
-        else if (Button("delete"))
-        {
-            selected_box = parent;
-            parent->rowAction({RowAction::REMOVE, ptr()});
-        }
-    }
-    else
-    {
-        PushItemDisabled();
-        Button("up");
-        Button("delete");
-        PopItemDisabled();
     }
 
     ImGuiTableFlags table_flags =
@@ -156,10 +198,32 @@ void Box::drawPopup()
 
         for (auto&& it : child_boxes)
             it->drawTreeTableRow(true);
-        doRowAction();
+        applyRowAction();
 
         ImGui::EndTable();
     }
+}
+
+void Box::drawRect(box_ptr box)
+{
+    if (box == ptr())
+        box = nullptr;
+
+    auto c = !box ? color : ut::colors::black ;
+
+    if (child_boxes.empty())
+    {
+        ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_inner), c, ImGuiDRECTStyle_LabelOnly);
+    }
+    else
+    {
+        for (auto&& it : child_boxes)
+        {
+            it->drawRect(box);
+        }
+    }
+
+    ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_outer), c.withA(0));
 }
 
 void Box::drawTreeTableRow()
@@ -172,12 +236,10 @@ void Box::drawTreeTableRow()
     {
         for (auto&& it: child_boxes)
             it->drawTreeTableRow();
-        doRowAction();
+        applyRowAction();
         ImGui::TreePop();
     }
 }
-
-
 
 bool Box::drawTreeTableRow(bool is_leaf)
 {
@@ -195,10 +257,10 @@ bool Box::drawTreeTableRow(bool is_leaf)
     if (is_leaf)
     {
         flags =
-                ImGuiTreeNodeFlags_SpanFullWidth |
-                ImGuiTreeNodeFlags_Leaf |
-                ImGuiTreeNodeFlags_Bullet |
-                ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            ImGuiTreeNodeFlags_SpanFullWidth |
+            ImGuiTreeNodeFlags_Leaf |
+            ImGuiTreeNodeFlags_Bullet |
+            ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
     PushStyleColor(ImGuiCol_Text, color);
@@ -227,21 +289,21 @@ bool Box::drawTreeTableRow(bool is_leaf)
 
         if (SmallButton("x"))
         {
-            parent->rowAction({RowAction::REMOVE, ptr()});
+            parent->setRowAction({RowAction::REMOVE, ptr()});
         }
 
         SameLine();
 
         if (SmallButton("up"))
         {
-            parent->rowAction({RowAction::MOVE_UP, ptr()});
+            parent->setRowAction({RowAction::MOVE_UP, ptr()});
         }
 
         SameLine();
 
         if (SmallButton("down"))
         {
-            parent->rowAction({RowAction::MOVE_DOWN, ptr()});
+            parent->setRowAction({RowAction::MOVE_DOWN, ptr()});
         }
 
         SameLine();
@@ -274,21 +336,6 @@ bool Box::drawTreeTableRow(bool is_leaf)
     PopID();
 
     return open;
-}
-
-box_ptr Box::tryGetBox(vec2 const& mp)
-{
-    auto r = gfx::VIRT.realRect(bounds_outer);
-
-    for (auto&& it : child_boxes)
-    {
-        if (auto box = it->tryGetBox(mp))
-            return box;
-    }
-
-    if (r.contains(mp))
-        return ptr();
-    return nullptr;
 }
 
 string Box::getLbl()
@@ -387,7 +434,46 @@ void Box::layoutSbox(rect const& b)
     }
 }
 
+void Box::applyRowAction()
+{
+    if (!m_row_action)
+        return;
 
+    auto ra = *m_row_action;
+    m_row_action.reset();
+
+    auto b = child_boxes.begin();
+    auto e = child_boxes.end();
+    for (auto it = b; it != e; ++it)
+    {
+        if (*it == ra.box)
+        {
+            switch (ra.type)
+            {
+                case RowAction::REMOVE:
+                    child_boxes.erase(it);
+                    break;
+
+                case RowAction::MOVE_UP:
+                    if (it != b)
+                        it->swap(*(it-1));
+                    break;
+
+                case RowAction::MOVE_DOWN:
+                    if (auto down = it+1; down != e)
+                        it->swap(*down);
+                    break;
+            }
+            return;
+        }
+    }
+}
+
+void Box::setRowAction(RowAction const& ra)
+{
+    assert(!m_row_action);
+    m_row_action = ra;
+}
 
 #if 0
 void normalizeWeights()

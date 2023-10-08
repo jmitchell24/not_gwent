@@ -41,9 +41,9 @@ void Sizer::draw()
     switch (pad.index())
     {
         case PAD_NONE:
-            if (Button("1")) pad.emplace<PAD_1>(); SameLine();
-            if (Button("2")) pad.emplace<PAD_2>(); SameLine();
-            if (Button("4")) pad.emplace<PAD_4>();
+            if (Button("pad"))      pad.emplace<PAD_1>(); SameLine();
+            if (Button("pad hv"))   pad.emplace<PAD_2>(); SameLine();
+            if (Button("pad ltrb")) pad.emplace<PAD_4>();
             break;
 
         case PAD_1:
@@ -56,9 +56,9 @@ void Sizer::draw()
             break;
 
         case PAD_4:
-            DragFloat("left  ", &get<PAD_4>(pad).x, 1,0,FLT_MAX);
-            DragFloat("top   ", &get<PAD_4>(pad).y, 1,0,FLT_MAX);
-            DragFloat("right ", &get<PAD_4>(pad).z, 1,0,FLT_MAX);
+            DragFloat("left"  , &get<PAD_4>(pad).x, 1,0,FLT_MAX);
+            DragFloat("top"   , &get<PAD_4>(pad).y, 1,0,FLT_MAX);
+            DragFloat("right" , &get<PAD_4>(pad).z, 1,0,FLT_MAX);
             DragFloat("bottom", &get<PAD_4>(pad).w, 1,0,FLT_MAX);
             break;
     }
@@ -74,8 +74,8 @@ void Sizer::draw()
     switch (scl.index())
     {
         case SCL_NONE:
-            if (Button("aspect  ")) scl.emplace<SCL_ASPECT>  (1); SameLine();
-            if (Button("scale   ")) scl.emplace<SCL_SCALE>   (1); SameLine();
+            if (Button("aspect"))   scl.emplace<SCL_ASPECT>  (1); SameLine();
+            if (Button("scale"))    scl.emplace<SCL_SCALE>   (1); SameLine();
             if (Button("scale xy")) scl.emplace<SCL_SCALE_XY>(1); SameLine();
             break;
 
@@ -141,14 +141,6 @@ void Sizer::draw()
             break;
     }
     EndGroup();
-
-    //
-    //
-    //
-
-    Separator();
-
-
 }
 
 rect Sizer::operator() (rect const& parent) const

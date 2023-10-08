@@ -24,14 +24,9 @@ using namespace ut;
 using namespace std;
 
 
-
-ledit::box_ptr SceneLayoutEditor::m_tag_root    = ledit::Box::create();
-
 void SceneLayoutEditor::layout(rect const &b)
 {
     bounds = b;
-
-
 }
 
 void SceneLayoutEditor::update(float dt)
@@ -42,8 +37,6 @@ void SceneLayoutEditor::update(float dt)
 void SceneLayoutEditor::draw()
 {
 
-
-    //
 }
 
 void SceneLayoutEditor::drawDebug()
@@ -51,12 +44,12 @@ void SceneLayoutEditor::drawDebug()
     using namespace ImGui;
     auto r = gfx::VIRT.virtViewport();
 
-    m_tag_root->layout(r);
-    m_tag_root->drawRect(ledit::Box::selected_box);
+    ledit::Box::root_box->layout(r);
+    ledit::Box::root_box->drawRect(ledit::Box::selected_box);
 
     if (IsMouseClicked(ImGuiMouseButton_Right))
     {
-        if (auto box = m_tag_root->tryGetBox(GetMousePos()))
+        if (auto box = ledit::Box::root_box->tryGetBox(GetMousePos()))
         {
             ledit::Box::selected_box = box;
             //OpenPopup("m_tag_popup");
@@ -79,38 +72,41 @@ void SceneLayoutEditor::drawDebug()
 
     //m_tag_root.normalizeWeights();
 
-    char const* title = "Box";
-    if (ledit::Box::selected_box)
-        if (!ledit::Box::selected_box->name.empty())
-            title = ledit::Box::selected_box->name.c_str();
-
-    Begin(PRINTER("%s###selected_box", title));
-    if (ledit::Box::selected_box)
+    if (Begin("Box Properties###selected_box"))
     {
-        ledit::Box::selected_box->drawPopup();
+        if (ledit::Box::selected_box)
+        {
+            ledit::Box::selected_box->drawProperties();
+        }
+        else
+        {
+            PushItemDisabled();
+            Text("No Box Selected");
+            PopItemDisabled();
+        }
     }
     End();
 
-    Begin("Box Hierarchy###box_hierarchy");
-
-    ImGuiTableFlags table_flags =
-        ImGuiTableFlags_BordersV        |
-        ImGuiTableFlags_BordersOuterH   |
-        ImGuiTableFlags_Resizable       |
-        ImGuiTableFlags_RowBg           |
-        ImGuiTableFlags_NoBordersInBody;
-
-    if (ImGui::BeginTable("grids", 2, table_flags))
+    if (Begin("Box Hierarchy###box_hierarchy"))
     {
-        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableHeadersRow();
+        ImGuiTableFlags table_flags =
+                ImGuiTableFlags_BordersV        |
+                ImGuiTableFlags_BordersOuterH   |
+                ImGuiTableFlags_Resizable       |
+                ImGuiTableFlags_RowBg           |
+                ImGuiTableFlags_NoBordersInBody;
 
-        m_tag_root->drawTreeTableRow();
+        if (ImGui::BeginTable("grids", 2, table_flags))
+        {
+            ImGui::TableSetupColumn("Label" , ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn(""      , ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableHeadersRow();
 
-        ImGui::EndTable();
+            ledit::Box::root_box->drawTreeTableRow();
+
+            ImGui::EndTable();
+        }
     }
-
     End();
 }
 
