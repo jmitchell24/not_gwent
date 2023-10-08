@@ -1,9 +1,24 @@
-hbox:
-  vbox:
+type: BOX_HBOX
+weight: 1
+children:
+  - type: BOX_HBOX
     weight: 1
-
-
-
-
-
-# vbox, hbox, grid
+  - type: BOX_HBOX
+    weight: 1
+  - type: BOX_VBOX
+    weight: 1
+    children:
+      - type: BOX_HBOX
+        weight: 1
+      - type: BOX_HBOX
+        weight: 1
+      - type: BOX_HBOX
+        weight: 1
+      - type: BOX_HBOX
+        weight: 1
+      - type: BOX_HBOX
+        weight: 1
+  - type: BOX_HBOX
+    weight: 1
+  - type: BOX_HBOX
+    weight: 1

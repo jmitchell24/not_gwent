@@ -3,6 +3,7 @@
 //
 
 #include "ledit_box.hpp"
+#include "ledit_yaml.hpp"
 using namespace ledit;
 
 #include "assert_msg.hpp"
@@ -21,7 +22,7 @@ using namespace gfx;
 //
 // ut
 //
-
+#include <ut/algo.hpp>
 using namespace ut;
 //
 // std
@@ -40,18 +41,14 @@ color Box::nextColor()
     return color::hsluv{hue, 80.0f, 80.0f, 1.0f}.toColor();
 }
 
-cstrview getBoxName(BoxType type)
-{
-    switch (type)
-    {
-        case BOX_VBOX: return "vbox";
-        case BOX_HBOX: return "hbox";
-        case BOX_SBOX: return "sbox";
+/*
 
-        default:nopath_case(BoxType);
-    }
-    return "";
-}
+vbox:
+
+
+ */
+
+
 
 //
 // Box -> Implementation
@@ -88,6 +85,27 @@ box_ptr Box::tryGetBox(vec2 const& mp)
     if (r.contains(mp))
         return ptr();
     return nullptr;
+}
+
+string Box::getLbl()
+{
+    string s;
+
+    switch (type)
+    {
+        case BOX_VBOX: s += PRINTER("[vbox %zu] ", child_boxes.size()); break;
+        case BOX_HBOX: s += PRINTER("[hbox %zu] ", child_boxes.size()); break;
+        case BOX_SBOX: s += PRINTER("[sbox %zu] ", child_boxes.size()); break;
+        default:nopath_case(BoxType);
+    }
+
+    if (ptr() == selected_box)
+        s += "*** ";
+
+    if (!name.empty())
+        s += PRINTER("\"%s\"", name.c_str());
+
+    return s;
 }
 
 void Box::drawProperties()
@@ -155,18 +173,17 @@ void Box::drawProperties()
 
     Text("Size and Position");
 
-    sizer.draw();
+    sizer.drawProperties();
 
     Separator();
 
     Text("Container");
 
     if (Button("R##type")) { type = BOX_SBOX; } SameLine();
-    if (BeginCombo("Type", getBoxName(type)))
+    if (BeginCombo("Type", box_to_string(type)))
     {
-        if (Selectable("vbox", type == BOX_VBOX)) { type = BOX_VBOX; }
-        if (Selectable("hbox", type == BOX_HBOX)) { type = BOX_HBOX; }
-        if (Selectable("sbox", type == BOX_SBOX)) { type = BOX_SBOX; }
+        auto& x = type;
+        EXPAND_BOXTYPE(CASE_SELECTABLE)
         EndCombo();
     }
 
@@ -204,28 +221,6 @@ void Box::drawProperties()
     }
 }
 
-void Box::drawRect(box_ptr box)
-{
-    if (box == ptr())
-        box = nullptr;
-
-    auto c = !box ? color : ut::colors::black ;
-
-    if (child_boxes.empty())
-    {
-        ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_inner), c, ImGuiDRECTStyle_LabelOnly);
-    }
-    else
-    {
-        for (auto&& it : child_boxes)
-        {
-            it->drawRect(box);
-        }
-    }
-
-    ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_outer), c.withA(0));
-}
-
 void Box::drawTreeTableRow()
 {
     if (child_boxes.empty())
@@ -257,10 +252,10 @@ bool Box::drawTreeTableRow(bool is_leaf)
     if (is_leaf)
     {
         flags =
-            ImGuiTreeNodeFlags_SpanFullWidth |
-            ImGuiTreeNodeFlags_Leaf |
-            ImGuiTreeNodeFlags_Bullet |
-            ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                ImGuiTreeNodeFlags_SpanFullWidth |
+                ImGuiTreeNodeFlags_Leaf |
+                ImGuiTreeNodeFlags_Bullet |
+                ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
     PushStyleColor(ImGuiCol_Text, color);
@@ -338,25 +333,26 @@ bool Box::drawTreeTableRow(bool is_leaf)
     return open;
 }
 
-string Box::getLbl()
+void Box::drawRect(box_ptr box)
 {
-    string s;
+    if (box == ptr())
+        box = nullptr;
 
-    switch (type)
+    auto c = !box ? color : ut::colors::black ;
+
+    if (child_boxes.empty())
     {
-        case BOX_VBOX: s += PRINTER("[vbox %zu] ", child_boxes.size()); break;
-        case BOX_HBOX: s += PRINTER("[hbox %zu] ", child_boxes.size()); break;
-        case BOX_SBOX: s += PRINTER("[sbox %zu] ", child_boxes.size()); break;
-        default:nopath_case(BoxType);
+        ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_inner), c, ImGuiDRECTStyle_LabelOnly);
+    }
+    else
+    {
+        for (auto&& it : child_boxes)
+        {
+            it->drawRect(box);
+        }
     }
 
-    if (ptr() == selected_box)
-        s += "*** ";
-
-    if (!name.empty())
-        s += PRINTER("\"%s\"", name.c_str());
-
-    return s;
+    ImGui::DrawBackgroundDRECT(name.c_str(), VIRT.realRect(bounds_outer), c.withA(0));
 }
 
 void Box::layout(rect const& b)
@@ -431,6 +427,35 @@ void Box::layoutSbox(rect const& b)
     for (auto&& it: child_boxes)
     {
         it->layout(b);
+    }
+}
+
+void Box::loadYaml(char const* filename)
+{
+    if (!filename)
+        return;
+
+    if (FILE* file = fopen(filename, "r"))
+    {
+        auto text = gulp::file_to_string(file);
+
+        fclose(file);
+    }
+}
+
+void Box::saveYaml(char const* filename)
+{
+    if (!filename)
+        return;
+
+    if (FILE* file = fopen(filename, "w"))
+    {
+        YAML::Emitter emitter;
+
+        emitYaml(emitter, root_box);
+
+        fwrite(emitter.c_str(), sizeof(char), emitter.size(), file);
+        fclose(file);
     }
 }
 

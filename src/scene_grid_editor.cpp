@@ -37,6 +37,7 @@ void SceneLayoutEditor::update(float dt)
 void SceneLayoutEditor::draw()
 {
 
+
 }
 
 void SceneLayoutEditor::drawDebug()
@@ -71,6 +72,11 @@ void SceneLayoutEditor::drawDebug()
 //    }
 
     //m_tag_root.normalizeWeights();
+
+    if (Button("Save"))
+    {
+        ledit::Box::saveYaml("data/layout/test.yaml");
+    }
 
     if (Begin("Box Properties###selected_box"))
     {

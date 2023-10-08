@@ -15,8 +15,8 @@ using namespace ledit;
 //
 // ut
 //
-
 using namespace ut;
+
 //
 // std
 //
@@ -27,7 +27,7 @@ using namespace std;
 // Sizer -> Implementation
 //
 
-void Sizer::draw()
+void Sizer::drawProperties()
 {
     using namespace ImGui;
 
@@ -38,28 +38,28 @@ void Sizer::draw()
     if (Button("R##pad")) pad = monostate{}; SameLine();
 
     BeginGroup();
-    switch (pad.index())
+    switch (padType())
     {
         case PAD_NONE:
-            if (Button("pad"))      pad.emplace<PAD_1>(); SameLine();
-            if (Button("pad hv"))   pad.emplace<PAD_2>(); SameLine();
-            if (Button("pad ltrb")) pad.emplace<PAD_4>();
+            if (Button("pad"))      setPad1({}); SameLine();
+            if (Button("pad hv"))   setPad2({}); SameLine();
+            if (Button("pad ltrb")) setPad4({});
             break;
 
-        case PAD_1:
-            DragFloat("pad", &get<PAD_1>(pad), 1,0,FLT_MAX);
+        case PAD_ONE:
+            DragFloat("pad", &getPad1(), 1,0,FLT_MAX);
             break;
 
-        case PAD_2:
-            DragFloat("horz", &get<PAD_2>(pad).x, 1,0,FLT_MAX);
-            DragFloat("vert", &get<PAD_2>(pad).y, 1,0,FLT_MAX);
+        case PAD_TWO:
+            DragFloat("horz", &getPad2().x, 1,0,FLT_MAX);
+            DragFloat("vert", &getPad2().y, 1,0,FLT_MAX);
             break;
 
-        case PAD_4:
-            DragFloat("left"  , &get<PAD_4>(pad).x, 1,0,FLT_MAX);
-            DragFloat("top"   , &get<PAD_4>(pad).y, 1,0,FLT_MAX);
-            DragFloat("right" , &get<PAD_4>(pad).z, 1,0,FLT_MAX);
-            DragFloat("bottom", &get<PAD_4>(pad).w, 1,0,FLT_MAX);
+        case PAD_FOUR:
+            DragFloat("left"  , &getPad4().x, 1,0,FLT_MAX);
+            DragFloat("top"   , &getPad4().y, 1,0,FLT_MAX);
+            DragFloat("right" , &getPad4().z, 1,0,FLT_MAX);
+            DragFloat("bottom", &getPad4().w, 1,0,FLT_MAX);
             break;
     }
     EndGroup();
@@ -71,25 +71,25 @@ void Sizer::draw()
     if (Button("R##scl")) scl = monostate{}; SameLine();
 
     BeginGroup();
-    switch (scl.index())
+    switch (sclType())
     {
         case SCL_NONE:
-            if (Button("aspect"))   scl.emplace<SCL_ASPECT>  (1); SameLine();
-            if (Button("scale"))    scl.emplace<SCL_SCALE>   (1); SameLine();
-            if (Button("scale xy")) scl.emplace<SCL_SCALE_XY>(1); SameLine();
+            if (Button("aspect"))   setSclAspect (1);     SameLine();
+            if (Button("scale"))    setSclScale  (1);     SameLine();
+            if (Button("scale xy")) setSclScaleXY({1,1});
             break;
 
         case SCL_ASPECT:
-            DragFloat("aspect", &get<SCL_ASPECT>(scl), 0.01, 0.5, 2);
+            DragFloat("aspect", &getSclAspect(), 0.01, 0.5, 2);
             break;
 
         case SCL_SCALE:
-            SliderFloat("scale", &get<SCL_SCALE>(scl), 0, 1);
+            SliderFloat("scale", &getSclScale(), 0, 1);
             break;
 
         case SCL_SCALE_XY:
-            SliderFloat("scale x", &get<SCL_SCALE_XY>(scl).x, 0, 1);
-            SliderFloat("scale y", &get<SCL_SCALE_XY>(scl).y, 0, 1);
+            SliderFloat("scale x", &getSclScaleXY().x, 0, 1);
+            SliderFloat("scale y", &getSclScaleXY().y, 0, 1);
             break;
     }
     EndGroup();
@@ -101,16 +101,16 @@ void Sizer::draw()
     if (Button("R##pos")) pos = monostate{}; SameLine();
 
     BeginGroup();
-    switch (pos.index())
+    switch (posType())
     {
         case POS_NONE:
-            if (Button("anchor")) pos.emplace<POS_ANCHOR>(ANCHOR_CC); SameLine();
-            if (Button("pos xy")) pos.emplace<POS_XY>    ();          SameLine();
+            if (Button("anchor")) setPosAnchor(ANCHOR_CC); SameLine();
+            if (Button("pos xy")) setPosXY({});
             break;
 
         case POS_ANCHOR:
 #define ANCHOR_BUTTON(lbl_, anchor_) \
-    if (get<POS_ANCHOR>(pos) == anchor_) \
+    if (getPosAnchor() == anchor_) \
     { \
         PushStyleColor(ImGuiCol_Button, ut::colors::goldenrod); \
         Button(lbl_); \
@@ -118,20 +118,20 @@ void Sizer::draw()
     }  \
     else if (Button(lbl_)) \
     { \
-        get<POS_ANCHOR>(pos) = anchor_; \
+        getPosAnchor() = anchor_; \
     }
 
-            ANCHOR_BUTTON("TL", ANCHOR_TL) SameLine();
-            ANCHOR_BUTTON("TC", ANCHOR_TC) SameLine();
-            ANCHOR_BUTTON("TR", ANCHOR_TR)
+        ANCHOR_BUTTON("TL", ANCHOR_TL) SameLine();
+        ANCHOR_BUTTON("TC", ANCHOR_TC) SameLine();
+        ANCHOR_BUTTON("TR", ANCHOR_TR)
 
-            ANCHOR_BUTTON("LC", ANCHOR_LC) SameLine();
-            ANCHOR_BUTTON("CC", ANCHOR_CC) SameLine();
-            ANCHOR_BUTTON("RC", ANCHOR_RC)
+        ANCHOR_BUTTON("LC", ANCHOR_LC) SameLine();
+        ANCHOR_BUTTON("CC", ANCHOR_CC) SameLine();
+        ANCHOR_BUTTON("RC", ANCHOR_RC)
 
-            ANCHOR_BUTTON("BL", ANCHOR_BL) SameLine();
-            ANCHOR_BUTTON("BC", ANCHOR_BC) SameLine();
-            ANCHOR_BUTTON("BR", ANCHOR_BR)
+        ANCHOR_BUTTON("BL", ANCHOR_BL) SameLine();
+        ANCHOR_BUTTON("BC", ANCHOR_BC) SameLine();
+        ANCHOR_BUTTON("BR", ANCHOR_BR)
 #undef ANCHOR_BUTTON
             break;
 
@@ -147,28 +147,29 @@ rect Sizer::operator() (rect const& parent) const
 {
     auto b = parent;
 
-    switch (scl.index())
+    switch (sclType())
     {
         case SCL_ASPECT:
-            b = b.fitAspect(get<SCL_ASPECT>(scl));
+            b = b.fitAspect(getSclAspect());
             break;
 
         case SCL_SCALE:
-            b = b.withSize(perc(get<SCL_SCALE>(scl)),
-                           perc(get<SCL_SCALE>(scl)));
+            b = b.withSize(perc(getSclScale()),
+                           perc(getSclScale()));
         break;
 
 
         case SCL_SCALE_XY:
-            b = b.withSize(perc(get<SCL_SCALE_XY>(scl).x),
-                           perc(get<SCL_SCALE_XY>(scl).y));
+            b = b.withSize(perc(getSclScaleXY().x),
+                           perc(getSclScaleXY().y));
             break;
+        default:break;
     }
 
     auto w = b.width();
     auto h = b.height();
 
-    switch (pos.index())
+    switch (posType())
     {
         case POS_ANCHOR:
             switch (get<POS_ANCHOR>(pos))
@@ -184,17 +185,19 @@ rect Sizer::operator() (rect const& parent) const
                 case ANCHOR_CC: b = parent.anchorCCtoCC(w,h); break;
             }
             break;
+        default:break;
     }
 
-    switch (pad.index())
+    switch (padType())
     {
-        case PAD_1: return b.shrunk(get<1>(pad));
-        case PAD_2: return b.shrunk(get<2>(pad).x,
-                                    get<2>(pad).y);
-        case PAD_4: return b.shrunk(get<3>(pad).x,
-                                    get<3>(pad).y,
-                                    get<3>(pad).z,
-                                    get<3>(pad).w);
+        case PAD_ONE : return b.shrunk(getPad1());
+        case PAD_TWO : return b.shrunk(getPad2().x,
+                                       getPad2().y);
+        case PAD_FOUR: return b.shrunk(getPad4().x,
+                                       getPad4().y,
+                                       getPad4().z,
+                                       getPad4().w);
+        default:break;
     }
 
     return b;

@@ -2,6 +2,8 @@
 // Created by james on 10/6/23.
 //
 
+#pragma once
+
 #include "ledit_sizer.hpp"
 
 //
@@ -22,10 +24,7 @@
 
 namespace ledit
 {
-    enum BoxType
-    {
-        BOX_VBOX, BOX_HBOX, BOX_SBOX
-    };
+
 
     class Box;
     using box_ptr   = std::shared_ptr<Box>;
@@ -50,8 +49,8 @@ namespace ledit
         Sizer           sizer;
         float           inner_pad=10;
 
-        static box_ptr root_box;
-        static box_ptr selected_box;
+        static box_ptr  root_box;
+        static box_ptr  selected_box;
 
         static box_ptr create(box_ptr const& parent);
 
@@ -70,6 +69,11 @@ namespace ledit
         void drawTreeTableRow();
         bool drawTreeTableRow(bool is_leaf);
         void drawRect(box_ptr box);
+
+        static void loadYaml(char const* filename);
+        static void saveYaml(char const* filename);
+
+
 
     private:
         struct RowAction
