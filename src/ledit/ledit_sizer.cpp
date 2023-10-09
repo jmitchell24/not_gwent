@@ -27,6 +27,13 @@ using namespace std;
 // Sizer -> Implementation
 //
 
+void Sizer::reset()
+{
+    pad = monostate{};
+    scl = monostate{};
+    pos = monostate{};
+}
+
 void Sizer::drawProperties()
 {
     using namespace ImGui;
@@ -35,7 +42,7 @@ void Sizer::drawProperties()
     // Padding
     //
 
-    if (Button("R##pad")) pad = monostate{}; SameLine();
+    if (ButtonEnabled("R##pad", pad.index()>0)) pad = monostate{}; SameLine();
 
     BeginGroup();
     switch (padType())
@@ -68,7 +75,7 @@ void Sizer::drawProperties()
     // Scale
     //
 
-    if (Button("R##scl")) scl = monostate{}; SameLine();
+    if (ButtonEnabled("R##scl", scl.index()>0)) scl = monostate{}; SameLine();
 
     BeginGroup();
     switch (sclType())
@@ -98,7 +105,7 @@ void Sizer::drawProperties()
     // Position
     //
 
-    if (Button("R##pos")) pos = monostate{}; SameLine();
+    if (ButtonEnabled("R##pos", pos.index()>0)) pos = monostate{}; SameLine();
 
     BeginGroup();
     switch (posType())

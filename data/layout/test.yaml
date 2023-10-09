@@ -1,24 +1,16 @@
 type: BOX_HBOX
-weight: 1
 children:
   - type: BOX_HBOX
-    weight: 1
-  - type: BOX_HBOX
-    weight: 1
-  - type: BOX_VBOX
-    weight: 1
     children:
       - type: BOX_HBOX
-        weight: 1
+        children:
+          - type: BOX_HBOX
       - type: BOX_HBOX
-        weight: 1
+      - type: BOX_VBOX
+        children:
+          - type: BOX_HBOX
+          - type: BOX_HBOX
+            pad: {pad1: 36}
+          - type: BOX_HBOX
+          - type: BOX_HBOX
       - type: BOX_HBOX
-        weight: 1
-      - type: BOX_HBOX
-        weight: 1
-      - type: BOX_HBOX
-        weight: 1
-  - type: BOX_HBOX
-    weight: 1
-  - type: BOX_HBOX
-    weight: 1

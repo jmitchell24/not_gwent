@@ -78,6 +78,11 @@ void SceneLayoutEditor::drawDebug()
         ledit::Box::saveYaml("data/layout/test.yaml");
     }
 
+    if (Button("Load"))
+    {
+        ledit::Box::loadYaml("data/layout/test.yaml");
+    }
+
     if (Begin("Box Properties###selected_box"))
     {
         if (ledit::Box::selected_box)
@@ -95,6 +100,26 @@ void SceneLayoutEditor::drawDebug()
 
     if (Begin("Box Hierarchy###box_hierarchy"))
     {
+        auto& opts = ledit::Box::tree_table_options;
+
+        auto w = ImGui::CalcTextSize("xxxxx").x;
+
+
+
+        Text("Row Options");
+
+        Columns(3, "row-columns",false);
+        Checkbox("add"      , &opts.show_row_add    ); NextColumn();
+        Checkbox("delete"   , &opts.show_row_delete ); NextColumn();
+        Checkbox("move"     , &opts.show_row_move   ); NextColumn();
+        Checkbox("rename"   , &opts.show_row_rename ); NextColumn();
+        Checkbox("weight"   , &opts.show_row_weight ); NextColumn();
+        Checkbox("type"     , &opts.show_row_type   );
+        Columns();
+
+
+        Separator();
+        Text("Hierarchy");
         ImGuiTableFlags table_flags =
                 ImGuiTableFlags_BordersV        |
                 ImGuiTableFlags_BordersOuterH   |
@@ -105,7 +130,7 @@ void SceneLayoutEditor::drawDebug()
         if (ImGui::BeginTable("grids", 2, table_flags))
         {
             ImGui::TableSetupColumn("Label" , ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn(""      , ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
 
             ledit::Box::root_box->drawTreeTableRow();

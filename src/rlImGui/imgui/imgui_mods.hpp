@@ -59,6 +59,64 @@ namespace ImGui
     void PushItemDisabled();
     void PopItemDisabled();
 
+    inline bool ButtonEnabled(text_ lbl, bool is_enabled)
+    {
+        if (is_enabled)
+            return Button(lbl);
+        PushItemDisabled();
+        Button(lbl);
+        PopItemDisabled();
+        return false;
+    }
+
+    inline bool SmallButtonEnabled(text_ lbl, bool is_enabled)
+    {
+        if (is_enabled)
+            return SmallButton(lbl);
+        PushItemDisabled();
+        SmallButton(lbl);
+        PopItemDisabled();
+        return false;
+    }
+
+    inline bool ButtonConfirm(text_ lbl, text_ prompt = "Are you sure?", text_ lbl_confirm = "yes")
+    {
+        if (Button(lbl))
+        {
+            OpenPopup("ButtonConfirm");
+        }
+
+        if (BeginPopup("ButtonConfirm"))
+        {
+            bool b = SmallButton(lbl_confirm);
+            SameLine();
+            TextUnformatted(prompt.begin(), prompt.end());
+            EndPopup();
+            return b;
+        }
+
+        return false;
+    }
+
+    inline bool SmallButtonConfirm(text_ lbl, text_ prompt = "Are you sure?", text_ lbl_confirm = "yes")
+    {
+        if (SmallButton(lbl))
+        {
+            OpenPopup("SmallButtonConfirm");
+        }
+
+        if (BeginPopup("SmallButtonConfirm"))
+        {
+            bool b = SmallButton(lbl_confirm);
+            SameLine();
+            TextUnformatted(prompt.begin(), prompt.end());
+            EndPopup();
+            return b;
+        }
+
+        return false;
+    }
+
 
     void DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style);
 

@@ -60,6 +60,7 @@ namespace ledit
         EXPAND_SCL(VAR_FUNC)
         EXPAND_POS(VAR_FUNC)
 
+        void reset();
         void drawProperties();
 
         ut::rect operator() (ut::rect const& parent) const;

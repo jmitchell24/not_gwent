@@ -24,8 +24,6 @@
 
 namespace ledit
 {
-
-
     class Box;
     using box_ptr   = std::shared_ptr<Box>;
     using boxlist_t = std::vector<box_ptr>;
@@ -33,6 +31,16 @@ namespace ledit
     class Box : public std::enable_shared_from_this<Box>
     {
     public:
+        struct TreeTableOptions
+        {
+            bool show_row_add       =false;
+            bool show_row_delete    =false;
+            bool show_row_move      =false;
+            bool show_row_rename    =false;
+            bool show_row_weight    =false;
+            bool show_row_type      =false;
+        };
+
         box_ptr         parent;
         boxlist_t       child_boxes;
 
@@ -52,6 +60,8 @@ namespace ledit
         static box_ptr  root_box;
         static box_ptr  selected_box;
 
+        static TreeTableOptions tree_table_options;
+
         static box_ptr create(box_ptr const& parent);
 
         box_ptr ptr();
@@ -59,6 +69,9 @@ namespace ledit
         box_ptr tryGetBox(ut::vec2 const& mp);
 
         std::string getLbl();
+        std::string getPath();
+
+        void reset();
 
         void layout    (ut::rect const& b);
         void layoutVbox(ut::rect const& b);
@@ -70,16 +83,21 @@ namespace ledit
         bool drawTreeTableRow(bool is_leaf);
         void drawRect(box_ptr box);
 
-        static void loadYaml(char const* filename);
-        static void saveYaml(char const* filename);
+        static void loadYaml(ut::cstrparam filename);
+        static void saveYaml(ut::cstrparam filename);
 
 
 
     private:
         struct RowAction
         {
-            enum Type { REMOVE, MOVE_UP, MOVE_DOWN } type;
+            enum Type { REMOVE, MOVE_INC, MOVE_DEC } type;
             box_ptr box;
+        };
+
+        struct PathString
+        {
+            std::string s; ut::color c;
         };
 
         std::optional<RowAction> m_row_action;
@@ -88,6 +106,8 @@ namespace ledit
 
         void applyRowAction();
         void setRowAction(RowAction const& ra);
+
+        static box_ptr createRoot();
 
         inline float weightsSum() const
         {
