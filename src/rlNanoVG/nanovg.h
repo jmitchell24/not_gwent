@@ -135,6 +135,20 @@ struct NVGtextRow {
 };
 typedef struct NVGtextRow NVGtextRow;
 
+// added by James Mitchell
+struct NVGstats
+{
+    /*	printf("Tris: draws:%d  fill:%d  stroke:%d  text:%d  TOT:%d\n",
+		ctx->drawCallCount, ctx->fillTriCount, ctx->strokeTriCount, ctx->textTriCount,
+		ctx->fillTriCount+ctx->strokeTriCount+ctx->textTriCount);*/
+
+    int drawCallCount;
+    int fillTriCount;
+    int strokeTriCount;
+    int textTriCount;
+};
+typedef struct NVGstats NVGstats;
+
 enum NVGimageFlags {
     NVG_IMAGE_GENERATE_MIPMAPS	= 1<<0,     // Generate mipmaps during creation of the image.
 	NVG_IMAGE_REPEATX			= 1<<1,		// Repeat image in X direction.
@@ -508,6 +522,9 @@ void nvgFill(NVGcontext* ctx);
 // Fills the current path with current stroke style.
 void nvgStroke(NVGcontext* ctx);
 
+// Added by Rado1
+void nvgStrokeNoScale(NVGcontext* ctx);
+
 
 //
 // Text
@@ -623,6 +640,12 @@ void nvgTextMetrics(NVGcontext* ctx, float* ascender, float* descender, float* l
 // White space is stripped at the beginning of the rows, the text is split at word boundaries or when new-line characters are encountered.
 // Words longer than the max width are slit at nearest character (i.e. no hyphenation).
 int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, float breakRowWidth, NVGtextRow* rows, int maxRows);
+
+//
+// added by James Mitchell
+//
+
+void nvgGetStats(NVGcontext* ctx, NVGstats* stats);
 
 //
 // Internal Render API

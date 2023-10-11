@@ -1,16 +1,24 @@
 type: BOX_HBOX
+name: poet
 children:
   - type: BOX_HBOX
+    name: soldier
+  - type: BOX_HBOX
+    name: cricket
+  - type: BOX_HBOX
+    name: split
+  - type: BOX_VBOX
+    name: tell
     children:
       - type: BOX_HBOX
-        children:
-          - type: BOX_HBOX
+        name: clay
       - type: BOX_HBOX
-      - type: BOX_VBOX
-        children:
-          - type: BOX_HBOX
-          - type: BOX_HBOX
-            pad: {pad1: 36}
-          - type: BOX_HBOX
-          - type: BOX_HBOX
+        name: impulse
       - type: BOX_HBOX
+        name: cactus
+      - type: BOX_HBOX
+        name: borrow
+  - type: BOX_HBOX
+    name: guide
+  - type: BOX_HBOX
+    name: squirrel

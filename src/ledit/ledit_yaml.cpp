@@ -5,7 +5,7 @@
 #include "ledit/ledit_yaml.hpp"
 using namespace ledit;
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 
 

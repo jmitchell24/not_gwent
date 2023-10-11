@@ -2291,6 +2291,52 @@ void nvgStroke(NVGcontext* ctx)
 	}
 }
 
+// Added by Rado1
+void nvgStrokeNoScale(NVGcontext* ctx)
+{
+    NVGstate* state = nvg__getState(ctx);
+    float scale = nvg__getAverageScale(state->xform);
+    float strokeWidth = nvg__clampf(state->strokeWidth, 0.0f, 200.0f);
+    NVGpaint strokePaint = state->stroke;
+    const NVGpath* path;
+    int i;
+
+    if (strokeWidth < ctx->fringeWidth) {
+        // If the stroke width is less than pixel size, use alpha to emulate coverage.
+        // Since coverage is area, scale by alpha*alpha.
+        float alpha = nvg__clampf(strokeWidth / ctx->fringeWidth, 0.0f, 1.0f);
+        strokePaint.innerColor.a *= alpha*alpha;
+        strokePaint.outerColor.a *= alpha*alpha;
+        strokeWidth = ctx->fringeWidth;
+    }
+
+    // Apply global alpha
+    strokePaint.innerColor.a *= state->alpha;
+    strokePaint.outerColor.a *= state->alpha;
+
+    nvg__flattenPaths(ctx);
+
+//    if (ctx->params.edgeAntiAlias && state->shapeAntiAlias)
+//        nvg__expandStroke(ctx, strokeWidth*0.5f + ctx->fringeWidth*0.5f, state->lineCap, state->lineJoin, state->miterLimit);
+//    else
+//        nvg__expandStroke(ctx, strokeWidth*0.5f, state->lineCap, state->lineJoin, state->miterLimit);
+
+    if (ctx->params.edgeAntiAlias && state->shapeAntiAlias)
+        nvg__expandStroke(ctx, strokeWidth*0.5f, ctx->fringeWidth*0.5f, state->lineCap, state->lineJoin, state->miterLimit);
+    else
+        nvg__expandStroke(ctx, strokeWidth*0.5f, 0.0f, state->lineCap, state->lineJoin, state->miterLimit);
+
+    ctx->params.renderStroke(ctx->params.userPtr, &strokePaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
+                             strokeWidth, ctx->cache->paths, ctx->cache->npaths);
+
+    // Count triangles
+    for (i = 0; i < ctx->cache->npaths; i++) {
+        path = &ctx->cache->paths[i];
+        ctx->strokeTriCount += path->nstroke - 2;
+        ctx->drawCallCount++;
+    }
+}
+
 // Add fonts
 int nvgCreateFont(NVGcontext* ctx, const char* name, const char* filename)
 {
@@ -2942,3 +2988,15 @@ void nvgTextMetrics(NVGcontext* ctx, float* ascender, float* descender, float* l
 		*lineh *= invscale;
 }
 // vim: ft=c nu noet ts=4
+
+//
+// added by James Mitchell
+//
+
+void nvgGetStats(NVGcontext* ctx, NVGstats* stats)
+{
+    stats->drawCallCount = ctx->drawCallCount;
+    stats->fillTriCount = ctx->fillTriCount;
+    stats->strokeTriCount = ctx->strokeTriCount;
+    stats->textTriCount = ctx->textTriCount;
+}

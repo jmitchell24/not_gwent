@@ -2,14 +2,10 @@
 // Created by james on 10/3/23.
 //
 
-#include "external/glad.h"
+#pragma once
 
-extern "C" {
-#include "nanovg.h"
-#define NANOVG_GL3_IMPLEMENTATION
-#include "nanovg_gl.h"
-#include "nanovg_gl_utils.h"
-}
+#include "rlNanoVG/nanosvg.h"
+#include "rlNanoVG/nanovg.h"
 
 #include <ut/math.hpp>
 
@@ -19,26 +15,18 @@ namespace nvg
     class Context
     {
     public:
-//        Context()
-//            : m_context{nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG)}
-//        {
-//
-//        }
-//
-//        ~Context()
-//        {
-//            nvgDeleteGL3(m_context);
-//        }
+        static Context& instance();
 
-        static Context& instance()
-        {
-            static Context x;
-            return x;
-        }
+        void load();
+        void unload();
 
-    private:
-        NVGcontext* m_context;
+        void beginDrawing();
+        void endDrawing();
+
+    //private:
+        NVGcontext* m_context= nullptr;
+        int m_fallback_font=0;
     };
 }
 
-nvg::Context& NVG = nvg::Context::instance();
+static nvg::Context& NVG = nvg::Context::instance();

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 #include "ng/ng_enum.hpp"
 

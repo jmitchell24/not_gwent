@@ -13,24 +13,21 @@
 
 
 #ifdef NDEBUG
-#define assert_msg(...)            (void)0;
-#define nopath_msg(...)            (void)0;
+#define check(...)          (void)0;
+#define nopath(...)         (void)0;
+#define nopath_case(x_)     (void)0;
 #else
-#define assert_msg(x_, ...)        do { __jassert_expression(x_, __LINE__, #x_, __func__, __FILE__, __VA_ARGS__); }while(0)
-#define nopath_msg(...)            do { __jassert_impossible(__LINE__, __func__, __FILE__, __VA_ARGS__); }while(0)
+#define check(x_, ...)      do { __check_expression(x_, __LINE__, #x_, __func__, __FILE__, __VA_ARGS__); }while(0)
+#define nopath(...)         do { __check_impossible(__LINE__, __func__, __FILE__, __VA_ARGS__); }while(0)
+#define nopath_case(x_)     do { static_assert(std::is_enum_v<x_>); __check_impossible(__LINE__, __func__, __FILE__, "BAD ENUM CASE: %s", #x_); }while(0)
 #endif
 
-#define nopath_impl       nopath_msg("UNIMPLEMENTED")
-#define nopath_break      nopath_msg("BREAKPOINT")
-#define nopath_null       assert_msg((x_) != nullptr, "NULL POINTER")
+#define check_null(x_)       check((x_) != nullptr, "NULL POINTER")
 
-#define nopath_case(x_) do {                   \
-    static_assert(std::is_enum_v< x_ >);        \
-    nopath_msg("BAD ENUM CASE: %s", #x_);          \
-}while(0)
+#define nopath_impl         nopath("UNIMPLEMENTED")
+#define nopath_break        nopath("BREAKPOINT")
 
-
-[[noreturn]] static inline void __jassert(int line, char const* msg, char const* expr, char const* func, char const* file)
+[[noreturn]] static inline void __check_impl(int line, char const* msg, char const* expr, char const* func, char const* file)
 {
     bool m=msg != nullptr, e=expr!= nullptr;
 
@@ -62,7 +59,7 @@
     abort();
 }
 
-static inline void __jassert_expression(bool b, int line, char const* expr, char const* func, char const* file, char const* fmt, ...)
+static inline void __check_expression(bool b, int line, char const* expr, char const* func, char const* file, char const* fmt, ...)
 {
     if (!b)
     {
@@ -74,11 +71,11 @@ static inline void __jassert_expression(bool b, int line, char const* expr, char
         bool has_msg = vsnprintf(buffer, MAX_LEN, fmt, args) > 0;
         va_end(args);
 
-        __jassert(line, has_msg ? buffer : nullptr, expr, func, file);
+        __check_impl(line, has_msg ? buffer : nullptr, expr, func, file);
     }
 }
 
-static inline void __jassert_impossible(int line, char const* func, char const* file, char const* fmt, ...)
+static inline void __check_impossible(int line, char const* func, char const* file, char const* fmt, ...)
 {
     size_t constexpr MAX_LEN = 512;
     static char buffer[MAX_LEN];
@@ -88,5 +85,5 @@ static inline void __jassert_impossible(int line, char const* func, char const* 
     bool has_msg = vsnprintf(buffer, MAX_LEN, fmt, args) > 0;
     va_end(args);
 
-    __jassert(line, has_msg ? buffer : nullptr, nullptr, func, file);
+    __check_impl(line, has_msg ? buffer : nullptr, nullptr, func, file);
 }

@@ -9,6 +9,8 @@ using namespace game::asset_loaders;
 #include <optional>
 using namespace std;
 
+#include "check.hpp"
+
 //
 // Texture2DLoader -> Implementation
 //
@@ -140,3 +142,76 @@ FontLoader::value_type FontLoader::errorValue()
 {
     return { };
 }
+
+#define NANOSVGRAST_IMPLEMENTATION
+#include "rlNanoVG/nanosvgrast.h"
+
+//
+// SvgLoader -> Implementation
+//
+
+SvgLoader::value_type SvgLoader::load(key_type const& k)
+{
+
+
+    // Load SVG
+    if (auto svg = nsvgParseFromFile(k.filename.c_str(), "px", 96))
+    {
+        if (auto rast = nsvgCreateRasterizer())
+        {
+            int w = (int)k.w;
+            int h = (int)k.h;
+
+            if (Image img = GenImageColor(w,h, BLANK); IsImageReady(img))
+            {
+
+                if (img.format == PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+                {
+                    // Rasterize
+                    auto dst = (unsigned char*)img.data;
+                    nsvgRasterize(rast, svg, 0,0,1, dst, w, h, w*4);
+                }
+
+
+                Texture2D tex = LoadTextureFromImage(img);
+                UnloadImage(img);
+                return tex;
+            }
+            nsvgDeleteRasterizer(rast);
+        }
+        nsvgDelete(svg);
+    }
+
+    return { 0 };
+}
+
+bool SvgLoader::isReady(value_type const& v)
+{
+    return IsTextureReady(v);
+}
+
+SvgLoader::value_type SvgLoader::errorValue()
+{
+    return { };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -57,6 +57,22 @@ namespace game::asset_loaders
         static value_type errorValue();
     };
 
+    struct SvgKey
+    {
+        std::string filename; size_t w,h;
+        RECORD_DECLS(SvgKey, filename, w, h);
+    };
+
+    struct SvgLoader
+    {
+        using key_type = SvgKey;
+        using value_type = Texture2D;
+        static value_type load(key_type const& k);
+        static bool isReady(value_type const& v);
+        static value_type errorValue();
+
+    };
+
 }
 
 namespace std
@@ -68,6 +84,18 @@ namespace std
             ut::digest d;
             d.putRange(key.filename);
             d.putValue(key.font_size);
+            return d.value();
+        }
+    };
+
+    template<> struct hash<game::asset_loaders::SvgKey>
+    {
+        size_t operator()(game::asset_loaders::SvgKey const& key) const
+        {
+            ut::digest d;
+            d.putRange(key.filename);
+            d.putValue(key.w);
+            d.putValue(key.h);
             return d.value();
         }
     };

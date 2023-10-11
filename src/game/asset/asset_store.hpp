@@ -83,4 +83,7 @@ namespace game
 
     [[maybe_unused]] static AssetStoreX<asset_loaders::FontLoader>& FONTS =
             AssetStoreX<asset_loaders::FontLoader>::instance();
+
+    [[maybe_unused]] static AssetStoreX<asset_loaders::SvgLoader>& SVG =
+            AssetStoreX<asset_loaders::SvgLoader>::instance();
 }

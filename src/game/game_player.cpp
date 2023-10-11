@@ -5,7 +5,7 @@
 #include "game/game_player.hpp"
 using namespace game;
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 //
 // ut

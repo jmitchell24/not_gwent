@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 #include "game/asset/asset_store.hpp"
 
 #define GAME_ENUM_FONTS \
@@ -12,6 +12,8 @@
     CASE(smallburgRegular128, "data/font/smallburg-Regular.ttf", 128) \
     CASE(steelfish128       , "data/font/steelfish.otf"        , 128)
 
+#define GAME_ENUM_SVG \
+    CASE(tiger, "data/svg/tiger.svg", 512, 512)
 
 #define GAME_ENUM_TEXTURES_BADGES \
     CASE(Alembic                , "data/ui/Alembic.png"       ) \
@@ -71,6 +73,13 @@ namespace game::textures
 GAME_ENUM_TEXTURES
 #undef CASE
 
+}
+
+namespace game::svg
+{
+#define CASE(x_, y_, z_, w_) static inline auto x_() { return game::SVG.get({y_, z_, w_}); }
+    GAME_ENUM_SVG
+#undef CASE
 }
 
 namespace game::fonts

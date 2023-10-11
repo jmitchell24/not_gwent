@@ -5,7 +5,7 @@
 #include "ledit/ledit_sizer.hpp"
 using namespace ledit;
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 //
 // imgui

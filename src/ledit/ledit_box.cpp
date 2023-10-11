@@ -6,7 +6,8 @@
 #include "ledit_yaml.hpp"
 using namespace ledit;
 
-#include "assert_msg.hpp"
+#include "check.hpp"
+#include "id_bip0039.hpp"
 
 //
 // imgui
@@ -41,6 +42,12 @@ color Box::nextColor()
     return color::hsluv{hue, 80.0f, 80.0f, 1.0f}.toColor();
 }
 
+cstrview nextName()
+{
+    static size_t counter=0;
+    return bip0039::wordlistRuntimeShuffle()[ (counter++) % 2048 ].str();
+}
+
 //
 // Box -> Implementation
 //
@@ -51,7 +58,7 @@ box_ptr Box::selected_box;
 Box::TreeTableOptions Box::tree_table_options;
 
 Box::Box(box_ptr p)
-    : parent{std::move(p)}, color{nextColor()}
+    : parent{std::move(p)}, color{nextColor()}, name{nextName()}
 {}
 
 box_ptr Box::create(box_ptr const& parent)

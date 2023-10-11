@@ -9,7 +9,7 @@
     TODO: https://github.com/Rabios/awesome-raylib
 */
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 //
 // scene
@@ -20,6 +20,7 @@
 #include "scene_proto_test.hpp"
 #include "scene_grid_editor.hpp"
 #include "scene_demo_window.hpp"
+#include "scene_nanovg_test.hpp"
 
 //
 // gfx
@@ -92,15 +93,20 @@ public:
 
     void drawDebug()
     {
-        ImGui::Begin("Stage");
-        ImGui::Value("FPS", GetFPS());
-        ImGui::Value("Frame MS", GetFrameTime());
-        ImGui::End();
+        using namespace ImGui;
 
-        ImGui::Begin("Scene");
+        Begin("Stage");
+
+        Value("FPS", GetFPS());
+        Value("Frame MS", GetFrameTime());
 
 
-        if (ImGui::BeginCombo("Scene", m_selected->name()))
+        End();
+
+        Begin("Scene");
+
+
+        if (BeginCombo("Scene", m_selected->name()))
         {
             for (auto&& it : m_scenes)
             {
@@ -109,17 +115,17 @@ public:
                     m_selected = it;
                 }
             }
-            ImGui::EndCombo();
+            EndCombo();
         }
 
 
 
 
-        ImGui::BeginChild(m_selected->name(), {0,0}, true);
+        BeginChild(m_selected->name(), {0,0}, true);
         m_selected->drawDebug();
-        ImGui::EndChild();
+        EndChild();
 
-        ImGui::End();
+        End();
     }
 
 private:
@@ -129,12 +135,12 @@ private:
 
 #define ENUM_SCENES \
     CASE(SceneLayoutEditor  )  \
+    CASE(SceneNanoVGTest    )  \
     CASE(SceneMathTest      )  \
     CASE(SceneProtoTest     )  \
     CASE(SceneGameBoard2Test)  \
     CASE(SceneCardTest      )  \
     CASE(SceneDemoWindow    )  \
-
 
 
 int main()
@@ -147,6 +153,8 @@ int main()
     rlImGuiAddFontAwesomeIconFonts(9);
     rlImGuiReloadFonts();
     rlImGuiEndInitImGui();
+
+    NVG.load();
 
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
@@ -205,6 +213,8 @@ ENUM_SCENES
 
 
     }
+
+    NVG.unload();
 
     return EXIT_SUCCESS;
 }

@@ -2,7 +2,7 @@
 // Created by james on 9/15/23.
 //
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 #include <ut/random.hpp>
 #include "game/game2.hpp"

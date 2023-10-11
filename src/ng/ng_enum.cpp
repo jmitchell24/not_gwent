@@ -5,7 +5,7 @@
 #include "ng/ng_enum.hpp"
 using namespace ng;
 
-#include "assert_msg.hpp"
+#include "check.hpp"
 
 //
 // ut
