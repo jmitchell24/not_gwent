@@ -48,9 +48,13 @@ void Sizer::drawProperties()
     switch (padType())
     {
         case PAD_NONE:
-            if (Button("pad"))      setPad1({}); SameLine();
-            if (Button("pad hv"))   setPad2({}); SameLine();
-            if (Button("pad ltrb")) setPad4({});
+            if (BeginCombo("pad", "..."))
+            {
+                if (Selectable("pad"     )) setPad1({});
+                if (Selectable("pad hv"  )) setPad2({});
+                if (Selectable("pad ltrb")) setPad4({});
+                EndCombo();
+            }
             break;
 
         case PAD_ONE:
@@ -81,9 +85,13 @@ void Sizer::drawProperties()
     switch (sclType())
     {
         case SCL_NONE:
-            if (Button("aspect"))   setSclAspect (1);     SameLine();
-            if (Button("scale"))    setSclScale  (1);     SameLine();
-            if (Button("scale xy")) setSclScaleXY({1,1});
+            if (BeginCombo("scale", "..."))
+            {
+                if (Selectable("aspect"  )) setSclAspect(1);
+                if (Selectable("scale"   )) setSclScale(1);
+                if (Selectable("scale xy")) setSclScaleXY({1,1});
+                EndCombo();
+            }
             break;
 
         case SCL_ASPECT:
@@ -111,21 +119,25 @@ void Sizer::drawProperties()
     switch (posType())
     {
         case POS_NONE:
-            if (Button("anchor")) setPosAnchor(ANCHOR_CC); SameLine();
-            if (Button("pos xy")) setPosXY({});
+            if (BeginCombo("pos", "..."))
+            {
+                if (Selectable("anchor")) setPosAnchor(ANCHOR_CC);
+                if (Selectable("pos xy")) setPosXY({});
+                EndCombo();
+            }
             break;
 
         case POS_ANCHOR:
 #define ANCHOR_BUTTON(lbl_, anchor_) \
-    if (getPosAnchor() == anchor_) \
+    if (getPosAnchor() == (anchor_)) \
     { \
         PushStyleColor(ImGuiCol_Button, ut::colors::goldenrod); \
-        Button(lbl_); \
+        Button((lbl_)); \
         PopStyleColor(); \
     }  \
-    else if (Button(lbl_)) \
+    else if (Button((lbl_))) \
     { \
-        getPosAnchor() = anchor_; \
+        getPosAnchor() = (anchor_); \
     }
 
         ANCHOR_BUTTON("TL", ANCHOR_TL) SameLine();
@@ -179,7 +191,7 @@ rect Sizer::operator() (rect const& parent) const
     switch (posType())
     {
         case POS_ANCHOR:
-            switch (get<POS_ANCHOR>(pos))
+            switch (getPosAnchor())
             {
                 case ANCHOR_TL: b = parent.anchorTLtoTL(w,h); break;
                 case ANCHOR_TR: b = parent.anchorTRtoTR(w,h); break;
@@ -190,6 +202,15 @@ rect Sizer::operator() (rect const& parent) const
                 case ANCHOR_TC: b = parent.anchorTCtoTC(w,h); break;
                 case ANCHOR_BC: b = parent.anchorBCtoBC(w,h); break;
                 case ANCHOR_CC: b = parent.anchorCCtoCC(w,h); break;
+            }
+            break;
+
+        case POS_XY:
+            {
+                auto o = getPosXY();
+                o.x *= parent.width() - w;
+                o.y *= parent.height() - h;
+                b.pos(parent.pos() + o);
             }
             break;
         default:break;

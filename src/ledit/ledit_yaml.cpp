@@ -26,6 +26,9 @@ using namespace std;
 
 namespace YAML
 {
+    //
+    // vecnf<D>
+    //
     template<size_t D> struct convert<vecnf<D>>
     {
         static Node encode(vecnf<D> const& v)
@@ -58,6 +61,31 @@ namespace YAML
         for (auto&& it : v.pack)
             em << it;
         return em << EndSeq;
+    }
+
+    //
+    // AnchorType
+    //
+    template<> struct convert<AnchorType>
+    {
+        static Node encode(AnchorType at)
+        {
+            auto s = anchor_to_string(at).str();
+            return Node{s};
+        }
+
+        static bool decode(Node const& n, AnchorType& at)
+        {
+            if (!n.IsScalar())
+                return false;
+            return string_to_anchor(n.as<string>(), at);
+        }
+    };
+
+    template <size_t D>
+    inline Emitter& operator<<(Emitter& em, AnchorType at)
+    {
+        return em << anchor_to_string(at);
     }
 }
 
@@ -150,22 +178,45 @@ namespace box_props
     {
         if (auto nscl = n["scl"])
         {
-                 if (auto naspect  = nscl["aspect" ]) box->sizer.setSclAspect (naspect .as<float>());
-            else if (auto nscale   = nscl["scale"  ]) box->sizer.setSclScale  (nscale  .as<float>());
-            else if (auto nscalexy = nscl["scalexy"]) box->sizer.setSclScaleXY(nscalexy.as<vec2 >());
-            else
-                throw Exception(n.Mark(), "invalid scl");
+            if (auto naspect  = nscl["aspect" ]) box->sizer.setSclAspect (naspect .as<float>()); else
+            if (auto nscale   = nscl["scale"  ]) box->sizer.setSclScale  (nscale  .as<float>()); else
+            if (auto nscalexy = nscl["scalexy"]) box->sizer.setSclScaleXY(nscalexy.as<vec2 >()); else
+            throw Exception(n.Mark(), "invalid scl");
         }
     }
 
-    SAVE_FUNC(pos, em, s)
+    SAVE_FUNC(pos, em, box)
     {
+        switch (box->sizer.posType())
+        {
+            case Sizer::POS_NONE   : break;
+            case Sizer::POS_XY     : em << Key << "pos" << Key << Flow << BeginMap << Key << "posxy"  << Value << box->sizer.getPosXY()     << EndMap; break;
+            case Sizer::POS_ANCHOR : em << Key << "pos" << Key << Flow << BeginMap << Key << "anchor" << Value << anchor_to_string(box->sizer.getPosAnchor()) << EndMap; break;
 
+            default:nopath_case(Sizer::SclType);
+        }
     }
 
-    LOAD_FUNC(pos, n, s)
+    LOAD_FUNC(pos, n, box)
     {
-
+        if (auto npos = n["pos"])
+        {
+            if (auto nposxy = npos["posxy"])
+            {
+                box->sizer.setPosXY(nposxy .as<vec2>());
+            }
+            else if (auto nanchor = npos["anchor"])
+            {
+                if (AnchorType t; string_to_anchor(nanchor.as<string>(), t))
+                    box->sizer.setPosAnchor(t);
+                else
+                    throw Exception(n.Mark(), "invalid anchor type");
+            }
+            else
+            {
+                throw Exception(n.Mark(), "invalid pos");
+            }
+        }
     }
 
 #undef LOAD_FUNC

@@ -59,6 +59,23 @@ namespace ImGui
     void PushItemDisabled();
     void PopItemDisabled();
 
+    inline void PushButtonColor(color_ c)
+    {
+        auto h  = c.toHSLUV();
+        auto b  = ut::color::hsluv{h.h, h.s, 66.0f, 0.4f};
+        auto bh = b.withA(1.0f);
+        auto ba = h.withL(50.0f);
+
+        PushStyleColor(ImGuiCol_Button, b);
+        PushStyleColor(ImGuiCol_ButtonHovered, bh);
+        PushStyleColor(ImGuiCol_ButtonActive, ba);
+    }
+
+    inline void PopButtonColor()
+    {
+        PopStyleColor(3);
+    }
+
     inline bool ButtonEnabled(text_ lbl, bool is_enabled)
     {
         if (is_enabled)
@@ -89,6 +106,7 @@ namespace ImGui
         if (BeginPopup("ButtonConfirm"))
         {
             bool b = SmallButton(lbl_confirm);
+            if (b) CloseCurrentPopup();
             SameLine();
             TextUnformatted(prompt.begin(), prompt.end());
             EndPopup();
@@ -108,6 +126,7 @@ namespace ImGui
         if (BeginPopup("SmallButtonConfirm"))
         {
             bool b = SmallButton(lbl_confirm);
+            if (b) CloseCurrentPopup();
             SameLine();
             TextUnformatted(prompt.begin(), prompt.end());
             EndPopup();

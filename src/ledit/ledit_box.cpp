@@ -173,31 +173,35 @@ void Box::drawProperties()
 
     {
         box_ptr b = ptr();
-        vector<PathString> ps;
+        vector<box_ptr> ps;
 
         do
         {
-            ps.push_back({b->getLbl(), b->color});
+            ps.push_back(b);
             b = b->parent;
         } while (b);
 
 
         ButtonEnabled(" ",false); SameLine();
 
+
+
         auto it = ps.rbegin();
-        PushStyleColor(ImGuiCol_Text, it->c);
-        TextUnformatted(it->s.c_str());
-        PopStyleColor();
+        PushButtonColor((*it)->color);
+        if (SmallButton((*it)->getLbl().c_str())) selected_box = (*it);
+        PopButtonColor();
 
         for (++it; it != ps.rend(); ++it)
         {
             SameLine();
             TextUnformatted("/");
             SameLine();
-            PushStyleColor(ImGuiCol_Text, it->c);
-            TextUnformatted(it->s.c_str());
-            PopStyleColor();
+            PushButtonColor((*it)->color);
+            if (SmallButton((*it)->getLbl().c_str())) selected_box = (*it);
+            PopButtonColor();
         }
+
+
     }
 
 

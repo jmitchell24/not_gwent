@@ -1,24 +1,4 @@
 type: BOX_HBOX
-name: poet
-children:
-  - type: BOX_HBOX
-    name: soldier
-  - type: BOX_HBOX
-    name: cricket
-  - type: BOX_HBOX
-    name: split
-  - type: BOX_VBOX
-    name: tell
-    children:
-      - type: BOX_HBOX
-        name: clay
-      - type: BOX_HBOX
-        name: impulse
-      - type: BOX_HBOX
-        name: cactus
-      - type: BOX_HBOX
-        name: borrow
-  - type: BOX_HBOX
-    name: guide
-  - type: BOX_HBOX
-    name: squirrel
+name: vibrant
+scl: {aspect: 1}
+pos: {posxy: [0.256999999, 0.418000013]}

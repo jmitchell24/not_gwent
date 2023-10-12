@@ -48,11 +48,23 @@ void SceneLayoutEditor::drawDebug()
     ledit::Box::root_box->layout(r);
     ledit::Box::root_box->drawRect(ledit::Box::selected_box);
 
-    if (IsMouseClicked(ImGuiMouseButton_Right))
+
+
+    if (!GetIO().WantCaptureMouse && IsMouseClicked(ImGuiMouseButton_Left))
     {
         if (auto box = ledit::Box::root_box->tryGetBox(GetMousePos()))
         {
             ledit::Box::selected_box = box;
+            //OpenPopup("m_tag_popup");
+        }
+    }
+
+    if (!GetIO().WantCaptureMouse && IsMouseClicked(ImGuiMouseButton_Middle))
+    {
+        if (auto box = ledit::Box::root_box->tryGetBox(GetMousePos()))
+        {
+            if (box->parent)
+                ledit::Box::selected_box = box->parent;
             //OpenPopup("m_tag_popup");
         }
     }
