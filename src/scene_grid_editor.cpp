@@ -5,11 +5,10 @@
 #include "scene_grid_editor.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
 
-#include "check.hpp"
-
 //
 // ut
 //
+#include <ut/check.hpp>
 #include <ut/time.hpp>
 using namespace ut;
 
@@ -21,6 +20,7 @@ using namespace ut;
 //
 // std
 //
+#include <filesystem>
 using namespace std;
 
 
@@ -45,112 +45,81 @@ void SceneLayoutEditor::drawDebug()
     using namespace ImGui;
     auto r = gfx::VIRT.virtViewport();
 
-    ledit::Box::root_box->layout(r);
-    ledit::Box::root_box->drawRect(ledit::Box::selected_box);
+    ledit::Box::drawOverlay();
 
+    ledit::Box::drawWindowSelectedBox();
 
+    ledit::Box::drawWindowBoxHierarchy();
 
-    if (!GetIO().WantCaptureMouse && IsMouseClicked(ImGuiMouseButton_Left))
+    if (Begin("Box Document###box_files"))
     {
-        if (auto box = ledit::Box::root_box->tryGetBox(GetMousePos()))
+        if (ButtonConfirm("Reset Root"))
         {
-            ledit::Box::selected_box = box;
-            //OpenPopup("m_tag_popup");
+            ledit::Box::root_box = ledit::Box::createRoot();
+            ledit::Box::selected_box = nullptr;
         }
-    }
 
-    if (!GetIO().WantCaptureMouse && IsMouseClicked(ImGuiMouseButton_Middle))
-    {
-        if (auto box = ledit::Box::root_box->tryGetBox(GetMousePos()))
+        if (ButtonDefault("active_file", !m_active_filename.empty()))
+            m_active_filename.clear();
+
+        BeginGroup();
+
+        if (m_active_filename.empty())
         {
-            if (box->parent)
-                ledit::Box::selected_box = box->parent;
-            //OpenPopup("m_tag_popup");
-        }
-    }
+            if (BeginCombo("filename", "..."))
+            {
+                for (auto&& it : m_filenames)
+                {
+                    if (Selectable(it.c_str(), it == m_active_filename))
+                    {
+                        if (ledit::Box::loadYaml(it))
+                            m_active_filename = it;
+                    }
 
-//    if (BeginPopup("m_tag_popup"))
-//    {
-//        if (ledit::Box::selected_box)
-//        {
-//            ledit::Box::selected_box->drawPopup();
-//        }
-//        else
-//        {
-//            //CloseCurrentPopup();
-//        }
-//
-//        EndPopup();
-//    }
+                    if (IsItemHovered())
+                        SetTooltip("%s", it.c_str());
+                }
+                EndCombo();
+            }
 
-    //m_tag_root.normalizeWeights();
-
-    if (Button("Save"))
-    {
-        ledit::Box::saveYaml("data/layout/test.yaml");
-    }
-
-    if (Button("Load"))
-    {
-        ledit::Box::loadYaml("data/layout/test.yaml");
-    }
-
-    if (Begin("Box Properties###selected_box"))
-    {
-        if (ledit::Box::selected_box)
-        {
-            ledit::Box::selected_box->drawProperties();
+            if (IsItemClicked())
+            {
+                refreshFiles();
+            }
         }
         else
         {
-            PushItemDisabled();
-            Text("No Box Selected");
-            PopItemDisabled();
+            LabelText("filename", "%s", m_active_filename.c_str());
         }
-    }
-    End();
 
-    if (Begin("Box Hierarchy###box_hierarchy"))
-    {
-        auto& opts = ledit::Box::tree_table_options;
+        EndGroup();
 
-        auto w = ImGui::CalcTextSize("xxxxx").x;
-
-
-
-        Text("Row Options");
-
-        Columns(3, "row-columns",false);
-        Checkbox("add"      , &opts.show_row_add    ); NextColumn();
-        Checkbox("delete"   , &opts.show_row_delete ); NextColumn();
-        Checkbox("move"     , &opts.show_row_move   ); NextColumn();
-        Checkbox("rename"   , &opts.show_row_rename ); NextColumn();
-        Checkbox("weight"   , &opts.show_row_weight ); NextColumn();
-        Checkbox("type"     , &opts.show_row_type   );
-        Columns();
-
-
-        Separator();
-        Text("Hierarchy");
-        ImGuiTableFlags table_flags =
-                ImGuiTableFlags_BordersV        |
-                ImGuiTableFlags_BordersOuterH   |
-                ImGuiTableFlags_Resizable       |
-                ImGuiTableFlags_RowBg           |
-                ImGuiTableFlags_NoBordersInBody;
-
-        if (ImGui::BeginTable("grids", 2, table_flags))
+        if (m_active_filename.empty())
         {
-            ImGui::TableSetupColumn("Label" , ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableHeadersRow();
-
-            ledit::Box::root_box->drawTreeTableRow();
-
-            ImGui::EndTable();
+            if (Button("Create File"))
+            {
+                m_active_filename = PRINTER("data/layout/%s.yaml", ledit::Box::root_box->name.c_str());
+                ledit::Box::saveYaml(m_active_filename);
+            }
+        }
+        else
+        {
+            if (Button("Overwrite File"))
+            {
+                ledit::Box::saveYaml(m_active_filename);
+            }
         }
     }
     End();
+}
+
+void SceneLayoutEditor::refreshFiles()
+{
+    m_filenames.clear();
+    for (auto&& it : filesystem::directory_iterator("data/layout"))
+    {
+        m_filenames.push_back(it.path().string());
+    }
 }
 
 #if 0

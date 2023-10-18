@@ -15,8 +15,12 @@
 #include "rlNanoVG/nanovg.hpp"
 using namespace nvg;
 
-#include "check.hpp"
 #include "raylib.h"
+
+//
+// ut
+//
+#include <ut/check.hpp>
 
 Context& Context::instance()
 {

@@ -88,12 +88,12 @@ constexpr ImVec2(ut::vec2f const& v) : x(v.x), y(v.y) {}                        
 operator ut::vec2f() const { return ut::vec2(x,y); }
 
 #define IM_VEC4_CLASS_EXTRA                                                                                 \
-constexpr ImVec4(ut::vec4f          const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {}                           \
-constexpr ImVec4(ut::rectf          const& v) : x(v.min.x), y(v.min.y), z(v.max.x), w(v.max.y) {}           \
-constexpr ImVec4(ut::color::normal  const& v) : x(v.r), y(v.g), z(v.b), w(v.a) {}                           \
-constexpr ImVec4(ut::color::hsv     const& v) : ImVec4(v.toNormal()) {}                                     \
-          ImVec4(ut::color::hsluv   const& v) : ImVec4(v.toNormal()) {}                                     \
-constexpr ImVec4(ut::color          const& v) : ImVec4(v.toNormal()) {}                                     \
+ImVec4(ut::vec4f          const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {}                           \
+ImVec4(ut::rectf          const& v) : x(v.min.x), y(v.min.y), z(v.max.x), w(v.max.y) {}           \
+ImVec4(ut::color::normal  const& v) : x(v.r), y(v.g), z(v.b), w(v.a) {}                           \
+ImVec4(ut::color::hsv     const& v) : ImVec4(v.toNormal()) {}                                     \
+ImVec4(ut::color::hsluv   const& v) : ImVec4(v.toNormal()) {}                                     \
+ImVec4(ut::color          const& v) : ImVec4(v.toNormal()) {}                                     \
 operator ut::vec4f          () const { return ut::vec4f(x,y,z,w); }                                         \
 operator ut::rectf          () const { return ut::rectf(x,y,z,w); }                                         \
 operator ut::color::normal  () const { return ut::color::normal(x,y,z,w); }                                 \

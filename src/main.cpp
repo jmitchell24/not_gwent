@@ -9,8 +9,6 @@
     TODO: https://github.com/Rabios/awesome-raylib
 */
 
-#include "check.hpp"
-
 //
 // scene
 //
@@ -49,6 +47,7 @@ using namespace gfx;
 //
 // ut
 //
+#include <ut/check.hpp>
 #include <ut/math.hpp>
 using namespace ut;
 
@@ -135,11 +134,11 @@ private:
 
 #define ENUM_SCENES \
     CASE(SceneLayoutEditor  )  \
+    CASE(SceneCardTest      )  \
+    CASE(SceneGameBoard2Test)  \
     CASE(SceneNanoVGTest    )  \
     CASE(SceneMathTest      )  \
     CASE(SceneProtoTest     )  \
-    CASE(SceneGameBoard2Test)  \
-    CASE(SceneCardTest      )  \
     CASE(SceneDemoWindow    )  \
 
 
@@ -169,7 +168,7 @@ ENUM_SCENES
 #undef CASE
     };
 
-    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).shrunk(VIRT_PAD);
+    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).deflated(VIRT_PAD);
     stage.layout(window_bounds);
 
 

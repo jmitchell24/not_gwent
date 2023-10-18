@@ -5,11 +5,11 @@
 #include "game/game_player.hpp"
 using namespace game;
 
-#include "check.hpp"
 
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 //

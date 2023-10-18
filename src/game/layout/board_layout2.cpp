@@ -32,14 +32,14 @@ size_t constexpr static VIRT_PAD        = 10;
 void GraphicsLayout::layout(GameBoard const& gb)
 {
     outer = gb.bounds;
-    inner = outer.shrunk(20);
+    inner = outer.deflated(20);
 
     board_inner2 = { gb.cpu.siege.bounds.min-20, gb.usr.siege.bounds.max+20 };
-    board_inner1 = board_inner2.expanded(20);
-    board_outer  = board_inner1.expanded(10);
+    board_inner1 = board_inner2.inflated(20);
+    board_outer  = board_inner1.inflated(10);
 
     cards_inner = { gb.cpu.siege.units.min, gb.usr.siege.units.max };
-    cards_outer = cards_inner.expanded(10);
+    cards_outer = cards_inner.inflated(10);
 
     cpu_siege_buttons   .layout(gb.cpu.siege);
     cpu_ranged_buttons  .layout(gb.cpu.ranged);
@@ -81,13 +81,13 @@ void GraphicsLayout::Buttons::layout(CombatRow const& row)
 
 
     buff_outer = row.buff;
-    buff_inner = buff_outer.shrunk(5,5,5,2.5);
+    buff_inner = buff_outer.deflated(5,5,5,2.5);
 
     nerf_outer = row.nerf;
-    nerf_inner = nerf_outer.shrunk(5,2.5,5,5);
+    nerf_inner = nerf_outer.deflated(5,2.5,5,5);
 
     score_outer = row.score;
-    score_inner = score_outer.shrunk(5);
+    score_inner = score_outer.deflated(5);
 
     bounds = { buff_outer.min, nerf_outer.max };
 }

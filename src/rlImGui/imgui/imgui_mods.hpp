@@ -21,9 +21,10 @@ enum ImGuiDRECTStyle_
 
 using ImGuiDRECTStyle = int;
 
-#define text_    ut::cstrparam
-#define rect_   ut::rectf const&
-#define color_  ut::color const&
+#define text_       ut::cstrparam
+#define rect_       ut::rectf const&
+#define color_      ut::color const&
+#define frame_      Frame const&
 
 namespace ImGui
 {
@@ -53,28 +54,54 @@ namespace ImGui
     void RenderDockspace();
 
     //
-    // Misc. Functions
+    // Extra Buttons
     //
 
-    void PushItemDisabled();
-    void PopItemDisabled();
+    struct ButtonColor { ut::color b,h,a,t; };
+
+    inline ButtonColor CreateButtonColor(ut::color::hsluv const& c)
+    {
+        return
+        {
+            {ut::color::hsluv{c.h, c.s, 66.0f, 0.4f}.toColor()},
+            {ut::color::hsluv{c.h, c.s, 66.0f, 1.0f}.toColor()},
+            {ut::color::hsluv{c.h, c.s, 50.0f, 1.0f}.toColor()},
+            {ut::colors::white}
+        };
+    }
+
+    inline ButtonColor CreateActivatedButtonColor(ut::color::hsluv const& c)
+    {
+        return
+        {
+            {ut::color::hsluv{c.h, c.s, 75.0f, 1.0f}.toColor()},
+            {ut::color::hsluv{c.h, c.s, 85.0f, 1.0f}.toColor()},
+            {ut::colors::white},
+            {ut::colors::black}
+        };
+    }
+
+    inline void PushButtonColor(ButtonColor const& c)
+    {
+        PushStyleColor(ImGuiCol_Button          , c.b);
+        PushStyleColor(ImGuiCol_ButtonHovered   , c.h);
+        PushStyleColor(ImGuiCol_ButtonActive    , c.a);
+        PushStyleColor(ImGuiCol_Text            , c.t);
+    }
 
     inline void PushButtonColor(color_ c)
-    {
-        auto h  = c.toHSLUV();
-        auto b  = ut::color::hsluv{h.h, h.s, 66.0f, 0.4f};
-        auto bh = b.withA(1.0f);
-        auto ba = h.withL(50.0f);
+    { PushButtonColor(CreateButtonColor(c.toHSLUV())); }
 
-        PushStyleColor(ImGuiCol_Button, b);
-        PushStyleColor(ImGuiCol_ButtonHovered, bh);
-        PushStyleColor(ImGuiCol_ButtonActive, ba);
-    }
+    inline void PushActivatedButtonColor()
+    { PushButtonColor(CreateActivatedButtonColor(ut::colors::hsluv::goldenrod())); }
 
     inline void PopButtonColor()
     {
-        PopStyleColor(3);
+        PopStyleColor(4);
     }
+
+    void PushItemDisabled();
+    void PopItemDisabled();
 
     inline bool ButtonEnabled(text_ lbl, bool is_enabled)
     {
@@ -94,6 +121,32 @@ namespace ImGui
         SmallButton(lbl);
         PopItemDisabled();
         return false;
+    }
+
+    inline bool ButtonActivated(text_ lbl, bool is_activated)
+    {
+        if (is_activated)
+        {
+            PushActivatedButtonColor();
+            Button(lbl);
+            PopButtonColor();
+            return false;
+        }
+
+        return Button(lbl);
+    }
+
+    inline bool SmallButtonActivated(text_ lbl, bool is_activated)
+    {
+        if (is_activated)
+        {
+            PushActivatedButtonColor();
+            SmallButton(lbl);
+            PopButtonColor();
+            return false;
+        }
+
+        return SmallButton(lbl);
     }
 
     inline bool ButtonConfirm(text_ lbl, text_ prompt = "Are you sure?", text_ lbl_confirm = "yes")
@@ -136,6 +189,72 @@ namespace ImGui
         return false;
     }
 
+    inline bool SmallActivatedButtonConfirm(text_ lbl, bool enabled, text_ prompt = "Are you sure?", text_ lbl_confirm = "yes")
+    {
+        if (SmallButtonActivated(lbl, enabled))
+        {
+            OpenPopup("SmallActivatedButtonConfirm");
+        }
+
+        if (BeginPopup("SmallActivatedButtonConfirm"))
+        {
+            bool b = SmallButton(lbl_confirm);
+            if (b) CloseCurrentPopup();
+            SameLine();
+            TextUnformatted(prompt.begin(), prompt.end());
+            EndPopup();
+            return b;
+        }
+
+        return false;
+    }
+
+    inline bool ButtonDefault(char const* lbl, bool enabled)
+    {
+        using namespace ImGui;
+
+        bool clicked = ButtonEnabled(ut::PRINTER("D##%s", lbl), enabled);
+        if (IsItemHovered())
+            SetTooltip("Set to Default");
+        SameLine();
+        return clicked;
+    }
+
+    //
+    // Misc. Functions
+    //
+
+    inline ImU32 ToU32(ut::color::normal   const& nor  ) { return ImGui::ColorConvertFloat4ToU32({nor.r, nor.g, nor.b, nor.a}); }
+    inline ImU32 ToU32(ut::color::hsv      const& hsv  ) { return ToU32(hsv.toNormal()); }
+    inline ImU32 ToU32(ut::color::hsluv    const& hsluv) { return ToU32(hsluv.toNormal()); }
+    inline ImU32 ToU32(ut::color           const& col  ) { return ToU32(col.toNormal()); }
+
+    inline void TextUnformatted(text_ t)
+    {
+        TextUnformatted(t.begin(), t.end());
+    }
+
+    struct Frame
+    {
+        ut::rect outer, inner;
+        struct Colors
+        {
+            ImU32 bd, bg;
+        } cols;
+
+        Frame(rect_ o, rect_ i, color_ c)
+        {
+            outer = o;
+            inner = i;
+
+            //auto h = c.opaque().toHSLUV();
+            cols.bd   = ToU32(ut::colors::red);
+            cols.bg   = ToU32(ut::colors::green);
+
+        }
+    };
+
+
 
     void DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style);
 
@@ -147,8 +266,18 @@ namespace ImGui
 
     inline void DrawBackgroundDRECT(text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style = ImGuiDRECTStyle_NoText)
     { DrawDRECT(GetBackgroundDrawList(), lbl, r, col, style); }
+
+    void DrawDFRAME(ImDrawList* dl, frame_ f);
+
+    inline void DrawBackgroundDFRAME(frame_ f)
+    { DrawDFRAME(GetBackgroundDrawList(), f); }
+
+    inline void DrawForegroundDFRAME(frame_ f)
+    { DrawDFRAME(GetForegroundDrawList(), f); }
+
 }
 
 #undef text_
 #undef rect_
 #undef color_
+#undef frame_

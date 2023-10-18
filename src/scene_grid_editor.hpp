@@ -8,6 +8,8 @@
 #include "ledit/ledit_box.hpp"
 #include "gfx/gfx_virt2d.hpp"
 
+#include <string>
+#include <vector>
 #include <variant>
 #include <optional>
 
@@ -26,4 +28,12 @@ public:
     void update(float dt) override;
     void draw() override;
     void drawDebug() override;
+
+private:
+    using filelist_t = std::vector<std::string>;
+
+    std::string m_active_filename;
+    filelist_t  m_filenames;
+
+    void refreshFiles();
 };

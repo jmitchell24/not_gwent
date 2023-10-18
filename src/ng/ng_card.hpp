@@ -4,13 +4,12 @@
 
 #pragma once
 
-#include "check.hpp"
-
 #include "ng/ng_enum.hpp"
 
 //
 // ut
 //
+#include <ut/check.hpp>
 #include <ut/string.hpp>
 
 //

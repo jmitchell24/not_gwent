@@ -3,8 +3,9 @@
 //
 #pragma once
 
-#include "check.hpp"
 #include "game/asset/asset_store.hpp"
+
+#include <ut/check.hpp>
 
 #define GAME_ENUM_FONTS \
     CASE(smallburgRegular32 , "data/font/smallburg-Regular.ttf", 32 ) \

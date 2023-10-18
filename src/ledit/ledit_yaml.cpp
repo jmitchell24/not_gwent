@@ -5,13 +5,11 @@
 #include "ledit/ledit_yaml.hpp"
 using namespace ledit;
 
-#include "check.hpp"
-
-
 
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 //
@@ -82,11 +80,138 @@ namespace YAML
         }
     };
 
-    template <size_t D>
     inline Emitter& operator<<(Emitter& em, AnchorType at)
     {
         return em << anchor_to_string(at);
     }
+
+#define VAR_ENCODE(a_, b_, c_, d_, e_)  case Sizer::b_: n[d_] = get<Sizer::b_>(x); break;
+#define VAR_DECODE(a_, b_, c_, d_, e_)  if (auto np = n[d_]) { x.emplace<Sizer::b_>(np.as<e_>()); return true; }
+#define VAR_EMIT(a_, b_, c_, d_, e_)    case Sizer::b_: em << Flow << BeginMap << Key << d_ << Value << get<Sizer::b_>(x) << EndMap; break;
+
+    //
+    // pad_type
+    //
+
+    template<> struct convert<Sizer::pad_type>
+    {
+        using var_type = Sizer::pad_type;
+        static Node encode(var_type const& x)
+        {
+            Node n;
+            switch (x.index())
+            {
+                EXPAND_PAD(VAR_ENCODE)
+                default:nopath("invalid var");
+            }
+            return n;
+        }
+
+        static bool decode(Node const& n, var_type& x)
+        {
+            if (n.IsMap())
+            {
+                if (n.size() == 0) { x.emplace<0>(); return true; }
+                if (n.size() == 1) { EXPAND_PAD(VAR_DECODE) }
+            }
+            return false;
+        }
+    };
+
+    inline Emitter& operator<<(Emitter& em, Sizer::pad_type const& x)
+    {
+        switch (x.index())
+        {
+            case 0: break;
+            EXPAND_PAD(VAR_EMIT)
+            default:nopath("invalid var");
+        }
+        return em;
+    }
+
+    //
+    // scl_type
+    //
+
+    template<> struct convert<Sizer::dim_type>
+    {
+        using var_type = Sizer::dim_type;
+        static Node encode(var_type const& x)
+        {
+            Node n;
+            switch (x.index())
+            {
+                EXPAND_DIM(VAR_ENCODE)
+                default:nopath("invalid var");
+            }
+            return n;
+        }
+
+        static bool decode(Node const& n, var_type& x)
+        {
+            if (n.IsMap())
+            {
+                if (n.size() == 0) { x.emplace<0>(); return true; }
+                if (n.size() == 1) { EXPAND_DIM(VAR_DECODE) }
+            }
+            return false;
+        }
+    };
+
+    inline Emitter& operator<<(Emitter& em, Sizer::dim_type const& x)
+    {
+        switch (x.index())
+        {
+            case 0: break;
+            EXPAND_DIM(VAR_EMIT)
+            default:nopath("invalid var");
+        }
+        return em;
+    }
+
+    //
+    // pos_type
+    //
+
+    template<> struct convert<Sizer::pos_type>
+    {
+        using var_type = Sizer::pos_type;
+        static Node encode(var_type const& x)
+        {
+            Node n;
+            switch (x.index())
+            {
+                EXPAND_POS(VAR_ENCODE)
+                default:nopath("invalid var");
+            }
+            return n;
+        }
+
+        static bool decode(Node const& n, var_type& x)
+        {
+            if (n.IsMap())
+            {
+                if (n.size() == 0) { x.emplace<0>(); return true; }
+                if (n.size() == 1) { EXPAND_POS(VAR_DECODE) }
+            }
+            return false;
+        }
+    };
+
+    inline Emitter& operator<<(Emitter& em, Sizer::pos_type const& x)
+    {
+        switch (x.index())
+        {
+            case 0: break;
+            EXPAND_POS(VAR_EMIT)
+            default:nopath("invalid var");
+        }
+        return em;
+    }
+
+
+#undef VAR_ENCODE
+#undef VAR_DECODE
 }
 
 
@@ -136,88 +261,14 @@ namespace box_props
         box->name = n["name"].as<string>("");
     }
 
-    SAVE_FUNC(pad, em, box)
-    {
-        switch (box->sizer.padType())
-        {
-            case Sizer::PAD_NONE: break;
-            case Sizer::PAD_ONE : em << Key << "pad" << Key << Flow << BeginMap << Key << "pad1" << Value << box->sizer.getPad1() << EndMap; break;
-            case Sizer::PAD_TWO : em << Key << "pad" << Key << Flow << BeginMap << Key << "pad2" << Value << box->sizer.getPad2() << EndMap; break;
-            case Sizer::PAD_FOUR: em << Key << "pad" << Key << Flow << BeginMap << Key << "pad4" << Value << box->sizer.getPad4() << EndMap; break;
+    SAVE_FUNC(pad, em, box) { if (box->sizer.pad.index() > 0) em << Key << "pad" << box->sizer.pad; }
+    LOAD_FUNC(pad, n , box) { if (auto np = n["pad"]) box->sizer.pad = np.as<Sizer::pad_type>(); }
 
-            default:nopath_case(Sizer::PadType);
-        }
-    }
+    SAVE_FUNC(scl, em, box) { if (box->sizer.dim.index() > 0) em << Key << "scl" << box->sizer.dim; }
+    LOAD_FUNC(scl, n , box) { if (auto np = n["dim"]) box->sizer.dim = np.as<Sizer::dim_type>(); }
 
-    LOAD_FUNC(pad, n, box)
-    {
-        if (auto npad = n["pad"])
-        {
-                 if (auto npad1 = npad["pad1"]) box->sizer.setPad1(npad1.as<float>());
-            else if (auto npad2 = npad["pad2"]) box->sizer.setPad2(npad2.as<vec2 >());
-            else if (auto npad4 = npad["pad4"]) box->sizer.setPad4(npad4.as<vec4 >());
-            else
-                throw Exception(n.Mark(), "invalid pad");
-        }
-    }
-
-    SAVE_FUNC(scl, em, box)
-    {
-        switch (box->sizer.sclType())
-        {
-            case Sizer::SCL_NONE: break;
-            case Sizer::SCL_ASPECT  : em << Key << "scl" << Key << Flow << BeginMap << Key << "aspect"  << Value << box->sizer.getSclAspect()  << EndMap; break;
-            case Sizer::SCL_SCALE   : em << Key << "scl" << Key << Flow << BeginMap << Key << "scale"   << Value << box->sizer.getSclScale()   << EndMap; break;
-            case Sizer::SCL_SCALE_XY: em << Key << "scl" << Key << Flow << BeginMap << Key << "scalexy" << Value << box->sizer.getSclScaleXY() << EndMap; break;
-
-            default:nopath_case(Sizer::SclType);
-        }
-    }
-
-    LOAD_FUNC(scl, n, box)
-    {
-        if (auto nscl = n["scl"])
-        {
-            if (auto naspect  = nscl["aspect" ]) box->sizer.setSclAspect (naspect .as<float>()); else
-            if (auto nscale   = nscl["scale"  ]) box->sizer.setSclScale  (nscale  .as<float>()); else
-            if (auto nscalexy = nscl["scalexy"]) box->sizer.setSclScaleXY(nscalexy.as<vec2 >()); else
-            throw Exception(n.Mark(), "invalid scl");
-        }
-    }
-
-    SAVE_FUNC(pos, em, box)
-    {
-        switch (box->sizer.posType())
-        {
-            case Sizer::POS_NONE   : break;
-            case Sizer::POS_XY     : em << Key << "pos" << Key << Flow << BeginMap << Key << "posxy"  << Value << box->sizer.getPosXY()     << EndMap; break;
-            case Sizer::POS_ANCHOR : em << Key << "pos" << Key << Flow << BeginMap << Key << "anchor" << Value << anchor_to_string(box->sizer.getPosAnchor()) << EndMap; break;
-
-            default:nopath_case(Sizer::SclType);
-        }
-    }
-
-    LOAD_FUNC(pos, n, box)
-    {
-        if (auto npos = n["pos"])
-        {
-            if (auto nposxy = npos["posxy"])
-            {
-                box->sizer.setPosXY(nposxy .as<vec2>());
-            }
-            else if (auto nanchor = npos["anchor"])
-            {
-                if (AnchorType t; string_to_anchor(nanchor.as<string>(), t))
-                    box->sizer.setPosAnchor(t);
-                else
-                    throw Exception(n.Mark(), "invalid anchor type");
-            }
-            else
-            {
-                throw Exception(n.Mark(), "invalid pos");
-            }
-        }
-    }
+    SAVE_FUNC(pos, em, box) { if (box->sizer.pos.index() > 0) em << Key << "pos" << box->sizer.pos; }
+    LOAD_FUNC(pos, n , box) { if (auto np = n["pos"]) box->sizer.pos = np.as<Sizer::pos_type>(); }
 
 #undef LOAD_FUNC
 #undef SAVE_FUNC
@@ -273,3 +324,16 @@ void ::ledit::fromYaml(YAML::Node const& node, box_ptr const& box)
     }
 }
 
+void ::ledit::emitYaml(YAML::Emitter& emitter, Layout const& layout)
+{
+    using namespace YAML;
+
+    emitYaml(emitter, layout.root_box);
+}
+
+void ::ledit::fromYaml(YAML::Node const& node, Layout& layout)
+{
+    using namespace YAML;
+
+    fromYaml(node, layout.root_box);
+}

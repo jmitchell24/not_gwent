@@ -10,12 +10,11 @@ using namespace ut;
 #define text_   ut::cstrparam
 #define rect_   ut::rectf const&
 #define color_  ut::color const&
+#define frame_      Frame const&
 
 //
 // Struct
 //
-
-static bool in_struct = false;
 
 bool ImGui::BeginStruct(text_ lbl)
 {
@@ -90,8 +89,8 @@ void ImGui::RenderDockspace()
     auto node = ImGui::DockBuilderGetCentralNode(dockspace_id);
     if (node != nullptr)
     {
-        g_dockspace_viewport.pos(node->Pos.x, node->Pos.y);
-        g_dockspace_viewport.size(node->Size.x, node->Size.y);
+        g_dockspace_viewport.setPos(node->Pos.x, node->Pos.y);
+        g_dockspace_viewport.setSize(node->Size.x, node->Size.y);
     }
 
     ImGui::End();
@@ -101,10 +100,11 @@ void ImGui::RenderDockspace()
 // Misc. Functions
 //
 
-ImU32 ToU32(color::normal   const& nor  ) { return ImGui::ColorConvertFloat4ToU32({nor.r, nor.g, nor.b, nor.a}); }
-ImU32 ToU32(color::hsv      const& hsv  ) { return ToU32(hsv.toNormal()); }
-ImU32 ToU32(color::hsluv    const& hsluv) { return ToU32(hsluv.toNormal()); }
-ImU32 ToU32(color           const& col  ) { return ToU32(col.toNormal()); }
+
+
+
+
+
 
 void ImGui::DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
 {
@@ -158,12 +158,27 @@ void ImGui::DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECT
         {
             auto txt_sz = ( vec2f(s.CellPadding) * 2 ) + ImGui::CalcTextSize(sv.begin(), sv.end());
 
-            rr.size(txt_sz);
+            rr.setSize(txt_sz);
             dl->AddRectFilled(rr.min, rr.max, c_bg);
             dl->AddRect(rr.min, rr.max, c_border);
             dl->AddText(r.min + s.CellPadding, c_text, sv.begin(), sv.end());
         }
     }
+}
+
+void ImGui::DrawDFRAME(ImDrawList* dl, frame_ f)
+{
+    auto o = f.outer;
+    auto i = f.inner;
+
+
+    dl->AddQuadFilled(o.tl(), o.tr(), i.tr(), i.tl(), f.cols.bg);
+    dl->AddQuadFilled(o.tr(), o.br(), i.br(), i.tr(), f.cols.bg);
+    dl->AddQuadFilled(o.br(), o.bl(), i.bl(), i.br(), f.cols.bg);
+    dl->AddQuadFilled(o.bl(), o.tl(), i.tl(), i.bl(), f.cols.bg);
+
+    //dl->AddRect(o.min, o.max, f.cols.bd);
+    //dl->AddRect(i.min, i.max, f.cols.bd);
 }
 
 void ImGui::PushItemDisabled()
@@ -181,3 +196,4 @@ void ImGui::PopItemDisabled()
 #undef text_
 #undef rect_
 #undef color_
+#undef frame_

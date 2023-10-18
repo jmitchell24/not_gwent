@@ -33,6 +33,7 @@ namespace ledit
     public:
         struct TreeTableOptions
         {
+            bool show_row_select    =true;
             bool show_row_add       =false;
             bool show_row_delete    =false;
             bool show_row_move      =false;
@@ -49,17 +50,17 @@ namespace ledit
         ut::color       color       = nextColor();
         int             weight      = 1;
 
-        ut::rect        bounds_outer;
-        ut::rect        bounds_inner;
+        ut::rect        bounds_parent;
+        ut::rect        bounds_pad;
+        ut::rect        bounds_content;
 
         std::string     name;
 
         Sizer           sizer;
         float           inner_pad=10;
 
-        static box_ptr  root_box;
-        static box_ptr  selected_box;
-
+        static box_ptr          root_box;
+        static box_ptr          selected_box;
         static TreeTableOptions tree_table_options;
 
         static box_ptr create(box_ptr const& parent);
@@ -69,7 +70,6 @@ namespace ledit
         box_ptr tryGetBox(ut::vec2 const& mp);
 
         std::string getLbl();
-        std::string getPath();
 
         void reset();
 
@@ -81,11 +81,20 @@ namespace ledit
         void drawProperties();
         void drawTreeTableRow();
         bool drawTreeTableRow(bool is_leaf);
-        void drawRect(box_ptr box);
 
-        static void loadYaml(ut::cstrparam filename);
-        static void saveYaml(ut::cstrparam filename);
 
+        void drawOverlayOutlines();
+        void drawOverlaySelectedAbove();
+        void drawOverlaySelectedBelow();
+
+
+        static bool loadYaml(ut::cstrparam filename);
+        static bool saveYaml(ut::cstrparam filename);
+        static box_ptr createRoot();
+
+        static void drawOverlay();
+        static void drawWindowSelectedBox();
+        static void drawWindowBoxHierarchy();
 
 
     private:
@@ -95,19 +104,12 @@ namespace ledit
             box_ptr box;
         };
 
-        struct PathString
-        {
-            std::string s; ut::color c;
-        };
-
         std::optional<RowAction> m_row_action;
 
         Box(box_ptr p);
 
         void applyRowAction();
         void setRowAction(RowAction const& ra);
-
-        static box_ptr createRoot();
 
         inline float weightsSum() const
         {
@@ -139,5 +141,9 @@ namespace ledit
         }
 
         static ut::color nextColor();
+
+        bool isSelected();
     };
+
+
 }

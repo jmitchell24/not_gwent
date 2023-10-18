@@ -5,11 +5,11 @@
 #include "ng/ng_enum.hpp"
 using namespace ng;
 
-#include "check.hpp"
 
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 //

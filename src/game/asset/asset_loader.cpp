@@ -6,10 +6,18 @@
 using namespace game;
 using namespace game::asset_loaders;
 
+//
+// ut
+//
+#include <ut/check.hpp>
+using namespace ut;
+
+
+//
+// std
+//
 #include <optional>
 using namespace std;
-
-#include "check.hpp"
 
 //
 // Texture2DLoader -> Implementation

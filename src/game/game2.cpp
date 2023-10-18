@@ -2,8 +2,7 @@
 // Created by james on 9/15/23.
 //
 
-#include "check.hpp"
-
+#include <ut/check.hpp>
 #include <ut/random.hpp>
 #include "game/game2.hpp"
 using namespace game;

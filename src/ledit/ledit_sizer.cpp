@@ -5,7 +5,6 @@
 #include "ledit/ledit_sizer.hpp"
 using namespace ledit;
 
-#include "check.hpp"
 
 //
 // imgui
@@ -15,12 +14,18 @@ using namespace ledit;
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 //
 // std
 //
 using namespace std;
+
+//
+// Helpers
+//
+
 
 
 //
@@ -30,7 +35,7 @@ using namespace std;
 void Sizer::reset()
 {
     pad = monostate{};
-    scl = monostate{};
+    dim = monostate{};
     pos = monostate{};
 }
 
@@ -42,7 +47,7 @@ void Sizer::drawProperties()
     // Padding
     //
 
-    if (ButtonEnabled("R##pad", pad.index()>0)) pad = monostate{}; SameLine();
+    if (ButtonDefault("pad", pad.index()>0)) pad = monostate{};
 
     BeginGroup();
     switch (padType())
@@ -79,32 +84,33 @@ void Sizer::drawProperties()
     // Scale
     //
 
-    if (ButtonEnabled("R##scl", scl.index()>0)) scl = monostate{}; SameLine();
+    if (ButtonDefault("dim", dim.index()>0)) dim = monostate{};
 
     BeginGroup();
-    switch (sclType())
+    switch (dimType())
     {
-        case SCL_NONE:
-            if (BeginCombo("scale", "..."))
+        case DIM_NONE:
+            if (BeginCombo("dim", "..."))
             {
-                if (Selectable("aspect"  )) setSclAspect(1);
-                if (Selectable("scale"   )) setSclScale(1);
-                if (Selectable("scale xy")) setSclScaleXY({1,1});
+                if (Selectable("aspect" )) setDimAspect(1);
+                if (Selectable("percent")) setDimPercent({1,1});
+                if (Selectable("units"  )) setDimUnits({100,100});
                 EndCombo();
             }
             break;
 
-        case SCL_ASPECT:
-            DragFloat("aspect", &getSclAspect(), 0.01, 0.5, 2);
+        case DIM_ASPECT:
+            DragFloat("aspect", &getDimAspect(), 0.01, 0.5, 2);
             break;
 
-        case SCL_SCALE:
-            SliderFloat("scale", &getSclScale(), 0, 1);
+        case DIM_PERCENT:
+            SliderFloat("percent w", &getDimPercent().x, 0, 1);
+            SliderFloat("percent h", &getDimPercent().y, 0, 1);
             break;
 
-        case SCL_SCALE_XY:
-            SliderFloat("scale x", &getSclScaleXY().x, 0, 1);
-            SliderFloat("scale y", &getSclScaleXY().y, 0, 1);
+        case DIM_UNITS:
+            DragFloat("units w", &getDimUnits().x, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            DragFloat("units h", &getDimUnits().y, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
             break;
     }
     EndGroup();
@@ -113,7 +119,7 @@ void Sizer::drawProperties()
     // Position
     //
 
-    if (ButtonEnabled("R##pos", pos.index()>0)) pos = monostate{}; SameLine();
+    if (ButtonDefault("pos", pos.index()>0)) pos = monostate{};
 
     BeginGroup();
     switch (posType())
@@ -121,8 +127,9 @@ void Sizer::drawProperties()
         case POS_NONE:
             if (BeginCombo("pos", "..."))
             {
-                if (Selectable("anchor")) setPosAnchor(ANCHOR_CC);
-                if (Selectable("pos xy")) setPosXY({});
+                if (Selectable("anchor" )) setPosAnchor(ANCHOR_CC);
+                if (Selectable("percent")) setPosPercent({});
+                if (Selectable("units"  )) setPosUnits({});
                 EndCombo();
             }
             break;
@@ -154,79 +161,103 @@ void Sizer::drawProperties()
 #undef ANCHOR_BUTTON
             break;
 
-        case POS_XY:
-            SliderFloat("pos x", &get<POS_XY>(pos).x, 0, 1);
-            SliderFloat("pos y", &get<POS_XY>(pos).y, 0, 1);
+        case POS_PERCENT:
+            SliderFloat("percent x", &getPosPercent().x, 0, 1);
+            SliderFloat("percent y", &getPosPercent().y, 0, 1);
+            break;
+
+        case POS_UNITS:
+            DragFloat("units x", &getPosUnits().x, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            DragFloat("units y", &getPosUnits().y, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
             break;
     }
     EndGroup();
 }
 
-rect Sizer::operator() (rect const& parent) const
+rect Sizer::getPad(rect b) const
 {
-    auto b = parent;
-
-    switch (sclType())
+    switch (padType())
     {
-        case SCL_ASPECT:
-            b = b.fitAspect(getSclAspect());
-            break;
-
-        case SCL_SCALE:
-            b = b.withSize(perc(getSclScale()),
-                           perc(getSclScale()));
-        break;
-
-
-        case SCL_SCALE_XY:
-            b = b.withSize(perc(getSclScaleXY().x),
-                           perc(getSclScaleXY().y));
-            break;
-        default:break;
+        case PAD_NONE: return b;
+        case PAD_ONE : return b.deflated(getPad1());
+        case PAD_TWO : return b.deflated(getPad2().x, getPad2().y);
+        case PAD_FOUR: return b.deflated(getPad4().x, getPad4().y, getPad4().z, getPad4().w);
+        default:nopath_case(PadType);
     }
+    return b;
+}
 
-    auto w = b.width();
-    auto h = b.height();
+vec2 Sizer::getDim(rect b) const
+{
+    switch (dimType())
+    {
+        case DIM_NONE    : return b.size();
+        case DIM_ASPECT  : return b.fitAspectSize(getDimAspect());
+        case DIM_PERCENT : return b.size() * getDimPercent();
+        case DIM_UNITS   : return getDimUnits();
+        default:nopath_case(DimType);
+    }
+    return b.size();
+}
 
+rect Sizer::getPos(rect b, vec2 sz) const
+{
     switch (posType())
     {
         case POS_ANCHOR:
             switch (getPosAnchor())
             {
-                case ANCHOR_TL: b = parent.anchorTLtoTL(w,h); break;
-                case ANCHOR_TR: b = parent.anchorTRtoTR(w,h); break;
-                case ANCHOR_BL: b = parent.anchorBLtoBL(w,h); break;
-                case ANCHOR_BR: b = parent.anchorBRtoBR(w,h); break;
-                case ANCHOR_LC: b = parent.anchorLCtoLC(w,h); break;
-                case ANCHOR_RC: b = parent.anchorRCtoRC(w,h); break;
-                case ANCHOR_TC: b = parent.anchorTCtoTC(w,h); break;
-                case ANCHOR_BC: b = parent.anchorBCtoBC(w,h); break;
-                case ANCHOR_CC: b = parent.anchorCCtoCC(w,h); break;
+                case ANCHOR_TL: return b.anchorTLtoTL(sz);
+                case ANCHOR_TR: return b.anchorTRtoTR(sz);
+                case ANCHOR_BL: return b.anchorBLtoBL(sz);
+                case ANCHOR_BR: return b.anchorBRtoBR(sz);
+                case ANCHOR_LC: return b.anchorLCtoLC(sz);
+                case ANCHOR_RC: return b.anchorRCtoRC(sz);
+                case ANCHOR_TC: return b.anchorTCtoTC(sz);
+                case ANCHOR_BC: return b.anchorBCtoBC(sz);
+                case ANCHOR_CC: return b.anchorCCtoCC(sz);
+                default:nopath_case(AnchorType);
             }
             break;
 
-        case POS_XY:
-            {
-                auto o = getPosXY();
-                o.x *= parent.width() - w;
-                o.y *= parent.height() - h;
-                b.pos(parent.pos() + o);
-            }
-            break;
+        case POS_PERCENT:
+            return b.withSize(sz).withOffset( (b.size() - sz) * getPosPercent() );
+
+        case POS_UNITS:
+            return b.withSize(sz).withOffset(getPosUnits());
         default:break;
     }
 
-    switch (padType())
-    {
-        case PAD_ONE : return b.shrunk(getPad1());
-        case PAD_TWO : return b.shrunk(getPad2().x,
-                                       getPad2().y);
-        case PAD_FOUR: return b.shrunk(getPad4().x,
-                                       getPad4().y,
-                                       getPad4().z,
-                                       getPad4().w);
-        default:break;
-    }
+    return b.withSize(sz);
+}
 
-    return b;
+rect Sizer::getOuter(rect const& parent) const
+{
+    auto sz = getDim(parent);
+    return getPos(parent, sz);
+}
+
+rect Sizer::getInner(rect const& parent) const
+{
+    return getPad(getOuter(parent));
+}
+
+Sizer::Box Sizer::getBox(rect const& parent) const
+{
+    auto outer = getOuter(parent);
+    return { parent, getPad(outer), outer };
+}
+
+bool Sizer::hasPad()
+{
+    return padType() != PAD_NONE;
+//    switch (padType())
+//    {
+//        case PAD_NONE: return false;
+//        case PAD_ONE : return std::isnormal(getPad1());
+//        case PAD_TWO : return getPad2().isFltNormal();
+//        case PAD_FOUR: return getPad4().isFltNormal();
+//        default:nopath_case(PadType);
+//    }
+//    return false;
 }

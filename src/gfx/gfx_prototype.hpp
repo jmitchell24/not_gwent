@@ -73,12 +73,12 @@ namespace gfx
             gfx::drawShadow(r, {2,2}, 5);
 
             auto outer = r;
-            auto inner = outer.shrunk(m_dimens.panel_bezel);
+            auto inner = outer.deflated(m_dimens.panel_bezel);
 
             //drawRaisedBezel(outer, inner, m_dimens.factor_dark, m_dimens.factor_darker, c);
 
-            outer = inner.shrunk(m_dimens.panel_frame);
-            inner = outer.shrunk(m_dimens.panel_bezel);
+            outer = inner.deflated(m_dimens.panel_frame);
+            inner = outer.deflated(m_dimens.panel_bezel);
             //drawLoweredBezel(outer, inner, m_dimens.factor_dark, m_dimens.factor_darker, c);
         }
 
@@ -92,12 +92,12 @@ namespace gfx
             gfx::drawShadow(r, {2,2}, 5);
 
             auto outer = r;
-            auto inner = outer.shrunk(m_dimens.panel_bezel/2);
+            auto inner = outer.deflated(m_dimens.panel_bezel/2);
 
             //drawRaisedBezel(outer, inner, m_dimens.factor_dark, m_dimens.factor_darker, m_colors.iron);
 
-            outer = inner.shrunk(m_dimens.panel_frame/2);
-            inner = outer.shrunk(m_dimens.panel_bezel/2);
+            outer = inner.deflated(m_dimens.panel_frame/2);
+            inner = outer.deflated(m_dimens.panel_bezel/2);
             //drawLoweredBezel(outer, inner, m_dimens.factor_dark, m_dimens.factor_darker, m_colors.iron);
 
             drawTexture(t, inner, ut::colors::white);
@@ -129,7 +129,7 @@ namespace gfx
             {
                 .q_outer  {outer, s3},
                 .q_inner1 {inner, s2},
-                .q_inner2 {inner.expanded(ex), s1},
+                .q_inner2 {inner.inflated(ex), s1},
                 .q_inner3 {inner, s0},
             };
 
@@ -191,10 +191,10 @@ namespace gfx
             auto g = (inner.top - outer.top);
 
             auto r1 = outer;
-            auto r2 = outer.shrunk(g * .4f);
-            auto r3 = outer.shrunk(g * .6f);
+            auto r2 = outer.deflated(g * .4f);
+            auto r3 = outer.deflated(g * .6f);
             auto r4 = inner;
-            auto r5 = inner.shrunk(inner.width() * .1f, inner.height() * .1f);
+            auto r5 = inner.deflated(inner.width() * .1f, inner.height() * .1f);
 
             return
             {

@@ -107,7 +107,7 @@ void StatsBoard::layout(rect const& b)
     name                = CELL(0,0, 6,2);
     deck_name           = CELL(0,2, 6,1);
     lead_name           = CELL(0,3, 6,1);
-    avatar              = CELL(0,4, 6,6).fitAspect(1).shrunk(VIRT_PAD);
+    avatar              = CELL(0,4, 6,6).fitAspect(1).deflated(VIRT_PAD);
     gems                = CELL(6,0, 4,5);
     score               = CELL(6,5, 4,5);
 #undef CELL
@@ -135,7 +135,7 @@ void StatsBoard::drawDebug()
 
 void GameBoard::layout(rect const& b)
 {
-    auto [b_stats    , b_cards_decks] = b.shrunk(VIRT_PAD).splitLeft(b.width() / 4, VIRT_PAD);
+    auto [b_stats    , b_cards_decks] = b.deflated(VIRT_PAD).splitLeft(b.width() / 4, VIRT_PAD);
     auto [b_cards    , b_decks      ] = b_cards_decks.splitRight(b.width() / 4, VIRT_PAD);
     auto [b_stats_cpu, b_stats_usr  ] = b_stats.splitNV<2>(150);
 
