@@ -3,6 +3,9 @@
 //
 
 #pragma once
+
+#include "ledit/ledit_editor.hpp"
+
 #include "scene.hpp"
 
 #include "game/card.hpp"
@@ -17,6 +20,8 @@ public:
     char const* name() const override { return "Card Test"; }
 
     game::Card card;
+
+    ledit::BoxEditor editor{"card.yaml"};
 
     void layout(ut::rect const& b) override
     {
@@ -47,5 +52,11 @@ public:
 
         ImGui::LabelText("layout elevation", "%.1f",
                          card.layout.m_z);
+
+        if (editor.begin())
+        {
+            // update card layout
+        }
+        editor.end();
     }
 };

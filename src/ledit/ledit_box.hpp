@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ledit_sizer.hpp"
+#include "ledit_flex.hpp"
 
 //
 // ut
@@ -26,6 +27,7 @@ namespace ledit
 {
     class Box;
     using box_ptr   = std::shared_ptr<Box>;
+    using box_cptr  = std::shared_ptr<Box const>;
     using boxlist_t = std::vector<box_ptr>;
 
     class Box : public std::enable_shared_from_this<Box>
@@ -50,9 +52,8 @@ namespace ledit
         ut::color       color       = nextColor();
         int             weight      = 1;
 
-        ut::rect        bounds_parent;
-        ut::rect        bounds_pad;
-        ut::rect        bounds_content;
+        ut::rect        bounds_inner;
+        ut::rect        bounds_outer;
 
         std::string     name;
 
@@ -66,6 +67,9 @@ namespace ledit
         static box_ptr create(box_ptr const& parent);
 
         box_ptr ptr();
+        box_cptr ptr() const;
+
+        box_ptr  deepCopy() const;
 
         box_ptr tryGetBox(ut::vec2 const& mp);
 
@@ -87,6 +91,8 @@ namespace ledit
         void drawOverlaySelectedAbove();
         void drawOverlaySelectedBelow();
 
+        std::string toYamlString();
+        std::string toCPPString();
 
         static bool loadYaml(ut::cstrparam filename);
         static bool saveYaml(ut::cstrparam filename);
@@ -95,6 +101,8 @@ namespace ledit
         static void drawOverlay();
         static void drawWindowSelectedBox();
         static void drawWindowBoxHierarchy();
+        static void drawWindowYamlOutput();
+        static void drawWindowCPPOutput();
 
 
     private:
@@ -144,6 +152,7 @@ namespace ledit
 
         bool isSelected();
     };
+
 
 
 }

@@ -133,8 +133,8 @@ private:
 };
 
 #define ENUM_SCENES \
-    CASE(SceneLayoutEditor  )  \
     CASE(SceneCardTest      )  \
+    CASE(SceneLayoutEditor  )  \
     CASE(SceneGameBoard2Test)  \
     CASE(SceneNanoVGTest    )  \
     CASE(SceneMathTest      )  \

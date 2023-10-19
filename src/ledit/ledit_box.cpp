@@ -13,6 +13,7 @@ using namespace ledit;
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
+#include "rlImGui/ed/TextEditor.h"
 
 //
 // gfx
@@ -43,6 +44,15 @@ color Box::nextColor()
 
     c.rotate(100);
     return c.toColor();
+}
+
+bool isNameValid(cstrparam s)
+{
+    assert(!s.empty());
+
+
+
+    return false;
 }
 
 static color ColWindowBg()
@@ -129,6 +139,16 @@ box_ptr Box::ptr()
     return shared_from_this();
 }
 
+box_cptr Box::ptr() const
+{
+    return shared_from_this();
+}
+
+box_ptr Box::deepCopy() const
+{
+    nopath_impl;
+}
+
 box_ptr Box::tryGetBox(vec2 const &mp)
 {
     for (auto &&it: child_boxes)
@@ -137,7 +157,7 @@ box_ptr Box::tryGetBox(vec2 const &mp)
             return box;
     }
 
-    auto r = VIRT.realRect(bounds_content);
+    auto r = VIRT.realRect(bounds_outer);
 
     if (r.contains(mp))
         return ptr();
@@ -213,13 +233,10 @@ void Box::drawProperties()
 
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("bounds_content", "%s", to_string(bounds_content.psize()).c_str());
+    LabelText("bounds_content", "%s", to_string(bounds_outer.psize()).c_str());
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("bounds_parent", "%s", to_string(bounds_parent.psize()).c_str());
-    ButtonEnabled(" ", false);
-    SameLine();
-    LabelText("bounds_pad", "%s", to_string(bounds_pad.psize()).c_str());
+    LabelText("bounds_pad", "%s", to_string(bounds_inner.psize()).c_str());
 
     {
         box_ptr b = ptr();
@@ -469,7 +486,7 @@ void Box::drawOverlay()
 {
     root_box->layout(rect{});
 
-    DRAW_OVERLAY_BG(root_box->bounds_content);
+    DRAW_OVERLAY_BG(root_box->bounds_outer);
 
     if (selected_box)
     {
@@ -487,14 +504,14 @@ void Box::drawOverlaySelectedBelow()
 
     if (sizer.hasPad())
     {
-        DRAW_OVERLAY_PADDING(bounds_pad, bounds_content, color.withNormalA(.25f));
+        DRAW_OVERLAY_PADDING(bounds_inner, bounds_outer, color.withNormalA(.25f));
     }
 
 }
 
 void Box::drawOverlaySelectedAbove()
 {
-    DRAW_OVERLAY_OUTLINE(bounds_content, color, 3.0f);
+    DRAW_OVERLAY_OUTLINE(bounds_outer, color, 3.0f);
 }
 
 void Box::drawOverlayOutlines()
@@ -503,7 +520,7 @@ void Box::drawOverlayOutlines()
 
     if (!isSelected())
     {
-        DRAW_OVERLAY_OUTLINE(bounds_content, ColBorder(), 1.0f);
+        DRAW_OVERLAY_OUTLINE(bounds_outer, ColBorder(), 1.0f);
     }
 
     for (auto &&it: child_boxes)
@@ -523,9 +540,9 @@ void Box::reset()
 void Box::layout(rect const &parent)
 {
     auto b = sizer.getBox(parent);
-    bounds_parent = b.parent;
-    bounds_pad = b.pad;
-    bounds_content = b.content;
+
+    bounds_inner      = b.pad;
+    bounds_outer  = b.content;
 
     if (child_boxes.empty())
         return;
@@ -533,13 +550,13 @@ void Box::layout(rect const &parent)
     switch (type)
     {
         case BOX_VBOX:
-            layoutVbox(bounds_pad);
+            layoutVbox(bounds_inner);
             break;
         case BOX_HBOX:
-            layoutHbox(bounds_pad);
+            layoutHbox(bounds_inner);
             break;
         case BOX_SBOX:
-            layoutSbox(bounds_pad);
+            layoutSbox(bounds_inner);
             break;
         default:
             nopath_case(BoxType);
@@ -604,6 +621,51 @@ void Box::layoutSbox(rect const &b)
     }
 }
 
+string Box::toYamlString()
+{
+    YAML::Emitter em;
+    emitYaml(em, ptr());
+    return em.c_str();
+}
+
+string Box::toCPPString()
+{
+    cstrparam txt = R"(
+namespace layout
+{
+    struct Layout
+    {
+        ut::rect name1 = ut::rect();
+        ut::rect name2 = ut::rect();
+        ut::rect name3 = ut::rect();
+        ut::rect name4 = ut::rect();
+        ut::rect name5 = ut::rect();
+
+        void layout(boxmap_t const& map)
+        {
+            name1 = map["name1"];
+            name2 = map["name2"];
+            name3 = map["name3"];
+            name4 = map["name4"];
+            name5 = map["name5"];
+        }
+    };
+
+    ...
+
+    //
+    LAYOUT_MANAGER.bind(my_layout, "my_layout.yaml");
+
+    using boxmap_t = std::unordered_set<std::string, ut::rect>;
+}
+
+
+
+    )"_sv;
+
+    return txt.str();
+}
+
 bool Box::loadYaml(cstrparam filename)
 {
     if (filename.empty())
@@ -642,14 +704,12 @@ bool Box::saveYaml(cstrparam filename)
 
     if (FILE *file = fopen(filename, "w"))
     {
-        YAML::Emitter emitter;
-
-        emitYaml(emitter, root_box);
-
-        fwrite(emitter.c_str(), sizeof(char), emitter.size(), file);
+        auto str = root_box->toYamlString();
+        fwrite(str.c_str(), sizeof(char), str.size(), file);
         fclose(file);
         return true;
-    } else
+    }
+    else
     {
         fprintf(stderr, "error opening layout file (%s)", filename.c_str());
     }
@@ -745,6 +805,36 @@ void Box::drawWindowBoxHierarchy()
 
             EndTable();
         }
+    }
+    End();
+}
+
+void Box::drawWindowYamlOutput()
+{
+    using namespace ImGui;
+
+    static TextEditor ted;
+
+    if (Begin("Yaml Output###yaml_hierarchy"))
+    {
+        ted.SetReadOnly(true);
+        ted.SetText(root_box->toYamlString());
+        ted.Render("YAML Output");
+    }
+    End();
+}
+
+void Box::drawWindowCPPOutput()
+{
+    using namespace ImGui;
+
+    static TextEditor ted;
+
+    if (Begin("CPP Output###cpp_hierarchy"))
+    {
+        ted.SetReadOnly(true);
+        ted.SetText(root_box->toCPPString());
+        ted.Render("CPP Output");
     }
     End();
 }

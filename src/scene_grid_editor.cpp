@@ -51,6 +51,10 @@ void SceneLayoutEditor::drawDebug()
 
     ledit::Box::drawWindowBoxHierarchy();
 
+    ledit::Box::drawWindowYamlOutput();
+
+    ledit::Box::drawWindowCPPOutput();
+
     if (Begin("Box Document###box_files"))
     {
         if (ButtonConfirm("Reset Root"))
