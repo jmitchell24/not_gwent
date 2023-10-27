@@ -10,13 +10,20 @@
 #include "game/asset/assets.hpp"
 #include "rlImGui/imgui/imgui.h"
 
+#if 0
 #include "rlNanoVG/nanovg.hpp"
+#endif
+
 
 class SceneNanoVGTest : public Scene
 {
 public:
-    char const* name() const override { return "NanoVG Test"; }
+    [[nodiscard]] ut::cstrview name() const override
+    {
+        return "NanoVG Test";
+    }
 
+#if 0
     float ratio1=1.5;
     float ratio2=1;
 
@@ -285,4 +292,5 @@ public:
             }
         }
     }
+#endif
 };

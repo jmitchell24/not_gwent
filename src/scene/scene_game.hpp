@@ -15,17 +15,20 @@
 class SceneGameBoard2Test : public Scene
 {
 public:
-    char const* name() const override { return "GameBoard2 Test"; }
-
-    void layout(ut::rect const& b) override
+    ut::cstrview name() const override
     {
-        m_gb.layout(b);
+        return "GameBoard2 Test";
     }
 
-    void update(float dt) override
+    void layout() override
     {
-        m_gb.update(dt);
-        game::TANK.update(dt);
+        m_gb.layout(Context::VIEW_RECT);
+    }
+
+    void update(update_param u) override
+    {
+        m_gb.update(u.frame_time);
+        game::TANK.update(u.frame_time);
     }
 
     void draw() override

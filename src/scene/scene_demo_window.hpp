@@ -12,23 +12,9 @@
 class SceneDemoWindow : public Scene
 {
 public:
-    char const* name() const override { return "Demo Window"; }
-
-    ut::rect bounds;
-
-    void layout(ut::rect const& b) override
+    [[nodiscard]] ut::cstrview name() const override
     {
-        bounds = b;
-    }
-
-    void update(float dt) override
-    {
-
-    }
-
-    void draw() override
-    {
-
+        return "Demo Window";
     }
 
     void drawDebug() override

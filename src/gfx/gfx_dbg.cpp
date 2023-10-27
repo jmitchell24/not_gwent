@@ -5,9 +5,24 @@ using namespace gfx;
 #include "rlImGui/imgui/imgui_mods.hpp"
 
 //
-//
+// ut
 //
 using namespace ut;
+
+//
+// std
+//
+using namespace std;
+
+//
+// Helper Functions
+//
+static color nextColor()
+{
+    static auto c = color::hsluv{120, 80, 80};
+    c.rotate(100);
+    return c.toColor();
+}
 
 //
 // DebugRectManager -> Implementation
@@ -26,7 +41,7 @@ DebugRectManager& DebugRectManager::instance()
     return x;
 }
 
-void DebugRectManager::addRect(cstrparam label, rectf const& r)
+void DebugRectManager::addRect(cstrparam label, rect const& r)
 {
     assert(!m_label.empty());
 
@@ -35,7 +50,7 @@ void DebugRectManager::addRect(cstrparam label, rectf const& r)
     m_label.back() = "";
 }
 
-void DebugRectManager::addRect(rectf const& r)
+void DebugRectManager::addRect(rect const& r)
 {
     assert(!m_label.empty());
 
@@ -49,7 +64,7 @@ void DebugRectManager::addRect(rectf const& r)
         m_draws.push_back(tag.toOverlay(r));
 }
 
-void DebugRectManager::pushRect(cstrparam label, rectf const& r)
+void DebugRectManager::pushRect(cstrparam label, rect const& r)
 {
     m_label.back() = label;
     addRect(r);
@@ -64,11 +79,13 @@ void DebugRectManager::popRect()
 
 void DebugRectManager::drawDebug()
 {
+    using namespace ImGui;
+
     for (auto& p: m_draws)
     {
         auto c = p.color.withNormalA(p.highlighted ? 0.5f : 0.0f);
         auto f = p.highlighted ? m_im_style : ImGuiDRECTStyle_NoText;
-        ImGui::DrawDRECT(p.text, p.bound, c, f);
+        DrawDRECT(p.text, p.bound, c, f);
     }
 
     m_draws.clear();
@@ -87,22 +104,22 @@ void DebugRectManager::drawDebug()
 
     if (enabled)
     {
-        ImGui::RadioButton("NoText", &m_im_style, ImGuiDRECTStyle_NoText);
-        ImGui::SameLine(125);
-        ImGui::RadioButton("LabelOnly", &m_im_style, ImGuiDRECTStyle_LabelOnly);
+        RadioButton("NoText", &m_im_style, ImGuiDRECTStyle_NoText);
+        SameLine(125);
+        RadioButton("LabelOnly", &m_im_style, ImGuiDRECTStyle_LabelOnly);
 
-        ImGui::RadioButton("ValueOnly", &m_im_style, ImGuiDRECTStyle_ValueOnly);
-        ImGui::SameLine(125);
-        ImGui::RadioButton("FullText", &m_im_style, ImGuiDRECTStyle_FullText);
+        RadioButton("ValueOnly", &m_im_style, ImGuiDRECTStyle_ValueOnly);
+        SameLine(125);
+        RadioButton("FullText", &m_im_style, ImGuiDRECTStyle_FullText);
 
-        if (ImGui::Button("Enable All"))
+        if (Button("Enable All"))
         {
             m_root_tag.enableAll();
         }
 
-        ImGui::SameLine();
+        SameLine();
 
-        if (ImGui::Button("Disable All"))
+        if (Button("Disable All"))
         {
             m_root_tag.disableAll();
         }
@@ -114,19 +131,19 @@ void DebugRectManager::drawDebug()
                 ImGuiTableFlags_RowBg           |
                 ImGuiTableFlags_NoBordersInBody;
 
-        if (ImGui::BeginTable("rectangles", 2, table_flags))
+        if (BeginTable("rectangles", 2, table_flags))
         {
-            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableHeadersRow();
+            TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
+            TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
+            TableHeadersRow();
 
             for (auto&& it : m_root_tag.child_tags)
                 it.draw();
 
-            ImGui::EndTable();
+            EndTable();
         }
 
-        ImGui::TreePop();
+        TreePop();
     }
 }
 
@@ -164,10 +181,11 @@ void DebugRectManager::Tag::draw()
 
 bool DebugRectManager::Tag::draw(bool is_leaf)
 {
-    ImGui::TableNextRow();
-    ImGui::TableNextColumn();
+    using namespace ImGui;
 
-    ImGui::PushID(this);
+    TableNextRow();
+    TableNextColumn();
+    PushID(this);
 
     int flags = ImGuiTreeNodeFlags_SpanFullWidth;
     if (is_leaf)
@@ -179,16 +197,15 @@ bool DebugRectManager::Tag::draw(bool is_leaf)
 
     highlighted = ImGui::IsItemHovered();
 
-    ImGui::SameLine();
-    ImGui::PushStyleColor(ImGuiCol_Text, color);
-    ImGui::Text("%s", text.c_str());
-    ImGui::PopStyleColor();
+    SameLine();
+    PushStyleColor(ImGuiCol_Text, color);
+    Text("%s", text.c_str());
+    PopStyleColor();
 
-    ImGui::TableNextColumn();
-
-    ImGui::PushID(text);
-    ImGui::PushStyleColor(ImGuiCol_Button, enabled ? colors::greenyellow : colors::orangered);
-    if (ImGui::SmallButton(enabled ? " " : "x"))
+    TableNextColumn();
+    PushID(text);
+    PushStyleColor(ImGuiCol_Button, enabled ? colors::greenyellow : colors::orangered);
+    if (SmallButton(enabled ? " " : "x"))
     {
         enabled = !enabled;
         if (enabled)
@@ -196,25 +213,17 @@ bool DebugRectManager::Tag::draw(bool is_leaf)
         else
             disableAll();
     }
-    ImGui::PopStyleColor();
-    ImGui::PopID();
+    PopStyleColor();
+    PopID();
 
     overlay_count = 0;
 
-    ImGui::PopID();
+    PopID();
 
     return open;
 }
 
-static color nextColor()
-{
-    static size_t counter=0;
 
-    auto hue = float(counter++) * 100.0f + 120.0f;
-    hue = fmodf(hue, 360.0f);
-
-    return color(color::hsluv{hue, 80.0f, 80.0f, 1.0f});
-}
 
 DebugRectManager::Tag& DebugRectManager::Tag::getChildTag(cstrview const* begin, cstrview const* end)
 {

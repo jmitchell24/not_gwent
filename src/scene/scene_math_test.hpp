@@ -9,26 +9,15 @@
 #include "rlImGui/imgui/imgui.h"
 
 
-
 class SceneMathTest : public Scene
 {
 public:
-    char const* name() const override { return "Math Test"; }
+    ut::cstrview name() const override { return "Math Test"; }
 
     float ratio1=1.5;
     float ratio2=1;
 
-    ut::rect bounds;
-
-    void layout(ut::rect const& b) override
-    {
-        bounds = b;
-    }
-
-    void update(float dt) override
-    {
-
-    }
+    ut::rect bounds = Context::VIEW_RECT;
 
     void draw() override
     {

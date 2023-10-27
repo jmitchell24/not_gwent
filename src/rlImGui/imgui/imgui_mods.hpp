@@ -44,14 +44,26 @@ namespace ImGui
 //        StructField(name, std::string_view{value});
 //    }
 
-
-
     //
     // Dockspace
     //
 
     ut::rectf GetDockspaceViewport();
     void RenderDockspace();
+
+    //
+    // ColorEdit
+    //
+
+    inline bool ColorEdit4(char const* label, ut::color& col, ImGuiColorEditFlags flags = 0)
+    {
+        if (auto v = col.toNormal().toVec4(); ColorEdit4(label, v.pack, flags))
+        {
+            col = ut::color{ut::color::normal{v}};
+            return true;
+        }
+        return false;
+    }
 
     //
     // Extra Buttons

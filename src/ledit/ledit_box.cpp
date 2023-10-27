@@ -4,23 +4,13 @@
 
 #include "ledit_box.hpp"
 #include "ledit_yaml.hpp"
-
 using namespace ledit;
-
-#include "id_bip0039.hpp"
 
 //
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
 #include "rlImGui/ed/TextEditor.h"
-
-//
-// gfx
-//
-#include "gfx/gfx_virt2d.hpp"
-
-using namespace gfx;
 
 //
 // ut
@@ -34,6 +24,9 @@ using namespace ut;
 //
 using namespace std;
 
+
+#include "rlgl.h"
+
 //
 // Helper Functions
 //
@@ -41,65 +34,32 @@ using namespace std;
 color Box::nextColor()
 {
     static auto c = color::hsluv{120, 80, 80};
-
     c.rotate(100);
     return c.toColor();
 }
 
-bool isNameValid(cstrparam s)
-{
-    assert(!s.empty());
-
-
-
-    return false;
-}
-
-static color ColWindowBg()
-{
-    using namespace ImGui;
-    color c = GetStyleColorVec4(ImGuiCol_WindowBg);
-    return c;
-}
-
-static color ColBorder()
-{
-    using namespace ImGui;
-    color c = GetStyleColorVec4(ImGuiCol_Border);
-    return c.opaque();
-}
-
-void DRAW_OVERLAY_OUTLINE(rect const &rect, color const &c, float thickness)
+void drawOverlayOutline(rect const &rect, color const &c, float thickness)
 {
     using namespace ImGui;
 
-    auto rr = VIRT.realRect(rect).round();
+    auto rr = rect.round();
     auto dl = GetBackgroundDrawList();
-    dl->AddRect(rr.min, rr.max, ToU32(c), 0, 0, thickness);
-}
-
-void DRAW_OVERLAY_BG(rect const &rect)
-{
-    using namespace ImGui;
-
-    auto rr = VIRT.realRect(rect).round();
-    auto dl = GetBackgroundDrawList();
-    dl->AddRectFilled(rr.min, rr.max, ToU32(ColWindowBg()));
-}
-
-#include "rlgl.h"
-
-void DRAW_OVERLAY_PADDING(rect const &outer, rect const &inner, color const &c)
-{
-    using namespace ImGui;
-
-    auto o = VIRT.realRect(outer).round();
-    auto i = VIRT.realRect(inner).round();
-
-    auto dl = GetBackgroundDrawList();
-
     auto prev_flags = dl->Flags;
+    dl->Flags = dl->Flags & ~ImDrawListFlags_AntiAliasedFill;
+    //dl->AddRect(rr.min, rr.max, ToU32(colors::black.withNormalA(.8)), 0, 0, thickness*5);
+    dl->AddRect(rr.min, rr.max, ToU32(c), 0, 0, thickness);
+    dl->Flags = prev_flags;
+}
 
+void drawOverlayPadding(rect const &outer, rect const &inner, color const &c)
+{
+    using namespace ImGui;
+
+    auto o = outer.round();
+    auto i = inner.round();
+
+    auto dl = GetBackgroundDrawList();
+    auto prev_flags = dl->Flags;
     dl->Flags = dl->Flags & ~ImDrawListFlags_AntiAliasedFill;
     dl->AddQuadFilled(o.tl(), o.tr(), i.tr(), i.tl(), ToU32(c));
     dl->AddQuadFilled(o.tr(), o.br(), i.br(), i.tr(), ToU32(c));
@@ -109,28 +69,75 @@ void DRAW_OVERLAY_PADDING(rect const &outer, rect const &inner, color const &c)
     dl->Flags = prev_flags;
 }
 
-//cstrview nextName()
-//{
-//    static size_t counter=0;
-//    return bip0039::wordlistRuntimeShuffle()[ (counter++) % 2048 ].str();
-//}
+//
+// BoxVisitor -> Implementation
+//
+
+rect BoxVisitor::getRect(rect const& r) const
+{
+    if (view_transform)
+    {
+        return view_transform->viewRect(r);
+    }
+    return r;
+}
+
+vec2 BoxVisitor::getMousePos(vec2 const& p) const
+{
+    if (view_transform)
+    {
+        return view_transform->realPoint(p);
+    }
+    return p;
+}
+
+box_ptr BoxVisitor::getBox(cstrparam s)
+{
+    auto k = s.str();
+
+    if (auto it = m_boxmap.find(k); it != m_boxmap.end())
+    {
+        if (auto&& v = it->second)
+            return v;
+    }
+
+    return m_boxmap[k] = nullptr;
+}
+
+void BoxVisitor::setBox(box_ptr const& ptr)
+{
+    if (auto it = m_boxmap.find(ptr->name); it != m_boxmap.end())
+    {
+        auto&& v = it->second;
+
+        if (v && v != ptr)
+            v->name.clear();
+        v = ptr;
+    }
+
+}
+
+void BoxVisitor::clearBox(box_ptr const& ptr)
+{
+    if (auto it = m_boxmap.find(ptr->name); it != m_boxmap.end())
+    {
+        auto&& v = it->second;
+        v = nullptr;
+        ptr->name.clear();
+    }
+}
 
 //
 // Box -> Implementation
 //
 
-box_ptr Box::root_box = createRoot();
-box_ptr Box::selected_box;
-
-Box::TreeTableOptions Box::tree_table_options;
-
 Box::Box(box_ptr p)
-        : parent{std::move(p)}, color{nextColor()}, name{}
+    : parent{std::move(p)}, color{nextColor()}, name{}
 {}
 
-box_ptr Box::create(box_ptr const &parent)
+box_ptr Box::create(box_ptr const& parent)
 {
-    assert(parent);
+    check_null(parent);
     return box_ptr{new Box(parent)};
 }
 
@@ -149,17 +156,15 @@ box_ptr Box::deepCopy() const
     nopath_impl;
 }
 
-box_ptr Box::tryGetBox(vec2 const &mp)
+box_ptr Box::tryGetBox(vec2 const& mp)
 {
-    for (auto &&it: child_boxes)
+    for (auto&& it: child_boxes)
     {
         if (auto box = it->tryGetBox(mp))
             return box;
     }
 
-    auto r = VIRT.realRect(bounds_outer);
-
-    if (r.contains(mp))
+    if (auto r = bounds_outer; r.contains(mp))
         return ptr();
     return nullptr;
 }
@@ -184,11 +189,11 @@ string Box::getLbl()
     return name;
 }
 
-void Box::drawProperties()
+void Box::drawProperties(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    assert(ptr() == selected_box);
+    assert(ptr() == v.selected_box);
 
     Text("Selection");
 
@@ -196,31 +201,33 @@ void Box::drawProperties()
     {
         if (Button("to parent"))
         {
-            selected_box = parent;
+            v.selected_box = parent;
         }
 
         SameLine();
 
         if (ButtonConfirm("delete"))
         {
-            selected_box = parent;
-            parent->setRowAction({RowAction::REMOVE, ptr()});
+            v.selected_box = parent;
+            v.clearBox(ptr());
+            parent->setChildAction({ChildAction::REMOVE, ptr()});
         }
 
         SameLine();
 
         if (Button("--"))
         {
-            parent->setRowAction({RowAction::MOVE_DEC, ptr()});
+            parent->setChildAction({ChildAction::MOVE_DEC, ptr()});
         }
 
         SameLine();
 
         if (Button("++"))
         {
-            parent->setRowAction({RowAction::MOVE_INC, ptr()});
+            parent->setChildAction({ChildAction::MOVE_INC, ptr()});
         }
-    } else
+    }
+    else
     {
         PushItemDisabled();
         Button("parent");
@@ -255,7 +262,7 @@ void Box::drawProperties()
 
         auto it = ps.rbegin();
         PushButtonColor((*it)->color);
-        if (SmallButton((*it)->getLbl().c_str())) selected_box = (*it);
+        if (SmallButton((*it)->getLbl().c_str())) v.selected_box = (*it);
         PopButtonColor();
 
         for (++it; it != ps.rend(); ++it)
@@ -264,20 +271,28 @@ void Box::drawProperties()
             TextUnformatted("/");
             SameLine();
             PushButtonColor((*it)->color);
-            if (SmallButton((*it)->getLbl().c_str())) selected_box = (*it);
+            if (SmallButton((*it)->getLbl().c_str())) v.selected_box = (*it);
             PopButtonColor();
         }
     }
 
 
     if (ButtonDefault("name", !name.empty()))
-    { name.clear(); }
+    { v.clearBox(ptr()); }
 
-    std::array<char, 20> static name_buffer;
-    ::strncpy(name_buffer.data(), name.c_str(), name_buffer.size());
-    if (InputText("name", name_buffer.data(), name_buffer.size()))
+    if (BeginCombo("name###name_get", name.c_str()))
     {
-        name = name_buffer.data();
+        for (auto&& it : v.boxmap())
+        {
+            auto key = it.first;
+            if (Selectable(key.c_str(), name == key))
+            {
+                name = key;
+                v.setBox(ptr());
+            }
+        }
+
+        EndCombo();
     }
 
     Separator();
@@ -327,33 +342,31 @@ void Box::drawProperties()
         TableHeadersRow();
 
 
-        bool show_row_select = tree_table_options.show_row_select;
-        tree_table_options.show_row_select = false;
+        bool show_row_select = v.edit_opts.show_row_select;
+        v.edit_opts.show_row_select = false;
         for (auto &&it: child_boxes)
-            it->drawTreeTableRow(true);
-        tree_table_options.show_row_select = show_row_select;
-
-        applyRowAction();
+            it->drawTreeTableRow(v, true);
+        v.edit_opts.show_row_select = show_row_select;
 
         EndTable();
     }
 }
 
-void Box::drawTreeTableRow()
+void Box::drawTreeTableRow(BoxVisitor& v)
 {
     if (child_boxes.empty())
     {
-        drawTreeTableRow(true);
-    } else if (drawTreeTableRow(false))
+        drawTreeTableRow(v, true);
+    }
+    else if (drawTreeTableRow(v, false))
     {
         for (auto &&it: child_boxes)
-            it->drawTreeTableRow();
-        applyRowAction();
+            it->drawTreeTableRow(v);
         ImGui::TreePop();
     }
 }
 
-bool Box::drawTreeTableRow(bool is_leaf)
+bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
 {
     using namespace ImGui;
 
@@ -388,7 +401,7 @@ bool Box::drawTreeTableRow(bool is_leaf)
 
         if (is_leaf && IsItemClicked(ImGuiMouseButton_Left))
         {
-            selected_box = ptr();
+            v.selected_box = ptr();
         }
 
         PopStyleColor();
@@ -400,39 +413,39 @@ bool Box::drawTreeTableRow(bool is_leaf)
 
     if (TableNextColumn())
     {
-        if (tree_table_options.show_row_select)
+        if (v.edit_opts.show_row_select)
         {
-            if (SmallButtonActivated("o", ptr() == selected_box))
-                selected_box = ptr();
+            if (SmallButtonActivated("o", ptr() == v.selected_box))
+                v.selected_box = ptr();
             SameLine();
         }
 
-        if (tree_table_options.show_row_add)
+        if (v.edit_opts.show_row_add)
         {
             if (SmallButton("+"))
                 child_boxes.push_back(Box::create(ptr()));
             SameLine();
         }
 
-        if (parent && tree_table_options.show_row_delete)
+        if (parent && v.edit_opts.show_row_delete)
         {
             if (SmallButtonConfirm("x"))
-                parent->setRowAction({RowAction::REMOVE, ptr()});
+                parent->setChildAction({ChildAction::REMOVE, ptr()});
             SameLine();
         }
 
-        if (parent && tree_table_options.show_row_move)
+        if (parent && v.edit_opts.show_row_move)
         {
             if (SmallButton("--"))
-                parent->setRowAction({RowAction::MOVE_DEC, ptr()});
+                parent->setChildAction({ChildAction::MOVE_DEC, ptr()});
             SameLine();
 
             if (SmallButton("++"))
-                parent->setRowAction({RowAction::MOVE_INC, ptr()});
+                parent->setChildAction({ChildAction::MOVE_INC, ptr()});
             SameLine();
         }
 
-        if (tree_table_options.show_row_rename)
+        if (v.edit_opts.show_row_rename)
         {
             if (SmallButton("n"))
                 OpenPopup("show-row-rename");
@@ -448,7 +461,7 @@ bool Box::drawTreeTableRow(bool is_leaf)
             SameLine();
         }
 
-        if (tree_table_options.show_row_weight)
+        if (v.edit_opts.show_row_weight)
         {
             Text("%d", weight);
             SameLine();
@@ -462,7 +475,7 @@ bool Box::drawTreeTableRow(bool is_leaf)
             SameLine();
         }
 
-        if (tree_table_options.show_row_type)
+        if (v.edit_opts.show_row_type)
         {
             if (SmallButton("t"))
                 OpenPopup("show-row-type");
@@ -481,51 +494,36 @@ bool Box::drawTreeTableRow(bool is_leaf)
     return is_open;
 }
 
-
-void Box::drawOverlay()
-{
-    root_box->layout(rect{});
-
-    DRAW_OVERLAY_BG(root_box->bounds_outer);
-
-    if (selected_box)
-    {
-        selected_box->drawOverlaySelectedBelow();
-        root_box->drawOverlayOutlines();
-        selected_box->drawOverlaySelectedAbove();
-    } else
-    {
-        root_box->drawOverlayOutlines();
-    }
-}
-
-void Box::drawOverlaySelectedBelow()
-{
-
-    if (sizer.hasPad())
-    {
-        DRAW_OVERLAY_PADDING(bounds_inner, bounds_outer, color.withNormalA(.25f));
-    }
-
-}
-
-void Box::drawOverlaySelectedAbove()
-{
-    DRAW_OVERLAY_OUTLINE(bounds_outer, color, 3.0f);
-}
-
-void Box::drawOverlayOutlines()
+void Box::drawOverlaySelectedBelow(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    if (!isSelected())
+    auto i = v.getRect(bounds_inner);
+    auto o = v.getRect(bounds_outer);
+    drawOverlayPadding(i, o, color.withNormalA(.25f));
+}
+
+void Box::drawOverlaySelectedAbove(BoxVisitor& v)
+{
+    using namespace ImGui;
+
+    auto o = v.getRect(bounds_outer);
+    drawOverlayOutline(o, color, 3.0f);
+}
+
+void Box::drawOverlayOutlines(BoxVisitor& v)
+{
+    using namespace ImGui;
+
+    if (ptr() != v.selected_box)
     {
-        DRAW_OVERLAY_OUTLINE(bounds_outer, ColBorder(), 1.0f);
+        auto o = v.getRect(bounds_outer);
+        drawOverlayOutline(o, v.overlay_opts.border, 1.0f);
     }
 
     for (auto &&it: child_boxes)
     {
-        it->drawOverlayOutlines();
+        it->drawOverlayOutlines(v);
     }
 }
 
@@ -541,8 +539,8 @@ void Box::layout(rect const &parent)
 {
     auto b = sizer.getBox(parent);
 
-    bounds_inner      = b.pad;
-    bounds_outer  = b.content;
+    bounds_inner    = b.pad;
+    bounds_outer    = b.content;
 
     if (child_boxes.empty())
         return;
@@ -671,16 +669,12 @@ bool Box::loadYaml(cstrparam filename)
     if (filename.empty())
         return false;
 
-    if (FILE *file = fopen(filename, "r"))
+    if (auto file = fopen(filename, "r"))
     {
         try
         {
             auto text = gulp::file_to_string(file);
-
-            box_ptr b = createRoot();
-            fromYaml(YAML::Load(text), b);
-            root_box = b;
-            selected_box = root_box;
+            fromYaml(YAML::Load(text), ptr());
             return true;
         }
         catch (YAML::Exception const &ex)
@@ -690,7 +684,8 @@ bool Box::loadYaml(cstrparam filename)
         }
 
         fclose(file);
-    } else
+    }
+    else
     {
         fprintf(stderr, "error opening layout file (%s)", filename.c_str());
     }
@@ -702,9 +697,9 @@ bool Box::saveYaml(cstrparam filename)
     if (filename.empty())
         return false;
 
-    if (FILE *file = fopen(filename, "w"))
+    if (auto file = fopen(filename, "w"))
     {
-        auto str = root_box->toYamlString();
+        auto str = toYamlString();
         fwrite(str.c_str(), sizeof(char), str.size(), file);
         fclose(file);
         return true;
@@ -716,183 +711,73 @@ bool Box::saveYaml(cstrparam filename)
     return false;
 }
 
-void Box::drawWindowSelectedBox()
+
+
+
+
+void Box::applyChildActions()
 {
-    using namespace ImGui;
-
-    if (!GetIO().WantCaptureMouse)
+    if (m_child_action)
     {
-        if (IsMouseClicked(ImGuiMouseButton_Left))
-        {
-            if (auto box = root_box->tryGetBox(GetMousePos()))
-                selected_box = box;
-            else
-                selected_box = nullptr;
-        }
+        auto b  = child_boxes.begin();
+        auto e  = child_boxes.end();
+        auto ca = *m_child_action;
 
-        if (IsMouseClicked(ImGuiMouseButton_Middle))
-        {
-            if (auto parent = ledit::Box::selected_box->parent)
-                selected_box = parent;
-        }
+        m_child_action.reset();
 
-        if (IsMouseClicked(ImGuiMouseButton_Right))
+        for (auto it = b; it != e; ++it)
         {
-            if (auto box = root_box->tryGetBox(GetMousePos()))
+            if (*it == ca.box)
             {
-                if (auto parent = box->parent)
-                    selected_box = parent;
+                switch (ca.type)
+                {
+                    case ChildAction::REMOVE:
+                        child_boxes.erase(it);
+                        break;
+
+                    case ChildAction::MOVE_DEC:
+                        if (it != b)
+                            it->swap(*(it - 1));
+                        break;
+
+                    case ChildAction::MOVE_INC:
+                        if (auto down = it + 1; down != e)
+                            it->swap(*down);
+                        break;
+                }
+                return;
             }
+
+            (*it)->applyChildActions();
         }
     }
-
-    if (Begin("Box Properties###selected_box"))
+    else
     {
-        if (selected_box)
-        {
-            selected_box->drawProperties();
-        } else
-        {
-            PushItemDisabled();
-            Text("No Box Selected");
-            PopItemDisabled();
-        }
+        for (auto && it : child_boxes)
+            it->applyChildActions();
     }
-    End();
+
 }
 
-void Box::drawWindowBoxHierarchy()
+void Box::setChildAction(ChildAction const& child_action)
 {
-    using namespace ImGui;
-
-    if (Begin("Box Hierarchy###box_hierarchy"))
-    {
-        auto &opts = tree_table_options;
-
-        Text("Row Options");
-
-        Columns(3, "row-columns", false);
-        Checkbox("add", &opts.show_row_add);
-        NextColumn();
-        Checkbox("delete", &opts.show_row_delete);
-        NextColumn();
-        Checkbox("move", &opts.show_row_move);
-        NextColumn();
-        Checkbox("rename", &opts.show_row_rename);
-        NextColumn();
-        Checkbox("weight", &opts.show_row_weight);
-        NextColumn();
-        Checkbox("type", &opts.show_row_type);
-        Columns();
-
-
-        Separator();
-        Text("Hierarchy");
-        ImGuiTableFlags table_flags =
-                ImGuiTableFlags_BordersV |
-                ImGuiTableFlags_BordersOuterH |
-                ImGuiTableFlags_Resizable |
-                ImGuiTableFlags_RowBg |
-                ImGuiTableFlags_NoBordersInBody;
-
-        if (BeginTable("grids", 2, table_flags))
-        {
-            TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
-            TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthFixed);
-            TableHeadersRow();
-
-            root_box->drawTreeTableRow();
-
-            EndTable();
-        }
-    }
-    End();
+    assert(!m_child_action);
+    m_child_action = child_action;
 }
 
-void Box::drawWindowYamlOutput()
+box_ptr Box::createRoot(rect const& bounds)
 {
-    using namespace ImGui;
-
-    static TextEditor ted;
-
-    if (Begin("Yaml Output###yaml_hierarchy"))
-    {
-        ted.SetReadOnly(true);
-        ted.SetText(root_box->toYamlString());
-        ted.Render("YAML Output");
-    }
-    End();
+    Sizer sz;
+    sz.setDimUnits(bounds.size());
+    sz.setPosUnits(bounds.pos());
+    return createRoot(sz);
 }
 
-void Box::drawWindowCPPOutput()
-{
-    using namespace ImGui;
-
-    static TextEditor ted;
-
-    if (Begin("CPP Output###cpp_hierarchy"))
-    {
-        ted.SetReadOnly(true);
-        ted.SetText(root_box->toCPPString());
-        ted.Render("CPP Output");
-    }
-    End();
-}
-
-
-void Box::applyRowAction()
-{
-    if (!m_row_action)
-        return;
-
-    auto ra = *m_row_action;
-    m_row_action.reset();
-
-    auto b = child_boxes.begin();
-    auto e = child_boxes.end();
-    for (auto it = b; it != e; ++it)
-    {
-        if (*it == ra.box)
-        {
-            switch (ra.type)
-            {
-                case RowAction::REMOVE:
-                    child_boxes.erase(it);
-                    break;
-
-                case RowAction::MOVE_DEC:
-                    if (it != b)
-                        it->swap(*(it - 1));
-                    break;
-
-                case RowAction::MOVE_INC:
-                    if (auto down = it + 1; down != e)
-                        it->swap(*down);
-                    break;
-            }
-            return;
-        }
-    }
-}
-
-void Box::setRowAction(RowAction const &ra)
-{
-    assert(!m_row_action);
-    m_row_action = ra;
-}
-
-box_ptr Box::createRoot()
+box_ptr Box::createRoot(Sizer const& sizer)
 {
     auto box = box_ptr{new Box({})};
-    box->sizer.setDimUnits({1280, 720});
-    box->sizer.setPosUnits({0, 0});
+    box->sizer = sizer;
     return box;
-}
-
-bool Box::isSelected()
-{
-
-    return ptr() == selected_box;
 }
 
 #if 0

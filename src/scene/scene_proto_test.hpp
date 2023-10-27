@@ -17,25 +17,17 @@ public:
     game::layout::GameBoard gb;
     game::layout::GraphicsLayout gl;
 
-    char const *name() const override
-    { return "Proto Test"; }
-
-
-    NVGcontext* context;
-
-    void layout(ut::rect const &b) override
+    [[nodiscard]] ut::cstrview name() const override
     {
-        bounds = b;
-        gb.layout(b);
+        return "Proto Test";
+    }
+
+    void layout() override
+    {
+        bounds = Context::VIEW_RECT;
+        gb.layout(bounds);
         gl.layout(gb);
     }
-
-    void update(float dt) override
-    {
-
-    }
-
-
 
     Texture2D avatar = game::textures::avatar_leshen();
 

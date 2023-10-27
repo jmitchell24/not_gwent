@@ -10,15 +10,15 @@
 */
 
 //
-// scene
+// scene / stage
 //
-#include "scene_game.hpp"
-#include "scene_card_test.hpp"
-#include "scene_math_test.hpp"
-#include "scene_proto_test.hpp"
-#include "scene_grid_editor.hpp"
-#include "scene_demo_window.hpp"
-#include "scene_nanovg_test.hpp"
+#include "scene/scene_stage.hpp"
+#include "scene/scene_game.hpp"
+#include "scene/scene_card_test.hpp"
+#include "scene/scene_math_test.hpp"
+#include "scene/scene_proto_test.hpp"
+#include "scene/scene_demo_window.hpp"
+#include "scene/scene_nanovg_test.hpp"
 
 //
 // gfx
@@ -37,12 +37,14 @@ using namespace gfx;
 
 #include "rlImGui/imgui/imgui_mods.hpp"
 
+#if 0
 //
 // lua
 //
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#endif
 
 //
 // ut
@@ -58,132 +60,81 @@ using namespace ut;
 #include <vector>
 using namespace std;
 
-size_t constexpr static SCREEN_WIDTH = 1920;
-size_t constexpr static SCREEN_HEIGHT = 1080;
+size_t constexpr static SCREEN_WIDTH    = 1920;
+size_t constexpr static SCREEN_HEIGHT   = 1080;
 
-size_t constexpr static VIRT_WIDTH = 1280;
-size_t constexpr static VIRT_HEIGHT = 720;
-size_t constexpr static VIRT_PAD = 10;
+#define EXPAND_SCENES(SCENE) \
+    SCENE(SceneCardTest      )  \
+    SCENE(SceneMathTest      )  \
+    SCENE(SceneGameBoard2Test)  \
+    SCENE(SceneNanoVGTest    )  \
+    SCENE(SceneProtoTest     )  \
+    SCENE(SceneDemoWindow    )  \
 
-class Stage
-{
-public:
-    using scenelist_type = std::vector<Scene*>;
-
-    Stage(initializer_list<Scene*> const& scenes)
-        : m_scenes{scenes}, m_selected{m_scenes.front()}
-    { assert(!m_scenes.empty()); }
-
-    void layout(rect const& b)
-    {
-        for (auto&& it : m_scenes)
-            it->layout(b);
-    }
-
-    void update()
-    {
-        m_selected->update(GetFrameTime());
-    }
-
-    void draw()
-    {
-        m_selected->draw();
-    }
-
-    void drawDebug()
-    {
-        using namespace ImGui;
-
-        Begin("Stage");
-
-        Value("FPS", GetFPS());
-        Value("Frame MS", GetFrameTime());
-
-
-        End();
-
-        Begin("Scene");
-
-
-        if (BeginCombo("Scene", m_selected->name()))
-        {
-            for (auto&& it : m_scenes)
-            {
-                if (ImGui::Selectable(it->name(), m_selected == it))
-                {
-                    m_selected = it;
-                }
-            }
-            EndCombo();
-        }
-
-
-
-
-        BeginChild(m_selected->name(), {0,0}, true);
-        m_selected->drawDebug();
-        EndChild();
-
-        End();
-    }
-
-private:
-    scenelist_type  m_scenes;
-    Scene*          m_selected;
-};
-
-#define ENUM_SCENES \
-    CASE(SceneCardTest      )  \
-    CASE(SceneLayoutEditor  )  \
-    CASE(SceneGameBoard2Test)  \
-    CASE(SceneNanoVGTest    )  \
-    CASE(SceneMathTest      )  \
-    CASE(SceneProtoTest     )  \
-    CASE(SceneDemoWindow    )  \
-
+#define SCENE_VAR(a_) a_    obj_##a_;
+#define SCENE_ELEMENT(a_)   &obj_##a_,
 
 int main()
 {
+    //
+    // load raylib
+    //
+
     SetTargetFPS(120);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Definitely not Gwent");
+
+    //
+    // load imgui
+    //
 
     rlImGuiBeginInitImGui();
     rlImGuiAddFontAwesomeIconFonts(9);
     rlImGuiReloadFonts();
     rlImGuiEndInitImGui();
 
-    NVG.load();
-
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-#define CASE(x_) x_ obj_##x_;
-ENUM_SCENES
-#undef CASE
+#if 0
+    //
+    // load nano vg
+    //
+    NVG.load();
+#endif
 
-    Stage stage
-    {
-#define CASE(x_) &obj_##x_,
-ENUM_SCENES
-#undef CASE
-    };
+    //
+    // load stage
+    //
 
-    auto window_bounds = rect(0, 0, VIRT_WIDTH, VIRT_HEIGHT).deflated(VIRT_PAD);
-    stage.layout(window_bounds);
+    EXPAND_SCENES(SCENE_VAR)
+    Stage stage { EXPAND_SCENES(SCENE_ELEMENT) };
 
-
+    stage.load();
+    stage.layout();
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(GRAY);
 
-        auto real_viewport = ImGui::GetDockspaceViewport();
+        auto viewport = ImGui::GetDockspaceViewport();
 
-        VIRT.layout(real_viewport, VIRT_WIDTH, VIRT_HEIGHT);
+        auto view_transform = ViewTransform::create(
+            viewport,
+            (float)Context::VIEW_WIDTH,
+            (float)Context::VIEW_HEIGHT
+        );
+
+        VIRT.layout(
+            viewport,
+            (float)Context::VIEW_WIDTH,
+            (float)Context::VIEW_HEIGHT
+        );
+
+
         VIRT.begin();
 
-        stage.update();
+        stage.update(Context::createUpdateData(view_transform));
         stage.draw();
 
         VIRT.end();
@@ -191,8 +142,6 @@ ENUM_SCENES
         rlDrawRenderBatchActive();
 
         rlImGuiBegin();
-
-
 
         {
             ImGui::RenderDockspace();
@@ -213,7 +162,22 @@ ENUM_SCENES
 
     }
 
+    //
+    // unload stage
+    //
+    stage.unload();
+
+#if 0
+    //
+    // unload nano vg
+    //
     NVG.unload();
+#endif
+
+    //
+    // unload raylib
+    //
+    CloseWindow();
 
     return EXIT_SUCCESS;
 }

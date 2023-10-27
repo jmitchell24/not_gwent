@@ -3,8 +3,6 @@
 //
 // ut
 //
-
-#include <memory>
 #include <ut/math.hpp>
 #include <ut/string.hpp>
 #include <ut/color.hpp>
@@ -12,6 +10,7 @@
 //
 // std
 //
+#include <memory>
 #include <vector>
 #include <unordered_map>
 
@@ -21,12 +20,12 @@ namespace gfx
     class DebugRectManager
     {
     public:
-        bool enabled = true;
+        bool enabled = false;
 
-        void addRect(ut::cstrparam label, ut::rectf const& r);
-        void pushRect(ut::cstrparam label, ut::rectf const& r);
+        void addRect (ut::cstrparam label, ut::rect const& r);
+        void pushRect(ut::cstrparam label, ut::rect const& r);
 
-        void addRect(ut::rectf const& r);
+        void addRect(ut::rect const& r);
         void popRect();
 
         void drawDebug();
@@ -38,7 +37,7 @@ namespace gfx
         {
             ut::cstrview    text;
             ut::color       color;
-            ut::rectf       bound;
+            ut::rect        bound;
             bool            highlighted;
         };
 
@@ -53,7 +52,7 @@ namespace gfx
             size_t              overlay_count;
             taglist_type        child_tags;
 
-            inline Overlay toOverlay(ut::rectf const& r) const
+            inline Overlay toOverlay(ut::rect const& r) const
             {
                 return { text, color, r, highlighted };
             }

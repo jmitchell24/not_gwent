@@ -8,11 +8,17 @@
 #include "ledit_flex.hpp"
 
 //
+// gfx
+//
+#include "gfx/gfx_view_transform.hpp"
+
+//
 // ut
 //
 #include <ut/math.hpp>
 #include <ut/color.hpp>
 #include <ut/string.hpp>
+#include <ut/func/delegate.hpp>
 
 //
 // std
@@ -28,20 +34,65 @@ namespace ledit
     class Box;
     using box_ptr   = std::shared_ptr<Box>;
     using box_cptr  = std::shared_ptr<Box const>;
+    using boxmap_t  = std::unordered_map<std::string, box_ptr>;
     using boxlist_t = std::vector<box_ptr>;
+
+    using rectget_t  = std::optional<ut::rect>;
+
+    struct BoxEditOptions
+    {
+        bool show_row_select    = true;
+        bool show_row_add       = false;
+        bool show_row_delete    = false;
+        bool show_row_move      = false;
+        bool show_row_rename    = false;
+        bool show_row_weight    = false;
+        bool show_row_type      = false;
+    };
+
+    struct OverlayOptions
+    {
+        ut::color   background {15 ,15 ,15 ,240};
+        ut::color   border     {110,110,128,128};
+
+    };
+
+
+
+    class BoxVisitor
+    {
+    public:
+        BoxEditOptions      edit_opts;
+        OverlayOptions      overlay_opts;
+        box_ptr             selected_box;
+
+        std::optional<gfx::ViewTransform> view_transform;
+
+        ut::rect getRect(ut::rect const& p) const;
+        ut::vec2 getMousePos(ut::vec2 const& p) const;
+
+
+        box_ptr     getBox      (ut::cstrparam s);
+        void        setBox      (box_ptr const& ptr);
+        void        clearBox    (box_ptr const& ptr);
+
+        inline boxmap_t const& boxmap() const { return m_boxmap; }
+
+    protected:
+        boxmap_t m_boxmap;
+    };
 
     class Box : public std::enable_shared_from_this<Box>
     {
     public:
-        struct TreeTableOptions
+        struct ChildAction
         {
-            bool show_row_select    =true;
-            bool show_row_add       =false;
-            bool show_row_delete    =false;
-            bool show_row_move      =false;
-            bool show_row_rename    =false;
-            bool show_row_weight    =false;
-            bool show_row_type      =false;
+            enum Type
+            {
+                REMOVE, MOVE_INC, MOVE_DEC
+            } type;
+
+            box_ptr box;
         };
 
         box_ptr         parent;
@@ -60,13 +111,12 @@ namespace ledit
         Sizer           sizer;
         float           inner_pad=10;
 
-        static box_ptr          root_box;
-        static box_ptr          selected_box;
-        static TreeTableOptions tree_table_options;
+
+
 
         static box_ptr create(box_ptr const& parent);
 
-        box_ptr ptr();
+        box_ptr  ptr();
         box_cptr ptr() const;
 
         box_ptr  deepCopy() const;
@@ -82,42 +132,30 @@ namespace ledit
         void layoutHbox(ut::rect const& b);
         void layoutSbox(ut::rect const& b);
 
-        void drawProperties();
-        void drawTreeTableRow();
-        bool drawTreeTableRow(bool is_leaf);
+        void drawProperties  (BoxVisitor& v);
+        void drawTreeTableRow(BoxVisitor& v);
+        bool drawTreeTableRow(BoxVisitor& v, bool is_leaf);
 
+        void drawOverlayOutlines     (BoxVisitor& v);
+        void drawOverlaySelectedAbove(BoxVisitor& v);
+        void drawOverlaySelectedBelow(BoxVisitor& v);
 
-        void drawOverlayOutlines();
-        void drawOverlaySelectedAbove();
-        void drawOverlaySelectedBelow();
+        void applyChildActions();
+        void setChildAction(ChildAction const& child_action);
 
         std::string toYamlString();
         std::string toCPPString();
 
-        static bool loadYaml(ut::cstrparam filename);
-        static bool saveYaml(ut::cstrparam filename);
-        static box_ptr createRoot();
+        bool loadYaml(ut::cstrparam filename);
+        bool saveYaml(ut::cstrparam filename);
 
-        static void drawOverlay();
-        static void drawWindowSelectedBox();
-        static void drawWindowBoxHierarchy();
-        static void drawWindowYamlOutput();
-        static void drawWindowCPPOutput();
-
+        static box_ptr createRoot(ut::rect const& bounds);
+        static box_ptr createRoot(Sizer const& sizer);
 
     private:
-        struct RowAction
-        {
-            enum Type { REMOVE, MOVE_INC, MOVE_DEC } type;
-            box_ptr box;
-        };
+        std::optional<ChildAction> m_child_action;
 
-        std::optional<RowAction> m_row_action;
-
-        Box(box_ptr p);
-
-        void applyRowAction();
-        void setRowAction(RowAction const& ra);
+        explicit Box(box_ptr p);
 
         inline float weightsSum() const
         {
@@ -150,7 +188,7 @@ namespace ledit
 
         static ut::color nextColor();
 
-        bool isSelected();
+//        bool isSelected();
     };
 
 

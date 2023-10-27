@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/gfx_dbg.hpp"
+#include "gfx/gfx_view_transform.hpp"
 
 #include <unordered_map>
 
@@ -16,6 +17,14 @@
 #define DRECT_PUSH1(r_)         do { gfx::VIRT.pushRectDebug(#r_, r_); } while(0)
 #define DRECT_POP()             do { gfx::VIRT.popRectDebug();         } while(0)
 
+#define flt_        float
+#define vec2_       ut::vec2f const&
+#define rect_       ut::rectf const&
+#define color_      ut::color const&
+#define text_       ut::cstrparam
+#define quad_       Quad const&
+#define vert_       Vertex const&
+
 namespace gfx
 {
     ///
@@ -24,26 +33,23 @@ namespace gfx
     class Virt2DManager
     {
     public:
-        inline ut::rectf realViewport() const
-        { return m_real_viewport; }
+        ViewTransform view_transform;
 
-        inline ut::rectf virtViewport() const
-        { return m_virt_viewport; }
+        inline ut::mat4 transformMatrix() const { return m_transform_matrix; }
+        inline ut::rectf realViewport() const { return m_real_viewport; }
+        //inline ut::rectf virtViewport() const { return m_virt_viewport; }
 
-        ut::vec2f realPoint(ut::vec2f const &p) const;
-        ut::rectf realRect(ut::rectf const &r) const;
+        ut::vec2f realPoint(vec2_ p) const;
+        ut::rectf realRect (rect_ r) const;
+
+        ut::vec2f virtPoint(vec2_ p) const;
+        ut::rectf virtRect (rect_ r) const;
 
         void layout(ut::rectf const &real_viewport, float virt_width, float virt_height);
-
-        ut::color nextDebugColor(size_t seed);
 
         void begin();
 
         void end();
-
-        void beginScissor(ut::rectf const &r);
-
-        void endScissor();
 
         //void drawText(rect const& r, float font_size, cstrview const& s, color const& c);
 
@@ -61,7 +67,6 @@ namespace gfx
         void drawText##x_(Font font, ut::rectf const& r, float h, ut::cstrparam s, ut::color const& c) const;
 
         UT_ENUM_RECT_ALIGNMENTS
-
 #undef CASE
 
         void drawThinLine(ut::vec2f const &a, ut::vec2f const &b, ut::color const &c);
@@ -92,22 +97,6 @@ namespace gfx
 
 
         //
-        // nanovg
-        //
-
-        void setNanoVGViewport(NVGcontext* ctx)
-        {
-            auto [fit_sz, fit_scale] = m_real_viewport.fitScale(m_virt_viewport.width(), m_virt_viewport.height());
-            auto fit_rect = m_real_viewport.anchorCCtoCC(fit_sz);
-
-            //auto mx_scale = MatrixScale(fit_scale,fit_scale, 1.0);
-            //auto mx_trans = MatrixTranslate(fit_rect.x(), fit_rect.y(), 0.0);
-
-            nvgTranslate(ctx, fit_rect.x(), fit_rect.y());
-            nvgScale(ctx, fit_scale, fit_scale);
-        }
-
-        //
         // debug
         //
 
@@ -130,14 +119,15 @@ namespace gfx
         // Singleton accessor
         //
 
-        static Virt2DManager &instance();
+        static Virt2DManager& instance();
 
     private:
         ut::rectf m_real_viewport;
-        ut::rectf m_virt_viewport;
+        //ut::rectf m_virt_viewport;
 
         float   m_scale                 = 1;
-        Matrix  m_transform;
+        ut::mat4 m_transform_matrix;
+        ut::mat4 m_transform_matrix_inverse;
 
         bool    m_begin_flag            = false;
         bool    m_begin_scissor_flag    = false;
@@ -149,3 +139,11 @@ namespace gfx
 
     [[maybe_unused]] static Virt2DManager &VIRT = Virt2DManager::instance();
 }
+
+#undef flt_
+#undef vec2_
+#undef rect_
+#undef color_
+#undef text_
+#undef quad_
+#undef vert_

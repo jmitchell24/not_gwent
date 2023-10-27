@@ -42,7 +42,7 @@ void ImGui::StructField(text_ name, text_ value)
 // Dockspace
 //
 
-static rectf g_dockspace_viewport;
+static rect g_dockspace_viewport{0,0,1,1};
 
 rectf ImGui::GetDockspaceViewport()
 {

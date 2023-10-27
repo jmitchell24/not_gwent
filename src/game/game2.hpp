@@ -4,8 +4,11 @@
 
 #pragma once
 
+#include "context.hpp"
+
 #include "game/board/board_boss.hpp"
 #include "game/game_player.hpp"
+#include "game/game_io.hpp"
 
 
 namespace game

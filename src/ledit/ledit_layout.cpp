@@ -14,34 +14,35 @@ using namespace ut;
 
 bool Layout::loadYaml(cstrparam filename)
 {
-    if (filename.empty())
-        return false;
-
-    if (FILE* file = fopen(filename, "r"))
-    {
-        try
-        {
-            auto text = gulp::file_to_string(file);
-
-            box_ptr b = Box::createRoot();
-            fromYaml(YAML::Load(text), b);
-            root_box = b;
-            selected_box = root_box;
-            return true;
-        }
-        catch (YAML::Exception const& ex)
-        {
-            fprintf(stderr, "%s:%d:%d:\n    ", filename.c_str(), ex.mark.line, ex.mark.column);
-            fprintf(stderr, "YAML parse error: %s\n", ex.msg.c_str());
-        }
-
-        fclose(file);
-    }
-    else
-    {
-        fprintf(stderr, "error opening layout file (%s)", filename.c_str());
-    }
     return false;
+//    if (filename.empty())
+//        return false;
+//
+//    if (FILE* file = fopen(filename, "r"))
+//    {
+//        try
+//        {
+//            auto text = gulp::file_to_string(file);
+//
+//            box_ptr b = Box::createRoot();
+//            fromYaml(YAML::Load(text), b);
+//            root_box = b;
+//            selected_box = root_box;
+//            return true;
+//        }
+//        catch (YAML::Exception const& ex)
+//        {
+//            fprintf(stderr, "%s:%d:%d:\n    ", filename.c_str(), ex.mark.line, ex.mark.column);
+//            fprintf(stderr, "YAML parse error: %s\n", ex.msg.c_str());
+//        }
+//
+//        fclose(file);
+//    }
+//    else
+//    {
+//        fprintf(stderr, "error opening layout file (%s)", filename.c_str());
+//    }
+//    return false;
 }
 
 bool Layout::saveYaml(cstrparam filename)

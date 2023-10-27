@@ -11,20 +11,26 @@ using namespace gfx;
 //
 // ut
 //
-#include <ut/random.hpp>
+#include <ut/check.hpp>
 using namespace ut;
 
 #include <vector>
 #include <iostream>
 using namespace std;
 
-
+#define flt_        float
+#define vec2_       ut::vec2f const&
+#define rect_       ut::rectf const&
+#define color_      ut::color const&
+#define text_       ut::cstrparam
+#define quad_       Quad const&
+#define vert_       Vertex const&
 
 //
 // Virt2DManager
 //
 
-#define ASSERT_BEGIN_FLAG assert(m_begin_flag && "Virtual screen-space is not active")
+#define ASSERT_BEGIN_FLAG check(m_begin_flag, "Virtual screen-space is not active");
 
 Virt2DManager& Virt2DManager::instance()
 {
@@ -34,23 +40,34 @@ Virt2DManager& Virt2DManager::instance()
 
 vec2 Virt2DManager::realPoint(vec2 const& p) const
 {
-    auto& mat = m_transform;
-
-    float x = p.x;
-    float y = p.y;
-    float z = 0;
-
-    return
-    {
-        mat.m0*x + mat.m4*y + mat.m8*z + mat.m12,
-        mat.m1*x + mat.m5*y + mat.m9*z + mat.m13
-    };
+//    auto& mat = m_transform;
+//
+//    float x = p.x;
+//    float y = p.y;
+//    float z = 0;
+//
+//    return
+//    {
+//        mat.m0*x + mat.m4*y + mat.m8*z + mat.m12,
+//        mat.m1*x + mat.m5*y + mat.m9*z + mat.m13
+//    };
+    return m_transform_matrix.transformPoint(p);
 }
 
-
-rectf Virt2DManager::realRect(rectf const& r) const
+rect Virt2DManager::realRect(rectf const& r) const
 {
     return { realPoint(r.min), realPoint(r.max) };
+}
+
+vec2 Virt2DManager::virtPoint(vec2 const& p) const
+{
+    auto o = -m_real_viewport.pos();
+    return (p - o) / m_scale;
+}
+
+rect Virt2DManager::virtRect(const ut::rectf &r) const
+{
+    return { virtPoint(r.min), virtPoint(r.max) };
 }
 
 //Virt2DManager::vec2 Virt2DManager::measureText(char const* text, unsigned font_size) const
@@ -83,20 +100,26 @@ void Virt2DManager::layout(rectf const& real_viewport, float virt_width, float v
     auto [fit_sz, fit_scale] = real_viewport.fitScale(virt_width, virt_height);
     auto fit_rect = real_viewport.anchorCCtoCC(fit_sz);
 
-    auto mx_scale = MatrixScale(fit_scale,fit_scale, 1.0);
-    auto mx_trans = MatrixTranslate(fit_rect.x(), fit_rect.y(), 0.0);
+//    auto mx_scale = MatrixScale(fit_scale,fit_scale, 1.0);
+//    auto mx_trans = MatrixTranslate(fit_rect.x(), fit_rect.y(), 0.0);
 
-    m_transform = MatrixMultiply(mx_scale, mx_trans);
+    //m_transform = MatrixMultiply(mx_scale, mx_trans);
+    m_transform_matrix = mat4::scaleTranslate(
+            fit_scale, fit_scale, 1,
+            fit_rect.x(), fit_rect.y(), 0);
+
 
     m_scale     = max(0.0001f, fit_scale);
 
     m_real_viewport.set(fit_rect);
-    m_virt_viewport.set(0,0,virt_width,virt_height);
+    //m_virt_viewport.set(0,0,virt_width,virt_height);
+
+    view_transform = ViewTransform::create(real_viewport, virt_width, virt_height);
 }
 
 void Virt2DManager::begin()
 {
-    assert(!m_begin_flag && "Virtual screen-space is already active");
+    check(!m_begin_flag, "Virtual screen-space is already active");
     m_begin_flag = true;
 
     // apply to matrix stack
@@ -109,7 +132,7 @@ void Virt2DManager::begin()
 
 void Virt2DManager::end()
 {
-    assert(m_begin_flag && "Virtual screen-space is not active");
+    check(m_begin_flag, "Virtual screen-space is not active");
     m_begin_flag = false;
 
     // reset matrix stack
@@ -120,35 +143,18 @@ void Virt2DManager::end()
     SetMouseScale(1,1);
 }
 
-void Virt2DManager::beginScissor(rectf const& virt_scissor_bound)
+void Virt2DManager::pushMatrix()
 {
-    assert(m_begin_flag && "Virtual screen-space is not active");
-    assert(!m_begin_scissor_flag && "Virtual scissor is already active");
-    VIRT_DEBUG(virt_scissor_bound);
-
-    auto tmp    = realRect(virt_scissor_bound);
-    auto sx     = tmp.left;
-    auto sy     = GetScreenHeight() - tmp.bottom;
-    auto sw     = tmp.width();
-    auto sh     = tmp.height();
-
-    rlDrawRenderBatchActive();
-    rlEnableScissorTest();
-    rlScissor(sx,sy,sw,sh);
-
-    m_begin_scissor_flag = true;
+    rlPushMatrix();
+    rlMultMatrixf(m_transform_matrix.data());
 }
 
-void Virt2DManager::endScissor()
+void Virt2DManager::popMatrix()
 {
-    assert(m_begin_flag && "Virtual screen-space is not active");
-    assert(m_begin_scissor_flag && "Virtual scissor is not active");
-
-    rlDrawRenderBatchActive();
-    rlDisableScissorTest();
-
-    m_begin_scissor_flag = false;
+    rlPopMatrix();
 }
+
+
 //MeasureTextEx(Font font, const char *text, float fontSize, float spacing);
 #define CASE(x_) \
 void Virt2DManager::drawText##x_(rectf const& r, float h, cstrparam s, color const& c) const \
@@ -171,16 +177,7 @@ void Virt2DManager::drawText##x_(Font font, rectf const& r, cstrparam s, color c
     UT_ENUM_RECT_ALIGNMENTS
 #undef CASE
 
-void Virt2DManager::pushMatrix()
-{
-    rlPushMatrix();
-    rlMultMatrixf(MatrixToFloat(m_transform));
-}
 
-void Virt2DManager::popMatrix()
-{
-    rlPopMatrix();
-}
 
 void Virt2DManager::drawThinLine(vec2 const& a, vec2 const& b, color const& c)
 {
@@ -357,3 +354,11 @@ void Virt2DManager::drawTexturePro(Texture2D texture, rect const& source, rect c
     ASSERT_BEGIN_FLAG; assert(IsTextureReady(texture));
     DrawTexturePro(texture, torl(source), torl(dest), torl(origin), rotation, torl(c));
 }
+
+#undef flt_
+#undef vec2_
+#undef rect_
+#undef color_
+#undef text_
+#undef quad_
+#undef vert_
