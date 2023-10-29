@@ -8,7 +8,7 @@ using namespace game::layout;
 
 
 
-#include "gfx/gfx_virt2d.hpp"
+#include "gfx/gfx_drect.hpp"
 
 
 //

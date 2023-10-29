@@ -9,7 +9,7 @@
 #include "raylib.h"
 #include "rlgl.h"
 #include "conv.hpp"
-#include "gfx_virt2d.hpp"
+#include "gfx/gfx_drect.hpp"
 
 #define flt_        float
 #define vec2_       ut::vec2f const&
@@ -36,7 +36,8 @@ UT_ENUM_RECT_ALIGNMENTS
     void drawTexture(Texture2D texture, rect_ rect, color_ color);
     void drawTexture(Texture2D texture, rect_ rect);
     void drawTextureFit(Texture2D texture, rect_ rect, color_ color);
-
+    void drawTexturePro(Texture2D texture, rect_ rect, color_ color);
+    void drawTexturePro(Texture2D texture, rect_ src, rect_ dst, vec2_ origin, float rotation);
 
 
     void drawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);

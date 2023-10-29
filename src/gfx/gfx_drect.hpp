@@ -1,6 +1,11 @@
 #pragma once
 
 //
+// gfx
+//
+#include "gfx/gfx_view_transform.hpp"
+
+//
 // ut
 //
 #include <ut/math.hpp>
@@ -12,15 +17,24 @@
 //
 #include <memory>
 #include <vector>
+#include <optional>
 #include <unordered_map>
+
+#define DRECT2(s_, r_)          do { gfx::DebugRectOverlayManager::instance().addRect (#s_, r_); } while(0)
+#define DRECT_PUSH2(s_, r_)     do { gfx::DebugRectOverlayManager::instance().pushRect(#s_, r_); } while(0)
+#define DRECT1(r_)              do { gfx::DebugRectOverlayManager::instance().addRect (#r_, r_); } while(0)
+#define DRECT_PUSH1(r_)         do { gfx::DebugRectOverlayManager::instance().pushRect(#r_, r_); } while(0)
+#define DRECT_POP()             do { gfx::DebugRectOverlayManager::instance().popRect ();        } while(0)
 
 namespace gfx
 {
-
-    class DebugRectManager
+    class DebugRectOverlayManager
     {
     public:
+        using vtransform_type = std::optional<gfx::ViewTransform>;
+
         bool enabled = false;
+        vtransform_type view_transform;
 
         void addRect (ut::cstrparam label, ut::rect const& r);
         void pushRect(ut::cstrparam label, ut::rect const& r);
@@ -30,7 +44,7 @@ namespace gfx
 
         void drawDebug();
 
-        static DebugRectManager& instance();
+        static DebugRectOverlayManager& instance();
 
     private:
         struct Overlay
@@ -69,11 +83,13 @@ namespace gfx
         using label_type = std::vector<ut::cstrview>;
         using draws_type = std::vector<Overlay>;
 
-        DebugRectManager();
+        DebugRectOverlayManager();
 
         Tag         m_root_tag;
         label_type  m_label;
         draws_type  m_draws;
         int         m_im_style;
     };
+
+    static DebugRectOverlayManager& DRECT = DebugRectOverlayManager::instance();
 }

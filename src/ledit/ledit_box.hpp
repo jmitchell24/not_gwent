@@ -4,84 +4,11 @@
 
 #pragma once
 
-#include "ledit_sizer.hpp"
-#include "ledit_flex.hpp"
-
-//
-// gfx
-//
-#include "gfx/gfx_view_transform.hpp"
-
-//
-// ut
-//
-#include <ut/math.hpp>
-#include <ut/color.hpp>
-#include <ut/string.hpp>
-#include <ut/func/delegate.hpp>
-
-//
-// std
-//
-#include <array>
-#include <utility>
-#include <vector>
-#include <string>
-#include <optional>
+#include "ledit/ledit_sizer.hpp"
+#include "ledit/ledit_box_visitor.hpp"
 
 namespace ledit
 {
-    class Box;
-    using box_ptr   = std::shared_ptr<Box>;
-    using box_cptr  = std::shared_ptr<Box const>;
-    using boxmap_t  = std::unordered_map<std::string, box_ptr>;
-    using boxlist_t = std::vector<box_ptr>;
-
-    using rectget_t  = std::optional<ut::rect>;
-
-    struct BoxEditOptions
-    {
-        bool show_row_select    = true;
-        bool show_row_add       = false;
-        bool show_row_delete    = false;
-        bool show_row_move      = false;
-        bool show_row_rename    = false;
-        bool show_row_weight    = false;
-        bool show_row_type      = false;
-    };
-
-    struct OverlayOptions
-    {
-        ut::color   background {15 ,15 ,15 ,240};
-        ut::color   border     {110,110,128,128};
-
-    };
-
-
-
-    class BoxVisitor
-    {
-    public:
-        BoxEditOptions      edit_opts;
-        OverlayOptions      overlay_opts;
-        box_ptr             selected_box;
-
-        std::optional<gfx::ViewTransform> view_transform;
-
-        ut::rect getRect(ut::rect const& p) const;
-        ut::vec2 getMousePos(ut::vec2 const& p) const;
-
-
-        box_ptr     getBox      (ut::cstrparam s);
-        void        setBox      (box_ptr const& ptr);
-        void        clearBox    (box_ptr const& ptr);
-
-        inline boxmap_t const& boxmap() const { return m_boxmap; }
-
-    protected:
-        boxmap_t m_boxmap;
-    };
-
     class Box : public std::enable_shared_from_this<Box>
     {
     public:
@@ -127,10 +54,8 @@ namespace ledit
 
         void reset();
 
-        void layout    (ut::rect const& b);
-        void layoutVbox(ut::rect const& b);
-        void layoutHbox(ut::rect const& b);
-        void layoutSbox(ut::rect const& b);
+        void layout(ut::rect const& b);
+
 
         void drawProperties  (BoxVisitor& v);
         void drawTreeTableRow(BoxVisitor& v);
@@ -156,6 +81,10 @@ namespace ledit
         std::optional<ChildAction> m_child_action;
 
         explicit Box(box_ptr p);
+
+        void layoutVbox(ut::rect const& b);
+        void layoutHbox(ut::rect const& b);
+        void layoutSbox(ut::rect const& b);
 
         inline float weightsSum() const
         {
@@ -187,10 +116,5 @@ namespace ledit
         }
 
         static ut::color nextColor();
-
-//        bool isSelected();
     };
-
-
-
 }

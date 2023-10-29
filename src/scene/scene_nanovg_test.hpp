@@ -6,7 +6,6 @@
 
 #include <regex>
 #include "scene.hpp"
-#include "gfx/gfx_virt2d.hpp"
 #include "game/asset/assets.hpp"
 #include "rlImGui/imgui/imgui.h"
 

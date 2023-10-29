@@ -23,7 +23,7 @@ Context::UpdateData Context::createUpdateData(ViewTransform const& vt)
     return UpdateData {
         .frame_time         = GetFrameTime(),
         .real_mouse_pos     = mp,
-        .view_mouse_pos     = vt.viewPoint(mp)
+        .view_mouse_pos     = vt.realPoint(mp)
     };
 }
 

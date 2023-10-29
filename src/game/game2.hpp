@@ -27,7 +27,7 @@ namespace game
         GameBoard2();
 
         void layout(ut::rect const& bounds);
-        void update(float dt);
+        void update(update_param u);
         void drawAboveCards();
         void drawUnderCards();
         void drawDebug     ();

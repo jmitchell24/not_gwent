@@ -242,22 +242,8 @@ rect Sizer::getInner(rect const& parent) const
     return getPad(getOuter(parent));
 }
 
-Sizer::Box Sizer::getBox(rect const& parent) const
+Sizer::Rects Sizer::getRects(rect const& parent) const
 {
     auto outer = getOuter(parent);
-    return { parent, getPad(outer), outer };
-}
-
-bool Sizer::hasPad()
-{
-    return padType() != PAD_NONE;
-//    switch (padType())
-//    {
-//        case PAD_NONE: return false;
-//        case PAD_ONE : return std::isnormal(getPad1());
-//        case PAD_TWO : return getPad2().isFltNormal();
-//        case PAD_FOUR: return getPad4().isFltNormal();
-//        default:nopath_case(PadType);
-//    }
-//    return false;
+    return { getPad(outer), outer };
 }

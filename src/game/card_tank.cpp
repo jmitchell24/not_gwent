@@ -15,7 +15,6 @@ using namespace game;
 //
 // gfx
 //
-#include "gfx/gfx_virt2d.hpp"
 #include "ng/ng_card_data.hpp"
 
 using namespace gfx;
@@ -88,7 +87,7 @@ void CardTank::draw()
         it.draw();
     }
 
-    if (VIRT.isRectDebugEnabled())
+    if (DRECT.enabled)
     {
         for (auto&& it: m_cards)
         {

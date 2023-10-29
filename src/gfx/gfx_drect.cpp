@@ -1,4 +1,4 @@
-#include "gfx/gfx_dbg.hpp"
+#include "gfx/gfx_drect.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
 using namespace gfx;
 
@@ -28,20 +28,20 @@ static color nextColor()
 // DebugRectManager -> Implementation
 //
 
-DebugRectManager::DebugRectManager() :
+DebugRectOverlayManager::DebugRectOverlayManager() :
     m_root_tag      {true, false, "", {}, 0},
     m_label         {""},
     m_draws         { },
     m_im_style      {ImGuiDRECTStyle_NoText}
 {}
 
-DebugRectManager& DebugRectManager::instance()
+DebugRectOverlayManager& DebugRectOverlayManager::instance()
 {
-    static DebugRectManager x;
+    static DebugRectOverlayManager x;
     return x;
 }
 
-void DebugRectManager::addRect(cstrparam label, rect const& r)
+void DebugRectOverlayManager::addRect(cstrparam label, rect const& r)
 {
     assert(!m_label.empty());
 
@@ -50,7 +50,7 @@ void DebugRectManager::addRect(cstrparam label, rect const& r)
     m_label.back() = "";
 }
 
-void DebugRectManager::addRect(rect const& r)
+void DebugRectOverlayManager::addRect(rect const& r)
 {
     assert(!m_label.empty());
 
@@ -64,33 +64,32 @@ void DebugRectManager::addRect(rect const& r)
         m_draws.push_back(tag.toOverlay(r));
 }
 
-void DebugRectManager::pushRect(cstrparam label, rect const& r)
+void DebugRectOverlayManager::pushRect(cstrparam label, rect const& r)
 {
     m_label.back() = label;
     addRect(r);
     m_label.emplace_back("");
 }
 
-void DebugRectManager::popRect()
+void DebugRectOverlayManager::popRect()
 {
     assert(m_label.size() > 1);
     m_label.pop_back();
 }
 
-void DebugRectManager::drawDebug()
+void DebugRectOverlayManager::drawDebug()
 {
     using namespace ImGui;
 
-    for (auto& p: m_draws)
+    for (auto&& it: m_draws)
     {
-        auto c = p.color.withNormalA(p.highlighted ? 0.5f : 0.0f);
-        auto f = p.highlighted ? m_im_style : ImGuiDRECTStyle_NoText;
-        DrawDRECT(p.text, p.bound, c, f);
+        auto c = it.color.withNormalA(it.highlighted ? 0.5f : 0.0f);
+        auto f = it.highlighted ? m_im_style : ImGuiDRECTStyle_NoText;
+        auto r = view_transform ? view_transform->viewRect(it.bound) : it.bound;
+        DrawDRECT(it.text, r, c, f);
     }
 
     m_draws.clear();
-
-
 
     if (enabled)
     {
@@ -151,21 +150,21 @@ void DebugRectManager::drawDebug()
 // DebugRectManager -> RectTag -> Implementation
 //
 
-void DebugRectManager::Tag::enableAll()
+void DebugRectOverlayManager::Tag::enableAll()
 {
     enabled = true;
     for (auto&& it : child_tags)
         it.enableAll();
 }
 
-void DebugRectManager::Tag::disableAll()
+void DebugRectOverlayManager::Tag::disableAll()
 {
     enabled = false;
     for (auto&& it : child_tags)
         it.disableAll();
 }
 
-void DebugRectManager::Tag::draw()
+void DebugRectOverlayManager::Tag::draw()
 {
     if (child_tags.empty())
     {
@@ -179,7 +178,7 @@ void DebugRectManager::Tag::draw()
     }
 }
 
-bool DebugRectManager::Tag::draw(bool is_leaf)
+bool DebugRectOverlayManager::Tag::draw(bool is_leaf)
 {
     using namespace ImGui;
 
@@ -225,7 +224,7 @@ bool DebugRectManager::Tag::draw(bool is_leaf)
 
 
 
-DebugRectManager::Tag& DebugRectManager::Tag::getChildTag(cstrview const* begin, cstrview const* end)
+DebugRectOverlayManager::Tag& DebugRectOverlayManager::Tag::getChildTag(cstrview const* begin, cstrview const* end)
 {
     assert(begin <= end);
 

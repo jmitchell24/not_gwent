@@ -3,6 +3,7 @@
 //
 
 #include "ledit/ledit_yaml.hpp"
+#include "ledit/ledit_box.hpp"
 using namespace ledit;
 
 
@@ -322,18 +323,4 @@ void ::ledit::fromYaml(YAML::Node const& node, box_ptr const& box)
         else
             throw Exception(ch.Mark(), "invalid children seq");
     }
-}
-
-void ::ledit::emitYaml(YAML::Emitter& emitter, Layout const& layout)
-{
-    using namespace YAML;
-
-    emitYaml(emitter, layout.root_box);
-}
-
-void ::ledit::fromYaml(YAML::Node const& node, Layout& layout)
-{
-    using namespace YAML;
-
-    fromYaml(node, layout.root_box);
 }

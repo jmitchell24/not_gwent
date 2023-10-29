@@ -69,63 +69,7 @@ void drawOverlayPadding(rect const &outer, rect const &inner, color const &c)
     dl->Flags = prev_flags;
 }
 
-//
-// BoxVisitor -> Implementation
-//
 
-rect BoxVisitor::getRect(rect const& r) const
-{
-    if (view_transform)
-    {
-        return view_transform->viewRect(r);
-    }
-    return r;
-}
-
-vec2 BoxVisitor::getMousePos(vec2 const& p) const
-{
-    if (view_transform)
-    {
-        return view_transform->realPoint(p);
-    }
-    return p;
-}
-
-box_ptr BoxVisitor::getBox(cstrparam s)
-{
-    auto k = s.str();
-
-    if (auto it = m_boxmap.find(k); it != m_boxmap.end())
-    {
-        if (auto&& v = it->second)
-            return v;
-    }
-
-    return m_boxmap[k] = nullptr;
-}
-
-void BoxVisitor::setBox(box_ptr const& ptr)
-{
-    if (auto it = m_boxmap.find(ptr->name); it != m_boxmap.end())
-    {
-        auto&& v = it->second;
-
-        if (v && v != ptr)
-            v->name.clear();
-        v = ptr;
-    }
-
-}
-
-void BoxVisitor::clearBox(box_ptr const& ptr)
-{
-    if (auto it = m_boxmap.find(ptr->name); it != m_boxmap.end())
-    {
-        auto&& v = it->second;
-        v = nullptr;
-        ptr->name.clear();
-    }
-}
 
 //
 // Box -> Implementation
@@ -535,12 +479,12 @@ void Box::reset()
     child_boxes.clear();
 }
 
-void Box::layout(rect const &parent)
+void Box::layout(rect const& p)
 {
-    auto b = sizer.getBox(parent);
+    auto rects = sizer.getRects(p);
 
-    bounds_inner    = b.pad;
-    bounds_outer    = b.content;
+    bounds_inner    = rects.pad;
+    bounds_outer    = rects.content;
 
     if (child_boxes.empty())
         return;
@@ -561,7 +505,7 @@ void Box::layout(rect const &parent)
     }
 }
 
-void Box::layoutVbox(rect const &b)
+void Box::layoutVbox(rect const& b)
 {
     auto sz = child_boxes.size();
     auto h = b.height() - (inner_pad * float(sz - 1));
@@ -586,7 +530,7 @@ void Box::layoutVbox(rect const &b)
     child_boxes.back()->layout({cl, cy, cr, b.max.y});
 }
 
-void Box::layoutHbox(rect const &b)
+void Box::layoutHbox(rect const& b)
 {
     auto sz = child_boxes.size();
     auto w = b.width() - (inner_pad * float(sz - 1));

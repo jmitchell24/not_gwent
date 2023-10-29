@@ -5,8 +5,6 @@
 #include "game/layout/row_layout.hpp"
 using namespace game::layout;
 
-#include "gfx/gfx_virt2d.hpp"
-
 #include "assert.hpp"
 
 //

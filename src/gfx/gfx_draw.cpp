@@ -75,6 +75,16 @@ void ::gfx::drawTextureFit(Texture2D texture, rect_ rect, color_ color)
     drawTexture(texture, rect.anchorCCtoCC(sz), color);
 }
 
+void ::gfx::drawTexturePro(Texture2D texture, rect_ rect, color_ color)
+{
+    drawTexture(texture, rect, color);
+}
+
+void ::gfx::drawTexturePro(Texture2D texture, rect_ src, rect_ dst, vec2_ origin, float rotation)
+{
+    DrawTexturePro(texture, torl(src), torl(dst), torl(origin), rotation, WHITE);
+}
+
 void ::gfx::drawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4)
 {
     Texture2D texShapes = { 1, 1, 1, 1, 7 };                // Texture used on shapes drawing (usually a white pixel)

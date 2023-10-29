@@ -5,7 +5,6 @@
 #pragma once
 
 #include "scene.hpp"
-#include "gfx/gfx_virt2d.hpp"
 #include "rlImGui/imgui/imgui.h"
 
 

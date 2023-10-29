@@ -23,7 +23,6 @@
 //
 // gfx
 //
-#include "gfx/gfx_virt2d.hpp"
 #include "gfx/gfx_prototype.hpp"
 using namespace gfx;
 
@@ -125,19 +124,25 @@ int main()
             (float)Context::VIEW_HEIGHT
         );
 
-        VIRT.layout(
-            viewport,
-            (float)Context::VIEW_WIDTH,
-            (float)Context::VIEW_HEIGHT
-        );
+        DRECT.view_transform = view_transform;
+
+//        VIRT.layout(
+//            viewport,
+//            (float)Context::VIEW_WIDTH,
+//            (float)Context::VIEW_HEIGHT
+//        );
 
 
-        VIRT.begin();
+        rlPushMatrix();
+        rlMultMatrixf(view_transform.translate.data());
 
         stage.update(Context::createUpdateData(view_transform));
         stage.draw();
 
-        VIRT.end();
+        rlPopMatrix();
+
+
+
 
         rlDrawRenderBatchActive();
 
@@ -147,7 +152,7 @@ int main()
             ImGui::RenderDockspace();
 
             ImGui::Begin("Graphics");
-            VIRT.drawDebug();
+            DRECT.drawDebug();
             PROTO.drawDebug();
             ImGui::End();
 

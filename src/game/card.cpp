@@ -29,7 +29,6 @@ using namespace std;
 //
 // gfx
 //
-#include "gfx/gfx_virt2d.hpp"
 #include "gfx/gfx_easings.hpp"
 #include "gfx/gfx_draw.hpp"
 #include "conv.hpp"
@@ -171,8 +170,8 @@ void Card::draw()
     //auto shadow_sz  = ( (layout.getElevation() - layout.ELEVATION_DROP) / (layout.ELEVATION_GRAB - layout.ELEVATION_DROP) ) * r_pad;
     //drawShadow(r, vec2(shadow_sz), shadow_sz + r_pad/2);
 
-    VIRT.drawTexturePro(assets.card, r, colors::white);
-    VIRT.drawTexturePro(assets.artwork,
+    drawTexturePro(assets.card, r, colors::white);
+    drawTexturePro(assets.artwork,
                         r.anchorCCtoCC(r.size()*.85), colors::white);
 
 
@@ -183,9 +182,6 @@ void Card::draw()
     auto r_stat_row         = r_stats.row(3,1, {.inner_pad=r_pad, .outer_pad=r_pad});
     auto r_stat_ability     = r_stats.row(3,2, {.inner_pad=r_pad, .outer_pad=r_pad});
 
-
-
-    //VIRT.drawRectangle(r_stats, outer.withL(15).withA(0.85).toColor());
 
     if (ng.isUnitCard())
     {

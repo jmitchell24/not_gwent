@@ -11,6 +11,7 @@
 
 #include "ledit/ledit_editor.hpp"
 #include "game/card.hpp"
+#include "gfx/gfx_draw.hpp"
 #include "ng/ng_card_data.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
 
@@ -64,7 +65,7 @@ public:
         drawCircle(r_ability, ut::colors::green);
         drawCircle(r_row, ut::colors::blue);
 
-        gfx::VIRT.drawTexturePro(card.assets.row, r_row, ut::colors::white);
+        gfx::drawTexturePro(card.assets.row, r_row, ut::colors::white);
     }
 
     void drawDebug() override
@@ -79,7 +80,7 @@ public:
                          card.layout.m_z);
 
 
-        editor.view_transform = gfx::VIRT.view_transform;
+        editor.view_transform = gfx::DRECT.view_transform;
 
         if (editor.draw())
         {

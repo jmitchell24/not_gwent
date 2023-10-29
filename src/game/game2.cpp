@@ -191,12 +191,14 @@ bool GameBoard2::tryGetHoveredCard(const ut::vec2 &mp, CardRef &ref)
         cpu.tryGetHoveredCard(mp, ref);
 }
 
-void GameBoard2::update(float dt)
+void GameBoard2::update(update_param u)
 {
-    usr.update(dt);
-    cpu.update(dt);
+    usr.update(u.frame_time);
+    cpu.update(u.frame_time);
 
-    auto mp = tout(GetMousePosition());
+    auto mp = u.view_mouse_pos;
+
+
 
     if (CardRef ref; tryGetHoveredCard(mp, ref))
     {

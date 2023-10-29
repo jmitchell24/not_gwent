@@ -74,9 +74,7 @@ namespace ledit
         ut::rect getInner(ut::rect const& parent) const;
         ut::rect getOuter(ut::rect const& parent) const;
 
-        struct Box { ut::rect parent, pad, content; };
-        Box getBox(ut::rect const& parent) const;
-
-        bool hasPad();
+        struct Rects { ut::rect pad, content; };
+        Rects getRects(ut::rect const& parent) const;
     };
 }

@@ -27,7 +27,7 @@ public:
 
     void update(update_param u) override
     {
-        m_gb.update(u.frame_time);
+        m_gb.update(u);
         game::TANK.update(u.frame_time);
     }
 

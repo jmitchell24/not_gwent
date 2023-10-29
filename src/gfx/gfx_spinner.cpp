@@ -2,9 +2,10 @@
 // Created by james on 9/3/23.
 //
 
+#include "gfx/gfx_draw.hpp"
 #include "gfx/gfx_spinner.hpp"
-#include "gfx/gfx_virt2d.hpp"
 #include "game/asset/assets.hpp"
+
 using namespace gfx;
 
 //
@@ -45,9 +46,10 @@ void Spinner::update(float dt)
 
 void Spinner::draw()
 {
+    using namespace gfx;
 
-    VIRT.drawTextCCtoCC(font, m_bounds_a, m_bounds_a.height(), PRINTER("%d", m_integer_a), m_color_a);
-    VIRT.drawTextCCtoCC(font, m_bounds_b, m_bounds_b.height(), PRINTER("%d", m_integer_b), m_color_b);
+    drawTextCCtoCC(font, m_bounds_a, m_bounds_a.height(), PRINTER("%d", m_integer_a), m_color_a);
+    drawTextCCtoCC(font, m_bounds_b, m_bounds_b.height(), PRINTER("%d", m_integer_b), m_color_b);
 
     DRECT_PUSH2(Spinner, m_bounds);
     DRECT1(m_bounds_a);
