@@ -1,0 +1,85 @@
+//
+// Created by james on 10/30/23.
+//
+
+#include "ledit/ledit_flex.hpp"
+using namespace ledit;
+
+//
+// imgui
+//
+#include "rlImGui/imgui/imgui_mods.hpp"
+
+//
+// ut
+//
+using namespace ut;
+
+//
+// std
+//
+using namespace std;
+
+//
+// Flex -> Implementation
+//
+
+void Flex::reset()
+{
+    type        = BOX_HBOX;
+    weight      = 1;
+    inner_pad   = 10;
+}
+
+void Flex::drawProperties()
+{
+    using namespace ImGui;
+
+    if (ButtonDefault("weight", weight != 1))
+    { weight = 1; }
+    if (int w = weight; InputInt("weight", &w, 1))
+    {
+        if (w > 0) weight = w;
+    }
+
+    if (ButtonDefault("type", type != BOX_HBOX))
+    { type = BOX_HBOX; }
+    if (BeginCombo("Type", box_to_string(type)))
+    {
+        EXPAND_BOXTYPE(CASE_SELECTABLE)
+        EndCombo();
+    }
+}
+
+void Flex::drawRowControls(BoxEditOptions const& edit_opts)
+{
+    using namespace ImGui;
+
+    if (edit_opts.show_row_weight)
+    {
+        Text("%d", weight);
+        SameLine();
+
+        if (SmallButton("+"))
+            weight++;
+        SameLine();
+
+        if (SmallButtonEnabled("-", weight > 1))
+            weight--;
+        SameLine();
+    }
+
+    if (edit_opts.show_row_type)
+    {
+        if (SmallButton("t"))
+            OpenPopup("show-row-type");
+
+        if (BeginPopup("show-row-type"))
+        {
+            EXPAND_BOXTYPE(CASE_SELECTABLE)
+            EndPopup();
+        }
+        SameLine();
+    }
+}
+

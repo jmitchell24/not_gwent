@@ -65,6 +65,16 @@ namespace ImGui
         return false;
     }
 
+    inline bool ColorEdit3(char const* label, ut::color& col, ImGuiColorEditFlags flags = 0)
+    {
+        if (auto v = col.toNormal().toVec4(); ColorEdit3(label, v.pack, flags))
+        {
+            col = ut::color{ut::color::normal{v}};
+            return true;
+        }
+        return false;
+    }
+
     //
     // Extra Buttons
     //

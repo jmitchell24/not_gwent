@@ -229,26 +229,26 @@ namespace box_props
 
     SAVE_FUNC(type, em, box)
     {
-        em << Key << "type" << Value << box_to_string(box->type);
+        em << Key << "type" << Value << box_to_string(box->flex.type);
     }
 
     LOAD_FUNC(type, n, box)
     {
         if (BoxType t; string_to_box(n["type"].as<string>(), t))
-            box->type = t;
+            box->flex.type = t;
         else
             throw Exception(n.Mark(), "invalid box type");
     }
 
     SAVE_FUNC(weight, em, box)
     {
-        if (box->weight != 1)
-            em << Key << "weight" << Value << box->weight;
+        if (box->flex.weight != 1)
+            em << Key << "weight" << Value << box->flex.weight;
     }
 
     LOAD_FUNC(weight, n, box)
     {
-        box->weight = n["weight"].as<int>(1);
+        box->flex.weight = n["weight"].as<int>(1);
     }
 
     SAVE_FUNC(name, em, box)

@@ -5,10 +5,12 @@
 #pragma once
 
 #include "ledit/ledit_sizer.hpp"
+#include "ledit/ledit_flex.hpp"
 #include "ledit/ledit_box_visitor.hpp"
 
 namespace ledit
 {
+
     class Box : public std::enable_shared_from_this<Box>
     {
     public:
@@ -22,13 +24,12 @@ namespace ledit
             box_ptr box;
         };
 
+        Flex            flex;
+
         box_ptr         parent;
         boxlist_t       child_boxes;
 
-        BoxType         type        = BOX_HBOX;
-        bool            highlighted = false;
-        ut::color       color       = nextColor();
-        int             weight      = 1;
+
 
         ut::rect        bounds_inner;
         ut::rect        bounds_outer;
@@ -36,7 +37,6 @@ namespace ledit
         std::string     name;
 
         Sizer           sizer;
-        float           inner_pad=10;
 
 
 
@@ -78,6 +78,10 @@ namespace ledit
         static box_ptr createRoot(Sizer const& sizer);
 
     private:
+
+        bool            highlighted = false;
+        ut::color       color       = nextColor();
+
         std::optional<ChildAction> m_child_action;
 
         explicit Box(box_ptr p);
@@ -109,9 +113,9 @@ namespace ledit
         {
             assert(!child_boxes.empty());
 
-            auto r = child_boxes[0]->weight;
+            auto r = child_boxes[0]->flex.weight;
             for (size_t i = 1; i < child_boxes.size(); ++i)
-                r = reducer(r, child_boxes[i]->weight);
+                r = reducer(r, child_boxes[i]->flex.weight);
             return r;
         }
 

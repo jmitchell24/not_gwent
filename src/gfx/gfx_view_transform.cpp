@@ -15,9 +15,9 @@ using namespace ut;
 //
 using namespace std;
 
-vec2 ViewTransform::realPoint(vec2 const& p) const { return translate_inverse.transformPoint(p); }
+vec2 ViewTransform::realPoint(vec2 const& p) const { return translate.transformPoint(p); }
 rect ViewTransform::realRect (rect const& r) const { return { realPoint(r.min), realPoint(r.max) }; }
-vec2 ViewTransform::viewPoint(vec2 const& p) const { return translate.transformPoint(p); }
+vec2 ViewTransform::viewPoint(vec2 const& p) const { return translate_inverse.transformPoint(p); }
 rect ViewTransform::viewRect (rect const& r) const { return { viewPoint(r.min), viewPoint(r.max) }; }
 
 ViewTransform ViewTransform::create(rect const& viewport, float width, float height)

@@ -21,20 +21,20 @@ using namespace std;
 // BoxVisitor -> Implementation
 //
 
-rect BoxVisitor::getRect(rect const& r) const
+rect BoxVisitor::getRealRect(rect const& r) const
 {
     if (view_transform)
     {
-        return view_transform->viewRect(r);
+        return view_transform->realRect(r);
     }
     return r;
 }
 
-vec2 BoxVisitor::getMousePos(vec2 const& p) const
+vec2 BoxVisitor::getViewPoint(vec2 const& p) const
 {
     if (view_transform)
     {
-        return view_transform->realPoint(p);
+        return view_transform->viewPoint(p);
     }
     return p;
 }

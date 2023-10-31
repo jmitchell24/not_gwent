@@ -42,8 +42,10 @@ namespace ledit
 
     struct OverlayOptions
     {
-        ut::color   background {15 ,15 ,15 ,240};
-        ut::color   border     {110,110,128,128};
+        static constexpr ut::color DEFAULT_BACKGROUND   {15 ,15 ,15 ,240};
+        static constexpr ut::color DEFAULT_BORDER       {110,110,128,128};
 
+        ut::color   background =DEFAULT_BACKGROUND;
+        ut::color   border     =DEFAULT_BORDER;
     };
 }

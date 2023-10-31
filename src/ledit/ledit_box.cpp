@@ -10,7 +10,6 @@ using namespace ledit;
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
-#include "rlImGui/ed/TextEditor.h"
 
 //
 // ut
@@ -51,7 +50,7 @@ void drawOverlayOutline(rect const &rect, color const &c, float thickness)
     dl->Flags = prev_flags;
 }
 
-void drawOverlayPadding(rect const &outer, rect const &inner, color const &c)
+void drawOverlayPadding(rect const &outer, rect const& inner, color const& c)
 {
     using namespace ImGui;
 
@@ -117,7 +116,7 @@ string Box::getLbl()
 {
     if (name.empty())
     {
-        switch (type)
+        switch (flex.type)
         {
             case BOX_VBOX:
                 return PRINTER("[vbox %zu]", child_boxes.size()).str();
@@ -247,22 +246,13 @@ void Box::drawProperties(BoxVisitor& v)
 
     Separator();
 
+    Text("Flex");
+
+    flex.drawProperties();
+
+    Separator();
+
     Text("Container");
-
-    if (ButtonDefault("weight", weight != 1))
-    { weight = 1; }
-    if (int w = weight; InputInt("weight", &w, 1))
-    {
-        if (w > 0) weight = w;
-    }
-
-    if (ButtonDefault("type", type != BOX_SBOX))
-    { type = BOX_SBOX; }
-    if (BeginCombo("Type", box_to_string(type)))
-    {
-        EXPAND_BOXTYPE(CASE_SELECTABLE)
-        EndCombo();
-    }
 
     if (ButtonDefault("child_boxes", !child_boxes.empty()))
     { child_boxes.clear(); }
@@ -405,32 +395,7 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
             SameLine();
         }
 
-        if (v.edit_opts.show_row_weight)
-        {
-            Text("%d", weight);
-            SameLine();
-
-            if (SmallButton("+"))
-                weight++;
-            SameLine();
-
-            if (SmallButtonEnabled("-", weight > 1))
-                weight--;
-            SameLine();
-        }
-
-        if (v.edit_opts.show_row_type)
-        {
-            if (SmallButton("t"))
-                OpenPopup("show-row-type");
-
-            if (BeginPopup("show-row-type"))
-            {
-                EXPAND_BOXTYPE(CASE_SELECTABLE)
-                EndPopup();
-            }
-            SameLine();
-        }
+        flex.drawRowControls(v.edit_opts);
     }
 
     PopID();
@@ -442,8 +407,8 @@ void Box::drawOverlaySelectedBelow(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    auto i = v.getRect(bounds_inner);
-    auto o = v.getRect(bounds_outer);
+    auto i = v.getRealRect(bounds_inner);
+    auto o = v.getRealRect(bounds_outer);
     drawOverlayPadding(i, o, color.withNormalA(.25f));
 }
 
@@ -451,8 +416,9 @@ void Box::drawOverlaySelectedAbove(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    auto o = v.getRect(bounds_outer);
-    drawOverlayOutline(o, color, 3.0f);
+    auto o = v.getRealRect(bounds_outer);
+    auto c = color;
+    drawOverlayOutline(o, c, 3.0f);
 }
 
 void Box::drawOverlayOutlines(BoxVisitor& v)
@@ -461,8 +427,9 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
 
     if (ptr() != v.selected_box)
     {
-        auto o = v.getRect(bounds_outer);
-        drawOverlayOutline(o, v.overlay_opts.border, 1.0f);
+        auto o = v.getRealRect(bounds_outer);
+        auto c = v.overlay_opts.border;
+        drawOverlayOutline(o, c, 1.0f);
     }
 
     for (auto &&it: child_boxes)
@@ -474,7 +441,7 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
 void Box::reset()
 {
     name = "";
-    weight = 1;
+    flex.reset();
     sizer.reset();
     child_boxes.clear();
 }
@@ -489,7 +456,7 @@ void Box::layout(rect const& p)
     if (child_boxes.empty())
         return;
 
-    switch (type)
+    switch (flex.type)
     {
         case BOX_VBOX:
             layoutVbox(bounds_inner);
@@ -507,24 +474,24 @@ void Box::layout(rect const& p)
 
 void Box::layoutVbox(rect const& b)
 {
-    auto sz = child_boxes.size();
-    auto h = b.height() - (inner_pad * float(sz - 1));
-    auto sum = weightsSum();
-    auto cl = b.min.x;
-    auto cr = b.max.x;
+    auto sz     = child_boxes.size();
+    auto h      = b.height() - (flex.inner_pad * float(sz - 1));
+    auto sum    = weightsSum();
+    auto cl     = b.min.x;
+    auto cr     = b.max.x;
 
     auto cy = b.min.y;
 
     for (size_t i = 0; i < sz - 1; ++i)
     {
         auto &&it = child_boxes[i];
-        auto ch = h * (float(it->weight) / sum);
+        auto ch = h * (float(it->flex.weight) / sum);
         auto ct = cy;
         auto cb = cy + ch;
 
         it->layout({cl, ct, cr, cb});
 
-        cy = cb + inner_pad;
+        cy = cb + flex.inner_pad;
     }
 
     child_boxes.back()->layout({cl, cy, cr, b.max.y});
@@ -532,24 +499,24 @@ void Box::layoutVbox(rect const& b)
 
 void Box::layoutHbox(rect const& b)
 {
-    auto sz = child_boxes.size();
-    auto w = b.width() - (inner_pad * float(sz - 1));
-    auto sum = weightsSum();
-    auto ct = b.min.y;
-    auto cb = b.max.y;
+    auto sz     = child_boxes.size();
+    auto w      = b.width() - (flex.inner_pad * float(sz - 1));
+    auto sum    = weightsSum();
+    auto ct     = b.min.y;
+    auto cb     = b.max.y;
 
     auto cx = b.min.x;
 
     for (size_t i = 0; i < sz - 1; ++i)
     {
         auto &&it = child_boxes[i];
-        auto cw = w * (float(it->weight) / sum);
+        auto cw = w * (float(it->flex.weight) / sum);
         auto cl = cx;
         auto cr = cx + cw;
 
         it->layout({cl, ct, cr, cb});
 
-        cx = cr + inner_pad;
+        cx = cr + flex.inner_pad;
     }
 
     child_boxes.back()->layout({cx, ct, b.max.x, cb});

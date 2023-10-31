@@ -65,7 +65,7 @@ bool BoxEditor::draw()
 
     if (!GetIO().WantCaptureMouse)
     {
-        auto mp = BoxVisitor::getMousePos(GetMousePos());
+        auto mp = BoxVisitor::getViewPoint(GetMousePos());
         if (IsMouseClicked(ImGuiMouseButton_Left))
         {
             if (auto box = m_root_box->tryGetBox(mp))
@@ -124,10 +124,11 @@ void BoxEditor::drawOverlay()
     m_root_box->layout(rect{});
 
     {
-        auto rr = BoxVisitor::getRect(m_root_box->bounds_outer).round();
+        auto rr = BoxVisitor::getRealRect(m_root_box->bounds_outer).round();
         auto dl = GetBackgroundDrawList();
+        auto bg = ToU32(overlay_opts.background);
 
-        dl->AddRectFilled(rr.min, rr.max, ToU32(overlay_opts.background));
+        dl->AddRectFilled(rr.min, rr.max, bg);
     }
 
     if (selected_box)
@@ -212,10 +213,30 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 
     Text("View Options");
 
-    ColorEdit4("Background", opts.background);
-    ColorEdit4("Border", opts.border);
+    if (ButtonDefault("bg_opacity", opts.background.a != OverlayOptions::DEFAULT_BACKGROUND.a))
+    { opts.background.a = OverlayOptions::DEFAULT_BACKGROUND.a; }
+
+    if (int o = int( float(opts.background.a) / 255.0f * 100.0f); SliderInt("Opacity (BG)", &o, 0, 100, "%d%%"))
+        opts.background.a = b8( float(o) / 100.0f * 255 );
+
+    if (ButtonDefault("background", opts.background != OverlayOptions::DEFAULT_BACKGROUND))
+    { opts.background = OverlayOptions::DEFAULT_BACKGROUND; }
+
+    ColorEdit3("Background", opts.background);
 
 
+    Dummy(GetItemRectSize());
+
+    if (ButtonDefault("bd_opacity", opts.border.a != OverlayOptions::DEFAULT_BORDER.a))
+    { opts.border.a = OverlayOptions::DEFAULT_BORDER.a; }
+
+    if (int o = int( float(opts.border.a) / 255.0f * 100.0f); SliderInt("Opacity (BD)", &o, 0, 100, "%d%%"))
+        opts.border.a = b8( float(o) / 100.0f * 255 );
+
+    if (ButtonDefault("border", opts.border != OverlayOptions::DEFAULT_BORDER))
+    { opts.border = OverlayOptions::DEFAULT_BORDER; }
+
+    ColorEdit3("Border", opts.border);
 }
 
 void BoxEditor::drawMainWindowFileOptions()
@@ -351,32 +372,3 @@ void BoxEditor::saveFile(ut::cstrparam filename)
     }
 }
 
-//void BoxEditor::drawWindowYamlOutput()
-//{
-//    using namespace ImGui;
-//
-//    static TextEditor ted;
-//
-//    if (Begin("Yaml Output###yaml_hierarchy"))
-//    {
-//        ted.SetReadOnly(true);
-//        ted.SetText(m_root_box->toYamlString());
-//        ted.Render("YAML Output");
-//    }
-//    End();
-//}
-//
-//void BoxEditor::drawWindowCPPOutput()
-//{
-//    using namespace ImGui;
-//
-//    static TextEditor ted;
-//
-//    if (Begin("CPP Output###cpp_hierarchy"))
-//    {
-//        ted.SetReadOnly(true);
-//        ted.SetText(root_box->toCPPString());
-//        ted.Render("CPP Output");
-//    }
-//    End();
-//}

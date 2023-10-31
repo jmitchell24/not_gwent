@@ -22,8 +22,8 @@ namespace ledit
 
         std::optional<gfx::ViewTransform> view_transform;
 
-        ut::rect getRect(ut::rect const& p) const;
-        ut::vec2 getMousePos(ut::vec2 const& p) const;
+        ut::rect getRealRect(ut::rect const& r) const;
+        ut::vec2 getViewPoint(ut::vec2 const& p) const;
 
 
         box_ptr     getBox      (ut::cstrparam s);
