@@ -17,8 +17,8 @@ namespace ledit
 
         void reset();
 
-        void drawProperties();
-        void drawRowControls(BoxEditOptions const& opts);
+        bool drawProperties();
+        bool drawRowControls(BoxEditOptions const& opts);
 
 
     private:

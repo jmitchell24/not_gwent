@@ -2,7 +2,7 @@
 // Created by james on 9/11/23.
 //
 
-#include "game/layout/board_layout.hpp"
+#include  "game/layout/board_layout.hpp"
 #include "game/layout/card_layout.hpp"
 using namespace game::layout;
 
@@ -10,6 +10,10 @@ using namespace game::layout;
 
 #include "gfx/gfx_drect.hpp"
 
+//
+// ledit
+//
+#include "ledit/ledit_editor.hpp"
 
 //
 // ut
@@ -24,6 +28,8 @@ using namespace std;
 size_t constexpr static VIRT_WIDTH      = 720;
 size_t constexpr static VIRT_HEIGHT     = 1280;
 size_t constexpr static VIRT_PAD        = 10;
+
+static ledit::BoxEditor BOX_EDITOR {"GameBoard"};
 
 //
 // CombatRow
@@ -103,7 +109,7 @@ void StatsBoard::layout(rect const& b)
 {
     bounds = b;
 
-#define CELL(x_, y_, w_, h_) ( bounds.cell(10,10, x_,y_,  { .w=w_, .h=h_, .inner_pad=5, .outer_pad=5}) )
+#define CELL(x_, y_, w_, h_) ( bounds.cell(10,10, x_,y_,  { .w=(w_), .h=h_, .inner_pad=5, .outer_pad=5}) )
     name                = CELL(0,0, 6,2);
     deck_name           = CELL(0,2, 6,1);
     lead_name           = CELL(0,3, 6,1);
@@ -111,6 +117,9 @@ void StatsBoard::layout(rect const& b)
     gems                = CELL(6,0, 4,5);
     score               = CELL(6,5, 4,5);
 #undef CELL
+
+
+
 }
 
 void StatsBoard::drawDebug()
@@ -156,10 +165,16 @@ void GameBoard::layout(rect const& b)
     usr.stats .layout(b_stats_usr);
 
     //card_size = CardLayout::sizeFromHeight(usr.player.bounds.height());
+
+    BOX_EDITOR.setRoot(b);
 }
+
+
 
 void GameBoard::drawDebug()
 {
+
+
     DRECT_PUSH2(GameBoard,bounds);
 
     DRECT_PUSH2(cpu, cpu.bounds);
@@ -180,6 +195,13 @@ void GameBoard::drawDebug()
     cpu.stats .drawDebug();
     usr.stats .drawDebug();
     DRECT_POP();
+
+    BOX_EDITOR.view_transform = gfx::DRECT.view_transform;
+    if (BOX_EDITOR.draw())
+    {
+        if (auto box = BOX_EDITOR.getRect("test"))
+            usr.stats.avatar = *box;
+    }
 }
 
 

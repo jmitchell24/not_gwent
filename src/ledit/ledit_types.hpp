@@ -31,6 +31,8 @@ namespace ledit
 
     struct BoxEditOptions
     {
+        static constexpr ut::cstrview SELECTED_BOX_POPUP_LBL = "selected_box_popup";
+
         bool show_row_select    = true;
         bool show_row_add       = false;
         bool show_row_delete    = false;
@@ -38,6 +40,8 @@ namespace ledit
         bool show_row_rename    = false;
         bool show_row_weight    = false;
         bool show_row_type      = false;
+
+        bool is_properties_window_open = false;
     };
 
     struct OverlayOptions

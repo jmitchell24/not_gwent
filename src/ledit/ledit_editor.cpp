@@ -33,13 +33,13 @@ using namespace std;
 //
 
 BoxEditor::BoxEditor(ut::cstrparam name)
-    : m_name{name.str()}, m_root_box{}, m_properties_window_open{false}
+    : m_name{name.str()}
 { }
 
 void BoxEditor::setRoot(rect const& bounds)
 {
-    m_root_box   = Box::createRoot(bounds);
-    selected_box = nullptr;
+    root_box        = Box::createRoot(bounds);
+    selected_box    = nullptr;
 }
 
 rectget_t BoxEditor::getRect(ut::cstrparam s)
@@ -53,94 +53,15 @@ bool BoxEditor::draw()
 {
     using namespace ImGui;
 
-    PushID(m_name.c_str());
-
-    if (!m_root_box)
+    if (!Box::isRoot(root_box))
         return false;
 
-    m_root_box->applyChildActions();
-
-    drawOverlay();
+    PushID(m_name.c_str());
+    Box::drawOverlay(*this);
     drawMainWindow();
-
-    if (!GetIO().WantCaptureMouse)
-    {
-        auto mp = BoxVisitor::getViewPoint(GetMousePos());
-        if (IsMouseClicked(ImGuiMouseButton_Left))
-        {
-            if (auto box = m_root_box->tryGetBox(mp))
-            {
-                selected_box = box;
-            }
-            else
-            {
-                selected_box = nullptr;
-                m_properties_window_open=false;
-            }
-        }
-
-        if (IsMouseClicked(ImGuiMouseButton_Middle))
-        {
-            if (auto parent = selected_box->parent)
-                selected_box = parent;
-        }
-
-        if (IsMouseClicked(ImGuiMouseButton_Right))
-        {
-            if (auto box = m_root_box->tryGetBox(mp))
-            {
-                selected_box = box;
-                m_properties_window_open=true;
-
-                SetNextWindowPos(GetMousePos());
-            }
-            else
-            {
-                selected_box = nullptr;
-                m_properties_window_open=false;
-            }
-        }
-    }
-
-    if (selected_box && m_properties_window_open)
-    {
-        auto window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking;
-        if (Begin("selected_box_popup", &m_properties_window_open, window_flags))
-        {
-            selected_box->drawProperties(*this);
-        }
-        End();
-    }
-
     PopID();
 
     return true;
-}
-
-void BoxEditor::drawOverlay()
-{
-    using namespace ImGui;
-
-    m_root_box->layout(rect{});
-
-    {
-        auto rr = BoxVisitor::getRealRect(m_root_box->bounds_outer).round();
-        auto dl = GetBackgroundDrawList();
-        auto bg = ToU32(overlay_opts.background);
-
-        dl->AddRectFilled(rr.min, rr.max, bg);
-    }
-
-    if (selected_box)
-    {
-        selected_box->drawOverlaySelectedBelow(*this);
-        m_root_box->drawOverlayOutlines(*this);
-        selected_box->drawOverlaySelectedAbove(*this);
-    }
-    else
-    {
-        m_root_box->drawOverlayOutlines(*this);
-    }
 }
 
 void BoxEditor::drawMainWindow()
@@ -161,25 +82,11 @@ void BoxEditor::drawMainWindow()
                 Separator();
                 drawMainWindowFileOptions();
                 Separator();
-                drawMainWindowBoxHierarchy();
+                Box::drawBoxHierarchy(*this);
                 EndTabItem();
             }
 
-            if (selected_box)
-            {
-                if (BeginTabItem("Box Properties"))
-                {
-                    selected_box->drawProperties(*this);
-                    EndTabItem();
-                }
-            }
-            else
-            {
-                PushItemDisabled();
-                if (BeginTabItem("Box Properties"))
-                    EndTabItem();
-                PopItemDisabled();
-            }
+            Box::drawPropertiesTab(*this);
             EndTabBar();
         }
     }
@@ -329,44 +236,20 @@ void BoxEditor::drawMainWindowFileOptions()
     }
 }
 
-void BoxEditor::drawMainWindowBoxHierarchy()
-{
-    using namespace ImGui;
-
-    ImGuiTableFlags table_flags =
-            ImGuiTableFlags_BordersV |
-            ImGuiTableFlags_BordersOuterH |
-            ImGuiTableFlags_Resizable |
-            ImGuiTableFlags_RowBg |
-            ImGuiTableFlags_NoBordersInBody;
-
-    Text("Box Hierarchy");
-    if (BeginTable("grids", 2, table_flags))
-    {
-        TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
-        TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthFixed);
-        TableHeadersRow();
-
-        m_root_box->drawTreeTableRow(*this);
-
-        EndTable();
-    }
-}
-
 void BoxEditor::loadFile(ut::cstrparam filename)
 {
-    box_ptr new_root = Box::createRoot(m_root_box->sizer);
+    box_ptr new_root = Box::createRoot(root_box->sizer);
     if (new_root->loadYaml(filename))
     {
         m_current_file = filename;
-        m_root_box = new_root;
-        selected_box = m_root_box;
+        root_box = new_root;
+        selected_box = root_box;
     }
 }
 
 void BoxEditor::saveFile(ut::cstrparam filename)
 {
-    if (m_root_box->saveYaml(filename))
+    if (root_box->saveYaml(filename))
     {
         m_current_file = filename;
     }

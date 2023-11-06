@@ -31,29 +31,39 @@ void Flex::reset()
     inner_pad   = 10;
 }
 
-void Flex::drawProperties()
+#define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { mark|=true; type = x_; }
+
+bool Flex::drawProperties()
 {
     using namespace ImGui;
 
+    bool mark = false;
+
     if (ButtonDefault("weight", weight != 1))
-    { weight = 1; }
+    { mark|=true; weight = 1; }
+
     if (int w = weight; InputInt("weight", &w, 1))
     {
-        if (w > 0) weight = w;
+        if (w > 0) { mark|=true; weight = w; }
     }
 
     if (ButtonDefault("type", type != BOX_HBOX))
-    { type = BOX_HBOX; }
+    { mark|=true; type = BOX_HBOX; }
+
     if (BeginCombo("Type", box_to_string(type)))
     {
         EXPAND_BOXTYPE(CASE_SELECTABLE)
         EndCombo();
     }
+
+    return mark;
 }
 
-void Flex::drawRowControls(BoxEditOptions const& edit_opts)
+bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
 {
     using namespace ImGui;
+
+    bool mark = false;
 
     if (edit_opts.show_row_weight)
     {
@@ -81,5 +91,8 @@ void Flex::drawRowControls(BoxEditOptions const& edit_opts)
         }
         SameLine();
     }
+
+    return mark;
 }
 
+#undef CASE_SELECTABLE

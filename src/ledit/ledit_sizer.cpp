@@ -47,7 +47,8 @@ void Sizer::drawProperties()
     // Padding
     //
 
-    if (ButtonDefault("pad", pad.index()>0)) pad = monostate{};
+    if (ButtonDefault("pad", pad.index()>0))
+    { pad = monostate{}; }
 
     BeginGroup();
     switch (padType())
@@ -55,9 +56,9 @@ void Sizer::drawProperties()
         case PAD_NONE:
             if (BeginCombo("pad", "..."))
             {
-                if (Selectable("pad"     )) setPad1({});
-                if (Selectable("pad hv"  )) setPad2({});
-                if (Selectable("pad ltrb")) setPad4({});
+                if (Selectable("pad"     )) { setPad1({}); }
+                if (Selectable("pad hv"  )) { setPad2({}); }
+                if (Selectable("pad ltrb")) { setPad4({}); }
                 EndCombo();
             }
             break;
@@ -84,7 +85,8 @@ void Sizer::drawProperties()
     // Scale
     //
 
-    if (ButtonDefault("dim", dim.index()>0)) dim = monostate{};
+    if (ButtonDefault("dim", dim.index()>0))
+    { dim = monostate{}; }
 
     BeginGroup();
     switch (dimType())
@@ -92,9 +94,9 @@ void Sizer::drawProperties()
         case DIM_NONE:
             if (BeginCombo("dim", "..."))
             {
-                if (Selectable("aspect" )) setDimAspect(1);
-                if (Selectable("percent")) setDimPercent({1,1});
-                if (Selectable("units"  )) setDimUnits({100,100});
+                if (Selectable("aspect" )) { setDimAspect (1);              }
+                if (Selectable("percent")) { setDimPercent({1,1});          }
+                if (Selectable("units"  )) { setDimUnits  ({100,100});      }
                 EndCombo();
             }
             break;
@@ -119,7 +121,8 @@ void Sizer::drawProperties()
     // Position
     //
 
-    if (ButtonDefault("pos", pos.index()>0)) pos = monostate{};
+    if (ButtonDefault("pos", pos.index()>0))
+    { pos = monostate{}; }
 
     BeginGroup();
     switch (posType())
@@ -127,9 +130,9 @@ void Sizer::drawProperties()
         case POS_NONE:
             if (BeginCombo("pos", "..."))
             {
-                if (Selectable("anchor" )) setPosAnchor(ANCHOR_CC);
-                if (Selectable("percent")) setPosPercent({});
-                if (Selectable("units"  )) setPosUnits({});
+                if (Selectable("anchor" )) { setPosAnchor(ANCHOR_CC);   }
+                if (Selectable("percent")) { setPosPercent({});         }
+                if (Selectable("units"  )) { setPosUnits({});           }
                 EndCombo();
             }
             break;
@@ -143,9 +146,7 @@ void Sizer::drawProperties()
         PopStyleColor(); \
     }  \
     else if (Button((lbl_))) \
-    { \
-        getPosAnchor() = (anchor_); \
-    }
+    { getPosAnchor() = (anchor_); }
 
         ANCHOR_BUTTON("TL", ANCHOR_TL) SameLine();
         ANCHOR_BUTTON("TC", ANCHOR_TC) SameLine();
@@ -231,19 +232,20 @@ rect Sizer::getPos(rect b, vec2 sz) const
     return b.withSize(sz);
 }
 
-rect Sizer::getOuter(rect const& parent) const
+//rect Sizer::getOuter(rect const& parent) const
+//{
+//    auto sz = getDim(parent);
+//    return getPos(parent, sz);
+//}
+//
+//rect Sizer::getInner(rect const& parent) const
+//{
+//    return getPad(getOuter(parent));
+//}
+
+void Sizer::getInnerOuter(rect const& parent, rect& inner, rect& outer) const
 {
     auto sz = getDim(parent);
-    return getPos(parent, sz);
-}
-
-rect Sizer::getInner(rect const& parent) const
-{
-    return getPad(getOuter(parent));
-}
-
-Sizer::Rects Sizer::getRects(rect const& parent) const
-{
-    auto outer = getOuter(parent);
-    return { getPad(outer), outer };
+    outer   = getPos(parent, sz);
+    inner   = getPad(outer);
 }

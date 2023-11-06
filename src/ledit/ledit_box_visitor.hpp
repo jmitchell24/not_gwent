@@ -18,6 +18,8 @@ namespace ledit
     public:
         BoxEditOptions      edit_opts;
         OverlayOptions      overlay_opts;
+
+        box_ptr             root_box;
         box_ptr             selected_box;
 
         std::optional<gfx::ViewTransform> view_transform;

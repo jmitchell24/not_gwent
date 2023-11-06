@@ -71,10 +71,9 @@ namespace ledit
         ut::vec2 getDim  (ut::rect parent) const;
         ut::rect getPos  (ut::rect parent, ut::vec2 sz) const;
 
-        ut::rect getInner(ut::rect const& parent) const;
-        ut::rect getOuter(ut::rect const& parent) const;
+//        ut::rect getInner(ut::rect const& parent) const;
+//        ut::rect getOuter(ut::rect const& parent) const;
 
-        struct Rects { ut::rect pad, content; };
-        Rects getRects(ut::rect const& parent) const;
+        void getInnerOuter(ut::rect const& parent, ut::rect& inner, ut::rect& outer) const;
     };
 }

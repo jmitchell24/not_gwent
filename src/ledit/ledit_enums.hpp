@@ -25,7 +25,7 @@
 #define CASE_ENUM(x_) x_,
 #define CASE_ENUM_TO_STRING(x_) case x_: return #x_##_sv;
 #define CASE_STRING_TO_ENUM(x_) if (s == #x_##_sv) { x = x_; return true; }
-#define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { type = x_; }
+
 
 namespace ledit
 {

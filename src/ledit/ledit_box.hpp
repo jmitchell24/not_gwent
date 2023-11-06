@@ -10,7 +10,6 @@
 
 namespace ledit
 {
-
     class Box : public std::enable_shared_from_this<Box>
     {
     public:
@@ -18,35 +17,29 @@ namespace ledit
         {
             enum Type
             {
-                REMOVE, MOVE_INC, MOVE_DEC
+                REMOVE, MOVE_INC, MOVE_DEC, DUPLICATE
             } type;
 
             box_ptr box;
         };
 
+        std::string     name;
         Flex            flex;
-
-        box_ptr         parent;
-        boxlist_t       child_boxes;
-
-
+        Sizer           sizer;
 
         ut::rect        bounds_inner;
         ut::rect        bounds_outer;
 
-        std::string     name;
+        box_ptr         parent;
+        boxlist_t       child_boxes;
 
-        Sizer           sizer;
-
-
-
-
-        static box_ptr create(box_ptr const& parent);
+        inline bool marked() const
+        { return m_mark; }
 
         box_ptr  ptr();
         box_cptr ptr() const;
 
-        box_ptr  deepCopy() const;
+        box_ptr  deepCopy(box_ptr const& parent);
 
         box_ptr tryGetBox(ut::vec2 const& mp);
 
@@ -54,8 +47,72 @@ namespace ledit
 
         void reset();
 
-        void layout(ut::rect const& b);
 
+
+
+
+
+
+        std::string toYamlString();
+        std::string toCPPString();
+
+        bool loadYaml(ut::cstrparam filename);
+        bool saveYaml(ut::cstrparam filename);
+
+        static bool isRoot(box_ptr const& box)
+        { return box && box->parent == nullptr; }
+
+        static box_ptr create       (box_ptr const& parent);
+        static box_ptr createRoot   (ut::rect const& bounds);
+        static box_ptr createRoot   (Sizer const& sizer);
+
+        static void drawBoxHierarchy    (BoxVisitor& v);
+        static void drawPropertiesTab   (BoxVisitor& v);
+        static bool drawOverlay         (BoxVisitor& v);
+
+
+
+    private:
+        ut::color m_color;
+        bool m_mark;
+
+        std::optional<ChildAction> m_child_action;
+
+        explicit Box(box_ptr p);
+
+        void setMark(bool m)
+        {
+            m_mark = m;
+            for (auto&& it: child_boxes)
+                it->setMark(m);
+        }
+
+        //
+        // layout
+        //
+
+        void layout    (ut::rect const& b);
+        void layoutVbox(ut::rect const& b);
+        void layoutHbox(ut::rect const& b);
+        void layoutSbox(ut::rect const& b);
+
+        //
+        // child action
+        //
+
+        void actionDelete       (BoxVisitor& v);
+        void actionClone        (BoxVisitor& v);
+        void actionMoveInc      (BoxVisitor& v);
+        void actionMoveDec      (BoxVisitor& v);
+        void actionCreateChild  (BoxVisitor& v);
+
+        void applyChildActions();
+        void setChildAction(ChildAction const& child_action);
+
+
+        //
+        // draw
+        //
 
         void drawProperties  (BoxVisitor& v);
         void drawTreeTableRow(BoxVisitor& v);
@@ -65,30 +122,9 @@ namespace ledit
         void drawOverlaySelectedAbove(BoxVisitor& v);
         void drawOverlaySelectedBelow(BoxVisitor& v);
 
-        void applyChildActions();
-        void setChildAction(ChildAction const& child_action);
-
-        std::string toYamlString();
-        std::string toCPPString();
-
-        bool loadYaml(ut::cstrparam filename);
-        bool saveYaml(ut::cstrparam filename);
-
-        static box_ptr createRoot(ut::rect const& bounds);
-        static box_ptr createRoot(Sizer const& sizer);
-
-    private:
-
-        bool            highlighted = false;
-        ut::color       color       = nextColor();
-
-        std::optional<ChildAction> m_child_action;
-
-        explicit Box(box_ptr p);
-
-        void layoutVbox(ut::rect const& b);
-        void layoutHbox(ut::rect const& b);
-        void layoutSbox(ut::rect const& b);
+        //
+        // helpers
+        //
 
         inline float weightsSum() const
         {

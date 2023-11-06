@@ -85,7 +85,7 @@ void DebugRectOverlayManager::drawDebug()
     {
         auto c = it.color.withNormalA(it.highlighted ? 0.5f : 0.0f);
         auto f = it.highlighted ? m_im_style : ImGuiDRECTStyle_NoText;
-        auto r = view_transform ? view_transform->viewRect(it.bound) : it.bound;
+        auto r = view_transform ? view_transform->realRect(it.bound) : it.bound;
         DrawDRECT(it.text, r, c, f);
     }
 

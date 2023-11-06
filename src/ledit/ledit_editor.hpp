@@ -30,16 +30,12 @@ namespace ledit
         filetext_type       m_new_file;
         std::string         m_current_file;
         filelist_type       m_layout_files;
-        box_ptr             m_root_box;
-        bool                m_properties_window_open;
 
-        void drawOverlay();
         void drawMainWindow();
 
         void drawMainWindowBoxEditOptions(BoxEditOptions& opts);
         void drawMainWindowOverlayOptions(OverlayOptions& opts);
         void drawMainWindowFileOptions();
-        void drawMainWindowBoxHierarchy();
 
         void loadFile(ut::cstrparam filename);
         void saveFile(ut::cstrparam filename);
