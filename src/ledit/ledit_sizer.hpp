@@ -65,14 +65,11 @@ namespace ledit
         EXPAND_POS(VAR_FUNC)
 
         void reset();
-        void drawProperties();
+        bool drawProperties();
 
         ut::rect getPad  (ut::rect parent) const;
         ut::vec2 getDim  (ut::rect parent) const;
         ut::rect getPos  (ut::rect parent, ut::vec2 sz) const;
-
-//        ut::rect getInner(ut::rect const& parent) const;
-//        ut::rect getOuter(ut::rect const& parent) const;
 
         void getInnerOuter(ut::rect const& parent, ut::rect& inner, ut::rect& outer) const;
     };

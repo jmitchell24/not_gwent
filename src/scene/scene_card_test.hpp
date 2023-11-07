@@ -87,16 +87,20 @@ public:
             if (auto box = editor.getRect("strength"))
             {
                 r_strength = *box;
+                TraceLog(LOG_INFO, "getRect 'strength'");
             }
 
             if (auto box = editor.getRect("ability"))
             {
                 r_ability = *box;
+                TraceLog(LOG_INFO, "getRect 'ability'");
             }
 
             if (auto box = editor.getRect("row"))
             {
                 r_row = *box;
+                TraceLog(LOG_INFO, "getRect 'row'");
+
             }
         }
     }

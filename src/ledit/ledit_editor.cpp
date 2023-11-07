@@ -45,7 +45,13 @@ void BoxEditor::setRoot(rect const& bounds)
 rectget_t BoxEditor::getRect(ut::cstrparam s)
 {
     if (auto box = getBox(s))
-        return {box->bounds_inner};
+    {
+        if (box->getChanged())
+        {
+            box->setChanged(false);
+            return {box->bounds_inner};
+        }
+    }
     return {};
 }
 

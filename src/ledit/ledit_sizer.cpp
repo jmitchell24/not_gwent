@@ -39,16 +39,18 @@ void Sizer::reset()
     pos = monostate{};
 }
 
-void Sizer::drawProperties()
+bool Sizer::drawProperties()
 {
     using namespace ImGui;
+
+    bool changed=false;
 
     //
     // Padding
     //
 
     if (ButtonDefault("pad", pad.index()>0))
-    { pad = monostate{}; }
+    { changed=true; pad = monostate{}; }
 
     BeginGroup();
     switch (padType())
@@ -56,27 +58,27 @@ void Sizer::drawProperties()
         case PAD_NONE:
             if (BeginCombo("pad", "..."))
             {
-                if (Selectable("pad"     )) { setPad1({}); }
-                if (Selectable("pad hv"  )) { setPad2({}); }
-                if (Selectable("pad ltrb")) { setPad4({}); }
+                if (Selectable("pad"     )) { changed=true; setPad1({}); }
+                if (Selectable("pad hv"  )) { changed=true; setPad2({}); }
+                if (Selectable("pad ltrb")) { changed=true; setPad4({}); }
                 EndCombo();
             }
             break;
 
         case PAD_ONE:
-            DragFloat("pad", &getPad1(), 1,0,FLT_MAX);
+            changed|=DragFloat("pad", &getPad1(), 1,0,FLT_MAX);
             break;
 
         case PAD_TWO:
-            DragFloat("horz", &getPad2().x, 1,0,FLT_MAX);
-            DragFloat("vert", &getPad2().y, 1,0,FLT_MAX);
+            changed|=DragFloat("horz", &getPad2().x, 1,0,FLT_MAX);
+            changed|=DragFloat("vert", &getPad2().y, 1,0,FLT_MAX);
             break;
 
         case PAD_FOUR:
-            DragFloat("left"  , &getPad4().x, 1,0,FLT_MAX);
-            DragFloat("top"   , &getPad4().y, 1,0,FLT_MAX);
-            DragFloat("right" , &getPad4().z, 1,0,FLT_MAX);
-            DragFloat("bottom", &getPad4().w, 1,0,FLT_MAX);
+            changed|=DragFloat("left"  , &getPad4().x, 1,0,FLT_MAX);
+            changed|=DragFloat("top"   , &getPad4().y, 1,0,FLT_MAX);
+            changed|=DragFloat("right" , &getPad4().z, 1,0,FLT_MAX);
+            changed|=DragFloat("bottom", &getPad4().w, 1,0,FLT_MAX);
             break;
     }
     EndGroup();
@@ -86,7 +88,7 @@ void Sizer::drawProperties()
     //
 
     if (ButtonDefault("dim", dim.index()>0))
-    { dim = monostate{}; }
+    { changed=true; dim = monostate{}; }
 
     BeginGroup();
     switch (dimType())
@@ -94,25 +96,25 @@ void Sizer::drawProperties()
         case DIM_NONE:
             if (BeginCombo("dim", "..."))
             {
-                if (Selectable("aspect" )) { setDimAspect (1);              }
-                if (Selectable("percent")) { setDimPercent({1,1});          }
-                if (Selectable("units"  )) { setDimUnits  ({100,100});      }
+                if (Selectable("aspect" )) { changed=true; setDimAspect (1);              }
+                if (Selectable("percent")) { changed=true; setDimPercent({1,1});          }
+                if (Selectable("units"  )) { changed=true; setDimUnits  ({100,100});      }
                 EndCombo();
             }
             break;
 
         case DIM_ASPECT:
-            DragFloat("aspect", &getDimAspect(), 0.01, 0.5, 2);
+            changed|=DragFloat("aspect", &getDimAspect(), 0.01, 0.5, 2);
             break;
 
         case DIM_PERCENT:
-            SliderFloat("percent w", &getDimPercent().x, 0, 1);
-            SliderFloat("percent h", &getDimPercent().y, 0, 1);
+            changed|=SliderFloat("percent w", &getDimPercent().x, 0, 1);
+            changed|=SliderFloat("percent h", &getDimPercent().y, 0, 1);
             break;
 
         case DIM_UNITS:
-            DragFloat("units w", &getDimUnits().x, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
-            DragFloat("units h", &getDimUnits().y, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("units w", &getDimUnits().x, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("units h", &getDimUnits().y, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
             break;
     }
     EndGroup();
@@ -122,7 +124,7 @@ void Sizer::drawProperties()
     //
 
     if (ButtonDefault("pos", pos.index()>0))
-    { pos = monostate{}; }
+    { changed=true; pos = monostate{}; }
 
     BeginGroup();
     switch (posType())
@@ -130,9 +132,9 @@ void Sizer::drawProperties()
         case POS_NONE:
             if (BeginCombo("pos", "..."))
             {
-                if (Selectable("anchor" )) { setPosAnchor(ANCHOR_CC);   }
-                if (Selectable("percent")) { setPosPercent({});         }
-                if (Selectable("units"  )) { setPosUnits({});           }
+                if (Selectable("anchor" )) { changed=true; setPosAnchor(ANCHOR_CC);   }
+                if (Selectable("percent")) { changed=true; setPosPercent({});         }
+                if (Selectable("units"  )) { changed=true; setPosUnits({});           }
                 EndCombo();
             }
             break;
@@ -146,7 +148,7 @@ void Sizer::drawProperties()
         PopStyleColor(); \
     }  \
     else if (Button((lbl_))) \
-    { getPosAnchor() = (anchor_); }
+    { changed=true; getPosAnchor() = (anchor_); }
 
         ANCHOR_BUTTON("TL", ANCHOR_TL) SameLine();
         ANCHOR_BUTTON("TC", ANCHOR_TC) SameLine();
@@ -163,13 +165,13 @@ void Sizer::drawProperties()
             break;
 
         case POS_PERCENT:
-            SliderFloat("percent x", &getPosPercent().x, 0, 1);
-            SliderFloat("percent y", &getPosPercent().y, 0, 1);
+            changed|=SliderFloat("percent x", &getPosPercent().x, 0, 1);
+            changed|=SliderFloat("percent y", &getPosPercent().y, 0, 1);
             break;
 
         case POS_UNITS:
-            DragFloat("units x", &getPosUnits().x, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
-            DragFloat("units y", &getPosUnits().y, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("units x", &getPosUnits().x, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("units y", &getPosUnits().y, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
             break;
     }
     EndGroup();

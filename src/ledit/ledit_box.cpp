@@ -106,8 +106,20 @@ Box::Box(box_ptr p) :
     name            { },
     parent          { std::move(p) },
     m_color         { nextColor() },
-    m_mark          { false }
+    m_changed       { true }
 {}
+
+void Box::setChanged(bool b)
+{
+    m_changed = b;
+    for (auto&& it : child_boxes)
+        it->setChanged(b);
+}
+
+bool Box::getChanged() const
+{
+    return m_changed;
+}
 
 box_ptr Box::create(box_ptr const& parent)
 {
@@ -198,22 +210,22 @@ void Box::drawProperties(BoxVisitor& v)
         SameLine();
 
         if (ButtonConfirm("delete"))
-            actionDelete(v);
+            parentActionDelete(v);
 
         SameLine();
 
         if (Button("clone"))
-            actionClone(v);
+            parentActionClone(v);
 
         SameLine();
 
         if (Button("--"))
-            actionMoveDec(v);
+            parentActionMoveDec(v);
 
         SameLine();
 
         if (Button("++"))
-            actionMoveInc(v);
+            parentActionMoveInc(v);
     }
     else
     {
@@ -286,13 +298,13 @@ void Box::drawProperties(BoxVisitor& v)
 
     Text("Size and Position");
 
-    sizer.drawProperties();
+    m_changed |= sizer.drawProperties();
 
     Separator();
 
     Text("Flex");
 
-    flex.drawProperties();
+    m_changed |= flex.drawProperties();
 
     Separator();
 
@@ -302,21 +314,20 @@ void Box::drawProperties(BoxVisitor& v)
     { child_boxes.clear(); }
 
     if (Button("add"))
-        actionCreateChild(v);
+        insertChildEnd(v);
 
     ImGuiTableFlags table_flags =
-            ImGuiTableFlags_BordersV |
-            ImGuiTableFlags_BordersOuterH |
-            ImGuiTableFlags_Resizable |
-            ImGuiTableFlags_RowBg |
-            ImGuiTableFlags_NoBordersInBody;
+        ImGuiTableFlags_BordersV |
+        ImGuiTableFlags_BordersOuterH |
+        ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_NoBordersInBody;
 
     if (BeginTable("gridsxxx", 2, table_flags))
     {
         TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
         TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
         TableHeadersRow();
-
 
         bool show_row_select = v.edit_opts.show_row_select;
         v.edit_opts.show_row_select = false;
@@ -339,7 +350,7 @@ void Box::drawTreeTableRow(BoxVisitor& v)
     }
     else if (drawTreeTableRow(v, false))
     {
-        for (auto &&it: child_boxes)
+        for (auto&& it: child_boxes)
             it->drawTreeTableRow(v);
         ImGui::TreePop();
     }
@@ -358,21 +369,22 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
     //
     // TreeNode
     //
+
     if (TableNextColumn())
     {
         PushStyleColor(ImGuiCol_Text, m_color);
 
         int flags =
-                ImGuiTreeNodeFlags_SpanFullWidth |
-                ImGuiTreeNodeFlags_DefaultOpen;
+            ImGuiTreeNodeFlags_SpanFullWidth |
+            ImGuiTreeNodeFlags_DefaultOpen;
 
         if (is_leaf)
         {
             flags =
-                ImGuiTreeNodeFlags_SpanFullWidth |
-                ImGuiTreeNodeFlags_Leaf |
-                ImGuiTreeNodeFlags_Bullet |
-                ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            ImGuiTreeNodeFlags_SpanFullWidth |
+            ImGuiTreeNodeFlags_Leaf |
+            ImGuiTreeNodeFlags_Bullet |
+            ImGuiTreeNodeFlags_NoTreePushOnOpen;
         }
 
         is_open = TreeNodeEx(getLbl().c_str(), flags);
@@ -401,25 +413,25 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
         if (v.edit_opts.show_row_add)
         {
             if (SmallButton("+"))
-                actionCreateChild(v);
+                insertChildEnd(v);
             SameLine();
         }
 
         if (parent && v.edit_opts.show_row_delete)
         {
             if (SmallButtonConfirm("x"))
-                actionDelete(v);
+                parentActionDelete(v);
             SameLine();
         }
 
         if (parent && v.edit_opts.show_row_move)
         {
             if (SmallButton("--"))
-                actionMoveDec(v);
+                parentActionMoveDec(v);
             SameLine();
 
             if (SmallButton("++"))
-                actionMoveInc(v);
+                parentActionMoveInc(v);
             SameLine();
         }
 
@@ -594,9 +606,11 @@ bool Box::saveYaml(cstrparam filename)
 // layout
 //
 
-void Box::layout(rect const& p)
+void Box::calcLayout(rect const& p)
 {
-    sizer.getInnerOuter(p, bounds_inner, bounds_outer);
+    rect i, o;
+    sizer.getInnerOuter(p, i, o);
+    setBounds(i, o);
 
     if (child_boxes.empty())
         return;
@@ -604,20 +618,20 @@ void Box::layout(rect const& p)
     switch (flex.type)
     {
         case BOX_VBOX:
-            layoutVbox(bounds_inner);
+            calcLayoutVbox(bounds_inner);
             break;
         case BOX_HBOX:
-            layoutHbox(bounds_inner);
+            calcLayoutHbox(bounds_inner);
             break;
         case BOX_SBOX:
-            layoutSbox(bounds_inner);
+            calcLayoutSbox(bounds_inner);
             break;
         default:
             nopath_case(BoxType);
     }
 }
 
-void Box::layoutVbox(rect const& b)
+void Box::calcLayoutVbox(rect const& b)
 {
     auto sz     = child_boxes.size();
     auto h      = b.height() - (flex.inner_pad * float(sz - 1));
@@ -634,15 +648,15 @@ void Box::layoutVbox(rect const& b)
         auto ct = cy;
         auto cb = cy + ch;
 
-        it->layout({cl, ct, cr, cb});
+        it->calcLayout({cl, ct, cr, cb});
 
         cy = cb + flex.inner_pad;
     }
 
-    child_boxes.back()->layout({cl, cy, cr, b.max.y});
+    child_boxes.back()->calcLayout({cl, cy, cr, b.max.y});
 }
 
-void Box::layoutHbox(rect const& b)
+void Box::calcLayoutHbox(rect const& b)
 {
     auto sz     = child_boxes.size();
     auto w      = b.width() - (flex.inner_pad * float(sz - 1));
@@ -659,51 +673,73 @@ void Box::layoutHbox(rect const& b)
         auto cl = cx;
         auto cr = cx + cw;
 
-        it->layout({cl, ct, cr, cb});
+        it->calcLayout({cl, ct, cr, cb});
 
         cx = cr + flex.inner_pad;
     }
 
-    child_boxes.back()->layout({cx, ct, b.max.x, cb});
+    child_boxes.back()->calcLayout({cx, ct, b.max.x, cb});
 }
 
-void Box::layoutSbox(rect const &b)
+void Box::calcLayoutSbox(rect const &b)
 {
     for (auto &&it: child_boxes)
     {
-        it->layout(b);
+        it->calcLayout(b);
     }
+}
+
+void Box::setBounds(rect const& inner, rect const& outer)
+{
+    m_changed |= bounds_inner != inner;
+    m_changed |= bounds_outer != outer;
+
+    bounds_inner = inner;
+    bounds_outer = outer;
 }
 
 //
 // child action
 //
 
-void Box::actionDelete(BoxVisitor& v)
+void Box::insertChildEnd(BoxVisitor& v)
 {
+    auto pos = child_boxes.end();
+    child_boxes.insert(pos, create(ptr()));
+    setChanged(true);
+}
+
+void Box::insertChildStart(BoxVisitor& v)
+{
+    auto pos = child_boxes.begin();
+    child_boxes.insert(pos, create(ptr()));
+    setChanged(true);
+}
+
+void Box::parentActionDelete(BoxVisitor& v)
+{
+    check_null(parent);
     v.selected_box = parent;
     v.clearBox(ptr());
-    parent->setChildAction({ChildAction::REMOVE, ptr()});
+    m_child_action = {ChildAction::DELETE, ptr()};
 }
 
-void Box::actionClone(BoxVisitor& v)
+void Box::parentActionClone(BoxVisitor& v)
 {
-    parent->setChildAction({ChildAction::DUPLICATE, ptr()});
+    check_null(parent);
+    m_child_action = {ChildAction::CLONE, ptr()};
 }
 
-void Box::actionMoveInc(BoxVisitor& v)
+void Box::parentActionMoveInc(BoxVisitor& v)
 {
-    parent->setChildAction({ChildAction::MOVE_INC, ptr()});
+    check_null(parent);
+    m_child_action = {ChildAction::MOVE_INC, ptr()};
 }
 
-void Box::actionMoveDec(BoxVisitor& v)
+void Box::parentActionMoveDec(BoxVisitor& v)
 {
-    parent->setChildAction({ChildAction::MOVE_DEC, ptr()});
-}
-
-void Box::actionCreateChild(BoxVisitor& v)
-{
-    child_boxes.push_back(Box::create(ptr()));
+    check_null(parent);
+    m_child_action = {ChildAction::MOVE_DEC, ptr()};
 }
 
 void Box::applyChildActions()
@@ -716,47 +752,37 @@ void Box::applyChildActions()
 
         m_child_action.reset();
 
-        for (auto it = b; it != e; ++it)
+        if (auto it = find(b, e, ca.box); it != e)
         {
-            if (*it == ca.box)
+            switch (ca.type)
             {
-                switch (ca.type)
-                {
-                    case ChildAction::REMOVE:
-                        child_boxes.erase(it);
-                        break;
+                case ChildAction::DELETE:
+                    child_boxes.erase(it);
+                    break;
 
-                    case ChildAction::MOVE_DEC:
-                        if (it != b)
-                            it->swap(*(it - 1));
-                        break;
+                case ChildAction::MOVE_DEC:
+                    if (it != b)
+                        it->swap(*(it - 1));
+                    break;
 
-                    case ChildAction::MOVE_INC:
-                        if (auto down = it + 1; down != e)
-                            it->swap(*down);
-                        break;
+                case ChildAction::MOVE_INC:
+                    if (auto down = it + 1; down != e)
+                        it->swap(*down);
+                    break;
 
-                    case ChildAction::DUPLICATE:
-                        child_boxes.insert(it+1, (*it)->deepCopy(ptr()));
-                        break;
-                }
-                return;
+                case ChildAction::CLONE:
+                    child_boxes.insert(it+1, (*it)->deepCopy(ptr()));
+                    break;
+                default:nopath_case(ChildAction::Type);
             }
 
-            (*it)->applyChildActions();
+            for (auto&& box : child_boxes)
+                box->setChanged(true);
         }
     }
-    else
-    {
-        for (auto && it : child_boxes)
-            it->applyChildActions();
-    }
-}
 
-void Box::setChildAction(ChildAction const& child_action)
-{
-    assert(!m_child_action);
-    m_child_action = child_action;
+    for (auto && it : child_boxes)
+        it->applyChildActions();
 }
 
 
@@ -775,14 +801,14 @@ box_ptr Box::createRoot(Sizer const& sizer)
     return box;
 }
 
-bool Box::drawOverlay(BoxVisitor& v)
+void Box::drawOverlay(BoxVisitor& v)
 {
     using namespace ImGui;
 
     check(isRoot(v.root_box), "invalid root");
 
     v.root_box->applyChildActions();
-    v.root_box->layout(rect{});
+    v.root_box->calcLayout(rect{});
 
     {
         auto rr = v.getRealRect(v.root_box->bounds_outer).round();

@@ -31,24 +31,24 @@ void Flex::reset()
     inner_pad   = 10;
 }
 
-#define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { mark|=true; type = x_; }
+#define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { changed|=true; type = x_; }
 
 bool Flex::drawProperties()
 {
     using namespace ImGui;
 
-    bool mark = false;
+    bool changed = false;
 
     if (ButtonDefault("weight", weight != 1))
-    { mark|=true; weight = 1; }
+    { changed|=true; weight = 1; }
 
     if (int w = weight; InputInt("weight", &w, 1))
     {
-        if (w > 0) { mark|=true; weight = w; }
+        if (w > 0) { changed|=true; weight = w; }
     }
 
     if (ButtonDefault("type", type != BOX_HBOX))
-    { mark|=true; type = BOX_HBOX; }
+    { changed|=true; type = BOX_HBOX; }
 
     if (BeginCombo("Type", box_to_string(type)))
     {
@@ -56,14 +56,14 @@ bool Flex::drawProperties()
         EndCombo();
     }
 
-    return mark;
+    return changed;
 }
 
 bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
 {
     using namespace ImGui;
 
-    bool mark = false;
+    bool changed = false;
 
     if (edit_opts.show_row_weight)
     {
@@ -71,11 +71,11 @@ bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
         SameLine();
 
         if (SmallButton("+"))
-            weight++;
+        { changed = true; weight++; }
         SameLine();
 
         if (SmallButtonEnabled("-", weight > 1))
-            weight--;
+        { changed = true; weight--; }
         SameLine();
     }
 
@@ -92,7 +92,7 @@ bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
         SameLine();
     }
 
-    return mark;
+    return changed;
 }
 
 #undef CASE_SELECTABLE

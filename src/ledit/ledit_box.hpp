@@ -17,7 +17,7 @@ namespace ledit
         {
             enum Type
             {
-                REMOVE, MOVE_INC, MOVE_DEC, DUPLICATE
+                DELETE, MOVE_INC, MOVE_DEC, CLONE
             } type;
 
             box_ptr box;
@@ -33,8 +33,8 @@ namespace ledit
         box_ptr         parent;
         boxlist_t       child_boxes;
 
-        inline bool marked() const
-        { return m_mark; }
+        void setChanged(bool b);
+        bool getChanged() const;
 
         box_ptr  ptr();
         box_cptr ptr() const;
@@ -46,12 +46,6 @@ namespace ledit
         std::string getLbl();
 
         void reset();
-
-
-
-
-
-
 
         std::string toYamlString();
         std::string toCPPString();
@@ -68,47 +62,44 @@ namespace ledit
 
         static void drawBoxHierarchy    (BoxVisitor& v);
         static void drawPropertiesTab   (BoxVisitor& v);
-        static bool drawOverlay         (BoxVisitor& v);
+        static void drawOverlay         (BoxVisitor& v);
 
 
 
     private:
-        ut::color m_color;
-        bool m_mark;
+        ut::color   m_color;
+        bool        m_changed;
 
         std::optional<ChildAction> m_child_action;
 
         explicit Box(box_ptr p);
 
-        void setMark(bool m)
-        {
-            m_mark = m;
-            for (auto&& it: child_boxes)
-                it->setMark(m);
-        }
+
 
         //
         // layout
         //
 
-        void layout    (ut::rect const& b);
-        void layoutVbox(ut::rect const& b);
-        void layoutHbox(ut::rect const& b);
-        void layoutSbox(ut::rect const& b);
+        void calcLayout    (ut::rect const& b);
+        void calcLayoutVbox(ut::rect const& b);
+        void calcLayoutHbox(ut::rect const& b);
+        void calcLayoutSbox(ut::rect const& b);
+
+        void setBounds(ut::rect const& inner, ut::rect const& outer);
 
         //
         // child action
         //
 
-        void actionDelete       (BoxVisitor& v);
-        void actionClone        (BoxVisitor& v);
-        void actionMoveInc      (BoxVisitor& v);
-        void actionMoveDec      (BoxVisitor& v);
-        void actionCreateChild  (BoxVisitor& v);
+        void insertChildEnd(BoxVisitor& v);
+        void insertChildStart(BoxVisitor& v);
+
+        void parentActionDelete   (BoxVisitor& v);
+        void parentActionClone    (BoxVisitor& v);
+        void parentActionMoveInc  (BoxVisitor& v);
+        void parentActionMoveDec  (BoxVisitor& v);
 
         void applyChildActions();
-        void setChildAction(ChildAction const& child_action);
-
 
         //
         // draw
