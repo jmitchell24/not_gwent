@@ -16,25 +16,28 @@ namespace ledit
     class BoxVisitor
     {
     public:
+        using vt_type = std::optional<gfx::ViewTransform>;
+
         BoxEditOptions      edit_opts;
         OverlayOptions      overlay_opts;
 
         box_ptr             root_box;
         box_ptr             selected_box;
 
-        std::optional<gfx::ViewTransform> view_transform;
+        vt_type             view_transform;
 
+        boxmap_t const& boxMap() const;
         ut::rect getRealRect(ut::rect const& r) const;
         ut::vec2 getViewPoint(ut::vec2 const& p) const;
-
 
         box_ptr     getBox      (ut::cstrparam s);
         void        setBox      (box_ptr const& ptr);
         void        clearBox    (box_ptr const& ptr);
 
-        inline boxmap_t const& boxmap() const { return m_boxmap; }
-
     protected:
-        boxmap_t m_boxmap;
+        void clearBoxMap();
+        void setBoxMap(box_ptr const& ptr);
+
+        boxmap_t m_box_map;
     };
 }

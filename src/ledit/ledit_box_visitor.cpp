@@ -21,6 +21,11 @@ using namespace std;
 // BoxVisitor -> Implementation
 //
 
+boxmap_t const& BoxVisitor::boxMap() const
+{
+    return m_box_map;
+}
+
 rect BoxVisitor::getRealRect(rect const& r) const
 {
     if (view_transform)
@@ -43,18 +48,18 @@ box_ptr BoxVisitor::getBox(cstrparam s)
 {
     auto k = s.str();
 
-    if (auto it = m_boxmap.find(k); it != m_boxmap.end())
+    if (auto it = m_box_map.find(k); it != m_box_map.end())
     {
         if (auto&& v = it->second)
             return v;
     }
 
-    return m_boxmap[k] = nullptr;
+    return m_box_map[k] = nullptr;
 }
 
 void BoxVisitor::setBox(box_ptr const& ptr)
 {
-    if (auto it = m_boxmap.find(ptr->name); it != m_boxmap.end())
+    if (auto it = m_box_map.find(ptr->name); it != m_box_map.end())
     {
         auto&& v = it->second;
 
@@ -67,10 +72,22 @@ void BoxVisitor::setBox(box_ptr const& ptr)
 
 void BoxVisitor::clearBox(box_ptr const& ptr)
 {
-    if (auto it = m_boxmap.find(ptr->name); it != m_boxmap.end())
+    if (auto it = m_box_map.find(ptr->name); it != m_box_map.end())
     {
         auto&& v = it->second;
         v = nullptr;
         ptr->name.clear();
     }
+}
+
+void BoxVisitor::clearBoxMap()
+{
+    m_box_map.clear();
+}
+
+void BoxVisitor::setBoxMap(box_ptr const& ptr)
+{
+    setBox(ptr);
+    for (auto&& it : ptr->child_boxes)
+        setBoxMap(it);
 }

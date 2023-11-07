@@ -64,17 +64,15 @@ namespace ledit
         static void drawPropertiesTab   (BoxVisitor& v);
         static void drawOverlay         (BoxVisitor& v);
 
-
-
     private:
+        using ca_type = std::optional<ChildAction>;
+
         ut::color   m_color;
         bool        m_changed;
 
-        std::optional<ChildAction> m_child_action;
+        ca_type     m_child_action;
 
         explicit Box(box_ptr p);
-
-
 
         //
         // layout

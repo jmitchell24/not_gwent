@@ -281,7 +281,7 @@ void Box::drawProperties(BoxVisitor& v)
 
     if (BeginCombo("name###name_get", name.c_str()))
     {
-        for (auto&& it : v.boxmap())
+        for (auto&& it : v.boxMap())
         {
             auto key = it.first;
             if (Selectable(key.c_str(), name == key))

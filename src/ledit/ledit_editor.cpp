@@ -247,9 +247,11 @@ void BoxEditor::loadFile(ut::cstrparam filename)
     box_ptr new_root = Box::createRoot(root_box->sizer);
     if (new_root->loadYaml(filename))
     {
-        m_current_file = filename;
-        root_box = new_root;
-        selected_box = root_box;
+        m_current_file  = filename;
+        root_box        = new_root;
+        selected_box    = root_box;
+
+        setBoxMap(root_box);
     }
 }
 
