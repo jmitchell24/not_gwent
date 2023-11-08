@@ -29,7 +29,7 @@ size_t constexpr static VIRT_WIDTH      = 720;
 size_t constexpr static VIRT_HEIGHT     = 1280;
 size_t constexpr static VIRT_PAD        = 10;
 
-static ledit::BoxEditor BOX_EDITOR {"GameBoard"};
+
 
 //
 // CombatRow
@@ -165,8 +165,6 @@ void GameBoard::layout(rect const& b)
     usr.stats .layout(b_stats_usr);
 
     //card_size = CardLayout::sizeFromHeight(usr.player.bounds.height());
-
-    BOX_EDITOR.setRoot(b);
 }
 
 
@@ -191,17 +189,9 @@ void GameBoard::drawDebug()
     usr.siege .drawDebug();
     DRECT_POP();
 
-    //weather   .drawDebug();
     cpu.stats .drawDebug();
     usr.stats .drawDebug();
     DRECT_POP();
-
-    BOX_EDITOR.view_transform = gfx::DRECT.view_transform;
-    if (BOX_EDITOR.draw())
-    {
-        if (auto box = BOX_EDITOR.getRect("test"))
-            usr.stats.avatar = *box;
-    }
 }
 
 

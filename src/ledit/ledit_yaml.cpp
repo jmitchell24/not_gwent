@@ -16,7 +16,6 @@ using namespace ut;
 //
 // std
 //
-#include <valarray>
 using namespace std;
 
 //
@@ -88,7 +87,7 @@ namespace YAML
 
 #define VAR_ENCODE(a_, b_, c_, d_, e_)  case Sizer::b_: n[d_] = get<Sizer::b_>(x); break;
 #define VAR_DECODE(a_, b_, c_, d_, e_)  if (auto np = n[d_]) { x.emplace<Sizer::b_>(np.as<e_>()); return true; }
-#define VAR_EMIT(a_, b_, c_, d_, e_)    case Sizer::b_: em << Flow << BeginMap << Key << d_ << Value << get<Sizer::b_>(x) << EndMap; break;
+#define VAR_EMIT(a_, b_, c_, d_, e_)    case Sizer::b_: em << Flow << BeginMap << Key << (d_) << Value << get<Sizer::b_>(x) << EndMap; break;
 
     //
     // pad_type
@@ -131,7 +130,7 @@ namespace YAML
     }
 
     //
-    // scl_type
+    // dim_type
     //
 
     template<> struct convert<Sizer::dim_type>
@@ -265,8 +264,8 @@ namespace box_props
     SAVE_FUNC(pad, em, box) { if (box->sizer.pad.index() > 0) em << Key << "pad" << box->sizer.pad; }
     LOAD_FUNC(pad, n , box) { if (auto np = n["pad"]) box->sizer.pad = np.as<Sizer::pad_type>(); }
 
-    SAVE_FUNC(scl, em, box) { if (box->sizer.dim.index() > 0) em << Key << "scl" << box->sizer.dim; }
-    LOAD_FUNC(scl, n , box) { if (auto np = n["dim"]) box->sizer.dim = np.as<Sizer::dim_type>(); }
+    SAVE_FUNC(dim, em, box) { if (box->sizer.dim.index() > 0) em << Key << "dim" << box->sizer.dim; }
+    LOAD_FUNC(dim, n , box) { if (auto np = n["dim"]) box->sizer.dim = np.as<Sizer::dim_type>(); }
 
     SAVE_FUNC(pos, em, box) { if (box->sizer.pos.index() > 0) em << Key << "pos" << box->sizer.pos; }
     LOAD_FUNC(pos, n , box) { if (auto np = n["pos"]) box->sizer.pos = np.as<Sizer::pos_type>(); }
@@ -284,7 +283,7 @@ void ::ledit::emitYaml(YAML::Emitter& em, box_ptr const& box)
     box_props::weight   (em, box);
     box_props::name     (em, box);
     box_props::pad      (em, box);
-    box_props::scl      (em, box);
+    box_props::dim      (em, box);
     box_props::pos      (em, box);
 
     if (!box->child_boxes.empty())
@@ -306,7 +305,7 @@ void ::ledit::fromYaml(YAML::Node const& node, box_ptr const& box)
     box_props::weight (node, box);
     box_props::name   (node, box);
     box_props::pad    (node, box);
-    box_props::scl    (node, box);
+    box_props::dim    (node, box);
     box_props::pos    (node, box);
 
     if (auto ch = node["children"])

@@ -15,14 +15,15 @@ namespace ledit
 
         BoxEditor(ut::cstrparam name);
 
+        inline bool ignoreMouse() const
+        { return overlay_opts.ignore_mouse; }
+
         void setRoot(ut::rect const& bounds);
         rectget_t getRect(ut::cstrparam name);
 
         bool draw();
 
     private:
-
-
         using filelist_type = std::vector<std::string>;
         using filetext_type = std::array<char, 30>;
 

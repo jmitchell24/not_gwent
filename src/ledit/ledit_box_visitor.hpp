@@ -35,9 +35,9 @@ namespace ledit
         void        clearBox    (box_ptr const& ptr);
 
     protected:
+        boxmap_t m_box_map;
+
         void clearBoxMap();
         void setBoxMap(box_ptr const& ptr);
-
-        boxmap_t m_box_map;
     };
 }

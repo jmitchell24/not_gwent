@@ -43,12 +43,11 @@ namespace ledit
 
         box_ptr tryGetBox(ut::vec2 const& mp);
 
-        std::string getLbl();
+        std::string getLbl() const;
 
         void reset();
 
         std::string toYamlString();
-        std::string toCPPString();
 
         bool loadYaml(ut::cstrparam filename);
         bool saveYaml(ut::cstrparam filename);
@@ -61,8 +60,8 @@ namespace ledit
         static box_ptr createRoot   (Sizer const& sizer);
 
         static void drawBoxHierarchy    (BoxVisitor& v);
-        static void drawPropertiesTab   (BoxVisitor& v);
         static void drawOverlay         (BoxVisitor& v);
+        static void drawPropertiesWindow(BoxVisitor& v);
 
     private:
         using ca_type = std::optional<ChildAction>;

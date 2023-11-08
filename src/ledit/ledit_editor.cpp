@@ -63,8 +63,9 @@ bool BoxEditor::draw()
         return false;
 
     PushID(m_name.c_str());
-    Box::drawOverlay(*this);
     drawMainWindow();
+    Box::drawPropertiesWindow(*this);
+    Box::drawOverlay(*this);
     PopID();
 
     return true;
@@ -91,8 +92,6 @@ void BoxEditor::drawMainWindow()
                 Box::drawBoxHierarchy(*this);
                 EndTabItem();
             }
-
-            Box::drawPropertiesTab(*this);
             EndTabBar();
         }
     }
@@ -124,7 +123,7 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 {
     using namespace ImGui;
 
-    Text("View Options");
+    Text("Overlay Options");
 
     if (ButtonDefault("bg_opacity", opts.background.a != OverlayOptions::DEFAULT_BACKGROUND.a))
     { opts.background.a = OverlayOptions::DEFAULT_BACKGROUND.a; }
@@ -136,7 +135,6 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
     { opts.background = OverlayOptions::DEFAULT_BACKGROUND; }
 
     ColorEdit3("Background", opts.background);
-
 
     Dummy(GetItemRectSize());
 
@@ -150,6 +148,10 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
     { opts.border = OverlayOptions::DEFAULT_BORDER; }
 
     ColorEdit3("Border", opts.border);
+
+    Dummy(GetItemRectSize());
+
+    Checkbox("Ignore Mouse Input", &opts.ignore_mouse);
 }
 
 void BoxEditor::drawMainWindowFileOptions()
@@ -250,6 +252,8 @@ void BoxEditor::loadFile(ut::cstrparam filename)
         m_current_file  = filename;
         root_box        = new_root;
         selected_box    = root_box;
+
+
 
         setBoxMap(root_box);
     }

@@ -51,5 +51,7 @@ namespace ledit
 
         ut::color   background =DEFAULT_BACKGROUND;
         ut::color   border     =DEFAULT_BORDER;
+
+        bool ignore_mouse=false;
     };
 }

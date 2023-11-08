@@ -141,7 +141,7 @@ box_ptr Box::deepCopy(box_ptr const& p)
 {
     box_ptr box = box_ptr{new Box(p)};
 
-    box->name   = name;
+    //box->name   = name;
     box->flex   = flex;
     box->sizer  = sizer;
 
@@ -172,7 +172,7 @@ box_ptr Box::tryGetBox(vec2 const& mp)
     return nullptr;
 }
 
-string Box::getLbl()
+string Box::getLbl() const
 {
     if (name.empty())
     {
@@ -298,13 +298,30 @@ void Box::drawProperties(BoxVisitor& v)
 
     Text("Size and Position");
 
-    m_changed |= sizer.drawProperties();
+    if (sizer.drawProperties())
+        setChanged(true);
 
     Separator();
 
     Text("Flex");
 
-    m_changed |= flex.drawProperties();
+    switch (flex.drawProperties())
+    {
+        case Flex::SELF:
+            setChanged(true);
+            break;
+        case Flex::SIBLINGS:
+            if (parent)
+            {
+                for (auto&& it : parent->child_boxes)
+                    it->setChanged(true);
+            }
+            else
+            {
+                setChanged(true);
+            }
+            break;
+    }
 
     Separator();
 
@@ -517,44 +534,6 @@ string Box::toYamlString()
     return em.c_str();
 }
 
-string Box::toCPPString()
-{
-    cstrparam txt = R"(
-namespace layout
-{
-    struct Layout
-    {
-        ut::rect name1 = ut::rect();
-        ut::rect name2 = ut::rect();
-        ut::rect name3 = ut::rect();
-        ut::rect name4 = ut::rect();
-        ut::rect name5 = ut::rect();
-
-        void layout(boxmap_t const& map)
-        {
-            name1 = map["name1"];
-            name2 = map["name2"];
-            name3 = map["name3"];
-            name4 = map["name4"];
-            name5 = map["name5"];
-        }
-    };
-
-    ...
-
-    //
-    LAYOUT_MANAGER.bind(my_layout, "my_layout.yaml");
-
-    using boxmap_t = std::unordered_set<std::string, ut::rect>;
-}
-
-
-
-    )"_sv;
-
-    return txt.str();
-}
-
 bool Box::loadYaml(cstrparam filename)
 {
     if (filename.empty())
@@ -566,6 +545,10 @@ bool Box::loadYaml(cstrparam filename)
         {
             auto text = gulp::file_to_string(file);
             fromYaml(YAML::Load(text), ptr());
+            if (parent)
+                calcLayout(parent->bounds_outer);
+            else
+                calcLayout(rect{});
             return true;
         }
         catch (YAML::Exception const &ex)
@@ -691,8 +674,8 @@ void Box::calcLayoutSbox(rect const &b)
 
 void Box::setBounds(rect const& inner, rect const& outer)
 {
-    m_changed |= bounds_inner != inner;
-    m_changed |= bounds_outer != outer;
+//    m_changed |= bounds_inner != inner;
+//    m_changed |= bounds_outer != outer;
 
     bounds_inner = inner;
     bounds_outer = outer;
@@ -721,25 +704,25 @@ void Box::parentActionDelete(BoxVisitor& v)
     check_null(parent);
     v.selected_box = parent;
     v.clearBox(ptr());
-    m_child_action = {ChildAction::DELETE, ptr()};
+    parent->m_child_action = {ChildAction::DELETE, ptr()};
 }
 
 void Box::parentActionClone(BoxVisitor& v)
 {
     check_null(parent);
-    m_child_action = {ChildAction::CLONE, ptr()};
+    parent->m_child_action = {ChildAction::CLONE, ptr()};
 }
 
 void Box::parentActionMoveInc(BoxVisitor& v)
 {
     check_null(parent);
-    m_child_action = {ChildAction::MOVE_INC, ptr()};
+    parent->m_child_action = {ChildAction::MOVE_INC, ptr()};
 }
 
 void Box::parentActionMoveDec(BoxVisitor& v)
 {
     check_null(parent);
-    m_child_action = {ChildAction::MOVE_DEC, ptr()};
+    parent->m_child_action = {ChildAction::MOVE_DEC, ptr()};
 }
 
 void Box::applyChildActions()
@@ -778,6 +761,10 @@ void Box::applyChildActions()
 
             for (auto&& box : child_boxes)
                 box->setChanged(true);
+        }
+        else
+        {
+            nopath("didn't find child action box");
         }
     }
 
@@ -829,7 +816,17 @@ void Box::drawOverlay(BoxVisitor& v)
         v.root_box->drawOverlayOutlines(v);
     }
 
-    if (!GetIO().WantCaptureMouse)
+    auto& io = GetIO();
+
+    if (!io.WantCaptureKeyboard)
+    {
+        if (IsKeyPressed(ImGuiKey_F1))
+        {
+            v.overlay_opts.ignore_mouse = !v.overlay_opts.ignore_mouse;
+        }
+    }
+
+    if (!io.WantCaptureMouse && !v.overlay_opts.ignore_mouse)
     {
         auto mp = v.getViewPoint(GetMousePos());
         if (IsMouseClicked(ImGuiMouseButton_Left))
@@ -867,19 +864,6 @@ void Box::drawOverlay(BoxVisitor& v)
             }
         }
     }
-
-    if (v.selected_box && v.edit_opts.is_properties_window_open)
-    {
-        auto window_flags =
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoDocking;
-
-        if (Begin(BoxEditOptions::SELECTED_BOX_POPUP_LBL, &v.edit_opts.is_properties_window_open, window_flags))
-        {
-            v.selected_box->drawProperties(v);
-        }
-        End();
-    }
 }
 
 void Box::drawBoxHierarchy(BoxVisitor& v)
@@ -908,24 +892,21 @@ void Box::drawBoxHierarchy(BoxVisitor& v)
     }
 }
 
-void Box::drawPropertiesTab(BoxVisitor& v)
+void Box::drawPropertiesWindow(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    if (v.selected_box)
+    if (v.selected_box && v.edit_opts.is_properties_window_open)
     {
-        if (BeginTabItem("Box Properties"))
+        auto window_flags =
+                ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoDocking;
+
+        if (Begin(BoxEditOptions::SELECTED_BOX_POPUP_LBL, &v.edit_opts.is_properties_window_open, window_flags))
         {
             v.selected_box->drawProperties(v);
-            EndTabItem();
         }
-    }
-    else
-    {
-        PushItemDisabled();
-        if (BeginTabItem("Box Properties"))
-            EndTabItem();
-        PopItemDisabled();
+        End();
     }
 }
 

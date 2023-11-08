@@ -13,6 +13,9 @@ using namespace game;
 
 #include "game/asset/assets.hpp"
 
+#include "ledit/ledit_editor.hpp"
+using namespace ledit;
+
 #include "gfx/gfx_draw.hpp"
 using namespace gfx;
 
@@ -25,6 +28,8 @@ using namespace std;
 //
 //
 //
+
+static BoxEditor BOX_EDITOR {"GameBoard"};
 
 ng::Card getNGTestLeader()
 {
@@ -153,7 +158,7 @@ GameBoard2::GameBoard2()
 
 }
 
-void GameBoard2::layout(ut::rect const& bounds)
+void GameBoard2::layout(rect const& bounds)
 {
     gb.layout(bounds);
 
@@ -181,6 +186,7 @@ void GameBoard2::layout(ut::rect const& bounds)
         boss.stackToRow(cpu.deck, cpu.hand, i);
     }
 
+    BOX_EDITOR.setRoot(bounds);
 
 }
 
@@ -198,7 +204,10 @@ void GameBoard2::update(update_param u)
 
     auto mp = u.view_mouse_pos;
 
+    BOX_EDITOR.view_transform = u.view_transform;
 
+    if (!BOX_EDITOR.ignoreMouse())
+        return;
 
     if (CardRef ref; tryGetHoveredCard(mp, ref))
     {
@@ -226,6 +235,8 @@ void GameBoard2::update(update_param u)
     {
         usr.cancelCast();
     }
+
+
 }
 
 
@@ -316,6 +327,28 @@ void GameBoard2::drawUnderCards()
 
 void GameBoard2::drawDebug()
 {
+    if (BOX_EDITOR.draw())
+    {
+        bool b = false;
+#define GET_RECT(x_) if (auto box = BOX_EDITOR.getRect(#x_)) { (x_) = *box; b = true; }
+        GET_RECT(gb.usr.stats.name)
+        GET_RECT(gb.usr.stats.deck_name)
+        GET_RECT(gb.usr.stats.lead_name)
+        GET_RECT(gb.usr.stats.gems)
+        GET_RECT(gb.usr.stats.score)
+        GET_RECT(gb.usr.stats.avatar)
+#undef GET_RECT
+
+
+        if (b)
+        {
+            static int counter=0;
+            TraceLog(LOG_INFO, "Stats layout Gen: %d", ++counter);
+            usr.stats.layout(gb.usr.stats);
+        }
+
+    }
+
     if (ImGui::Button("Draw"))
     {
         auto idx = 0;

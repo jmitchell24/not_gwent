@@ -175,6 +175,8 @@ bool Sizer::drawProperties()
             break;
     }
     EndGroup();
+
+    return changed;
 }
 
 rect Sizer::getPad(rect b) const

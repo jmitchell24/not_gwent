@@ -63,8 +63,8 @@ size_t constexpr static SCREEN_WIDTH    = 1920;
 size_t constexpr static SCREEN_HEIGHT   = 1080;
 
 #define EXPAND_SCENES(SCENE) \
-    SCENE(SceneCardTest      )  \
     SCENE(SceneGameBoard2Test)  \
+    SCENE(SceneCardTest      )  \
     SCENE(SceneMathTest      )  \
     SCENE(SceneNanoVGTest    )  \
     SCENE(SceneProtoTest     )  \

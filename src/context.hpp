@@ -13,6 +13,8 @@ public:
         float       frame_time;
         ut::vec2    real_mouse_pos;
         ut::vec2    view_mouse_pos;
+
+        gfx::ViewTransform view_transform;
     };
 
     static constexpr size_t     VIEW_WIDTH  { 1280 };

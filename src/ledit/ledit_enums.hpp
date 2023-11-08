@@ -30,7 +30,7 @@
 namespace ledit
 {
     enum AnchorType     { EXPAND_ANCHORTYPE(CASE_ENUM) };
-    enum BoxType        { EXPAND_BOXTYPE(CASE_ENUM) };
+    enum BoxType        { EXPAND_BOXTYPE   (CASE_ENUM) };
 
     inline static ut::cstrview anchor_to_string(AnchorType x)
     {
