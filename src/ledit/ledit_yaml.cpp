@@ -241,13 +241,13 @@ namespace box_props
 
     SAVE_FUNC(weight, em, box)
     {
-        if (box->flex.weight != 1)
-            em << Key << "weight" << Value << box->flex.weight;
+        if (box->weight != 1.0f)
+            em << Key << "weight" << Value << box->weight;
     }
 
     LOAD_FUNC(weight, n, box)
     {
-        box->flex.weight = n["weight"].as<int>(1);
+        box->weight = n["weight"].as<float>(1);
     }
 
     SAVE_FUNC(name, em, box)

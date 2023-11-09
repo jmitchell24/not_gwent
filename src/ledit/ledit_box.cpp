@@ -305,27 +305,45 @@ void Box::drawProperties(BoxVisitor& v)
 
     Text("Flex");
 
-    switch (flex.drawProperties())
-    {
-        case Flex::SELF:
-            setChanged(true);
-            break;
-        case Flex::SIBLINGS:
-            if (parent)
-            {
-                for (auto&& it : parent->child_boxes)
-                    it->setChanged(true);
-            }
-            else
-            {
-                setChanged(true);
-            }
-            break;
-    }
+    if (flex.drawProperties())
+        setChanged(true);
 
     Separator();
 
     Text("Container");
+
+    if (parent)
+    {
+        if (Button("U"))
+        {
+            parent->calcWeightsUniform();
+        }
+        if (IsItemHovered())
+            SetTooltip("Uniform Distribution");
+        SameLine();
+
+        BeginGroup();
+
+        if (Button("A"))
+        {
+            parent->calcWeightsUniformAnchor(ptr());
+        }
+        if (IsItemHovered())
+            SetTooltip("Uniform Distribution with Anchor");
+        SameLine();
+
+        if (float w = weight; SliderFloat("weight", &w, 0, 1))
+        {
+            if (w > 0 && w < 1)
+            {
+                weight = w;
+                parent->calcWeightsPropAnchor(ptr());
+            }
+        }
+
+        EndGroup();
+    }
+
 
     if (ButtonDefault("child_boxes", !child_boxes.empty()))
     { child_boxes.clear(); }
@@ -525,7 +543,12 @@ void Box::reset()
     child_boxes.clear();
 }
 
-
+void Box::normalizeWeights()
+{
+    calcWeightsNormal();
+    for (auto&& it : child_boxes)
+        it->normalizeWeights();
+}
 
 string Box::toYamlString()
 {
@@ -545,6 +568,7 @@ bool Box::loadYaml(cstrparam filename)
         {
             auto text = gulp::file_to_string(file);
             fromYaml(YAML::Load(text), ptr());
+            normalizeWeights();
             if (parent)
                 calcLayout(parent->bounds_outer);
             else
@@ -589,6 +613,15 @@ bool Box::saveYaml(cstrparam filename)
 // layout
 //
 
+void Box::setBounds(rect const& inner, rect const& outer)
+{
+//    m_changed |= bounds_inner != inner;
+//    m_changed |= bounds_outer != outer;
+
+    bounds_inner = inner;
+    bounds_outer = outer;
+}
+
 void Box::calcLayout(rect const& p)
 {
     rect i, o;
@@ -618,7 +651,6 @@ void Box::calcLayoutVbox(rect const& b)
 {
     auto sz     = child_boxes.size();
     auto h      = b.height() - (flex.inner_pad * float(sz - 1));
-    auto sum    = weightsSum();
     auto cl     = b.min.x;
     auto cr     = b.max.x;
 
@@ -627,7 +659,7 @@ void Box::calcLayoutVbox(rect const& b)
     for (size_t i = 0; i < sz - 1; ++i)
     {
         auto &&it = child_boxes[i];
-        auto ch = h * (float(it->flex.weight) / sum);
+        auto ch = h * it->weight;
         auto ct = cy;
         auto cb = cy + ch;
 
@@ -643,7 +675,6 @@ void Box::calcLayoutHbox(rect const& b)
 {
     auto sz     = child_boxes.size();
     auto w      = b.width() - (flex.inner_pad * float(sz - 1));
-    auto sum    = weightsSum();
     auto ct     = b.min.y;
     auto cb     = b.max.y;
 
@@ -652,7 +683,7 @@ void Box::calcLayoutHbox(rect const& b)
     for (size_t i = 0; i < sz - 1; ++i)
     {
         auto &&it = child_boxes[i];
-        auto cw = w * (float(it->flex.weight) / sum);
+        auto cw = w * it->weight;
         auto cl = cx;
         auto cr = cx + cw;
 
@@ -672,13 +703,100 @@ void Box::calcLayoutSbox(rect const &b)
     }
 }
 
-void Box::setBounds(rect const& inner, rect const& outer)
-{
-//    m_changed |= bounds_inner != inner;
-//    m_changed |= bounds_outer != outer;
+//
+// weight calculation
+//
 
-    bounds_inner = inner;
-    bounds_outer = outer;
+void Box::calcWeightsPropAnchor(box_ptr const& anchor)
+{
+    if (child_boxes.size() > 1)
+    {
+        float target    = 1.0f - anchor->weight;
+        float sum       = 0.0f;
+        for (auto&& it : child_boxes)
+            if (it != anchor)
+                sum += it->weight;
+
+        if (sum > 0.0f)
+        {
+            for (auto&& it : child_boxes)
+            {
+                if (it != anchor)
+                {
+                    it->weight *= target / sum;
+                    it->setChanged(true);
+                }
+            }
+        }
+    }
+    else if (child_boxes.size() > 0)
+    {
+        anchor->weight = 1.0f;
+        anchor->setChanged(true);
+    }
+}
+
+void Box::calcWeightsUniformAnchor(box_ptr const& anchor)
+{
+    if (child_boxes.size() > 1)
+    {
+        float target    = 1.0f - anchor->weight;
+        float w         = target / float(child_boxes.size()-1);
+        for (auto&& it: child_boxes)
+        {
+            if (it != anchor)
+            {
+                it->weight = w;
+                it->setChanged(true);
+            }
+        }
+    }
+    else if (child_boxes.size() > 0)
+    {
+        anchor->weight = 1.0f;
+        anchor->setChanged(true);
+    }
+}
+
+void Box::calcWeightsUniform()
+{
+    if (!child_boxes.empty())
+    {
+        float w = 1.0f / float(child_boxes.size());
+        for (auto&& it: child_boxes)
+        {
+            it->weight = w;
+            it->setChanged(true);
+        }
+    }
+}
+
+void Box::calcWeightsNormal()
+{
+    if (!child_boxes.empty())
+    {
+        float sum = 0.0f;
+        for (auto&& it : child_boxes)
+            sum += it->weight;
+
+        if (sum > 0.0f)
+        {
+            for (auto&& it : child_boxes)
+            {
+                it->weight /= sum;
+                it->setChanged(true);
+            }
+        }
+        else
+        {
+            float w = 1.0f / float(child_boxes.size());
+            for (auto&& it : child_boxes)
+            {
+                it->weight = w;
+                it->setChanged(true);
+            }
+        }
+    }
 }
 
 //
@@ -687,16 +805,18 @@ void Box::setBounds(rect const& inner, rect const& outer)
 
 void Box::insertChildEnd(BoxVisitor& v)
 {
-    auto pos = child_boxes.end();
-    child_boxes.insert(pos, create(ptr()));
-    setChanged(true);
+    insertChild(child_boxes.end(), create(ptr()));
 }
 
 void Box::insertChildStart(BoxVisitor& v)
 {
-    auto pos = child_boxes.begin();
-    child_boxes.insert(pos, create(ptr()));
-    setChanged(true);
+    insertChild(child_boxes.begin(), create(ptr()));
+}
+
+void Box::insertChild(boxlist_t::iterator const& pos, box_ptr const& box)
+{
+    child_boxes.insert(pos, box);
+    calcWeightsUniform();
 }
 
 void Box::parentActionDelete(BoxVisitor& v)

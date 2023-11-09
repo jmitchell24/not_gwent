@@ -24,6 +24,7 @@ namespace ledit
         };
 
         std::string     name;
+        float           weight;
         Flex            flex;
         Sizer           sizer;
 
@@ -46,6 +47,7 @@ namespace ledit
         std::string getLbl() const;
 
         void reset();
+        void normalizeWeights();
 
         std::string toYamlString();
 
@@ -68,7 +70,6 @@ namespace ledit
 
         ut::color   m_color;
         bool        m_changed;
-
         ca_type     m_child_action;
 
         explicit Box(box_ptr p);
@@ -77,12 +78,21 @@ namespace ledit
         // layout
         //
 
+        void setBounds(ut::rect const& inner, ut::rect const& outer);
+
         void calcLayout    (ut::rect const& b);
         void calcLayoutVbox(ut::rect const& b);
         void calcLayoutHbox(ut::rect const& b);
         void calcLayoutSbox(ut::rect const& b);
 
-        void setBounds(ut::rect const& inner, ut::rect const& outer);
+        //
+        // weight calculation
+        //
+
+        void calcWeightsPropAnchor(box_ptr const& anchor);
+        void calcWeightsUniformAnchor(box_ptr const& anchor);
+        void calcWeightsUniform();
+        void calcWeightsNormal();
 
         //
         // child action
@@ -90,6 +100,7 @@ namespace ledit
 
         void insertChildEnd(BoxVisitor& v);
         void insertChildStart(BoxVisitor& v);
+        void insertChild(boxlist_t::iterator const& pos, box_ptr const& box);
 
         void parentActionDelete   (BoxVisitor& v);
         void parentActionClone    (BoxVisitor& v);
@@ -110,38 +121,7 @@ namespace ledit
         void drawOverlaySelectedAbove(BoxVisitor& v);
         void drawOverlaySelectedBelow(BoxVisitor& v);
 
-        //
-        // helpers
-        //
 
-        inline float weightsSum() const
-        {
-            return (float)reduceWeights([](auto a, auto b) { return a + b; });
-        }
-
-        inline int weightsGCD() const
-        {
-            return reduceWeights([](auto a, auto b)
-            {
-                while (b != 0)
-                {
-                    auto tmp = b;
-                    b = a % b;
-                    a = tmp;
-                }
-                return a;
-            });
-        }
-
-        template <typename Reducer> int reduceWeights(Reducer&& reducer) const
-        {
-            assert(!child_boxes.empty());
-
-            auto r = child_boxes[0]->flex.weight;
-            for (size_t i = 1; i < child_boxes.size(); ++i)
-                r = reducer(r, child_boxes[i]->flex.weight);
-            return r;
-        }
 
         static ut::color nextColor();
     };

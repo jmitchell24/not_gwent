@@ -27,36 +27,27 @@ using namespace std;
 void Flex::reset()
 {
     type        = BOX_HBOX;
-    weight      = 1;
     inner_pad   = 10;
 }
 
-#define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { changed=SELF; type = x_; }
+#define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { changed=true; type = x_; }
 
-Flex::ChangeType Flex::drawProperties()
+bool Flex::drawProperties()
 {
     using namespace ImGui;
 
-    ChangeType changed = NONE;
+    bool changed = false;
 
     if (ButtonDefault("inner pad", inner_pad != 10))
-    { changed=SELF; inner_pad=10; }
+    { changed=true; inner_pad=10; }
 
     if (float p = inner_pad; DragFloat("inner_pad", &p, 0.1f, 0.0f))
     {
-        if (p > 0) { changed=SELF; inner_pad=p; }
-    }
-
-    if (ButtonDefault("weight", weight != 1))
-    { changed=SIBLINGS; weight = 1; }
-
-    if (int w = weight; InputInt("weight", &w, 1))
-    {
-        if (w > 0) { changed=SIBLINGS; weight = w; }
+        if (p > 0) { changed=true; inner_pad=p; }
     }
 
     if (ButtonDefault("type", type != BOX_HBOX))
-    { changed=SELF; type = BOX_HBOX; }
+    { changed=true; type = BOX_HBOX; }
 
     if (BeginCombo("Type", box_to_string(type)))
     {
@@ -67,25 +58,11 @@ Flex::ChangeType Flex::drawProperties()
     return changed;
 }
 
-Flex::ChangeType Flex::drawRowControls(BoxEditOptions const& edit_opts)
+bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
 {
     using namespace ImGui;
 
-    ChangeType changed = NONE;
-
-    if (edit_opts.show_row_weight)
-    {
-        Text("%d", weight);
-        SameLine();
-
-        if (SmallButton("+"))
-        { changed=SIBLINGS; weight++; }
-        SameLine();
-
-        if (SmallButtonEnabled("-", weight > 1))
-        { changed=SIBLINGS; weight--; }
-        SameLine();
-    }
+    bool changed = false;
 
     if (edit_opts.show_row_type)
     {
