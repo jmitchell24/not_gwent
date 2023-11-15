@@ -44,7 +44,7 @@ vec2 BoxVisitor::getViewPoint(vec2 const& p) const
     return p;
 }
 
-box_ptr BoxVisitor::getBox(cstrparam s)
+box_ptr BoxVisitor::getBoxSlot(cstrparam s)
 {
     auto k = s.str();
 
@@ -57,20 +57,22 @@ box_ptr BoxVisitor::getBox(cstrparam s)
     return m_box_map[k] = nullptr;
 }
 
-void BoxVisitor::setBox(box_ptr const& ptr)
+void BoxVisitor::setBoxSlot(box_ptr const& ptr)
 {
     if (auto it = m_box_map.find(ptr->name); it != m_box_map.end())
     {
+        auto&& k = it->first;
         auto&& v = it->second;
 
         if (v && v != ptr)
             v->name.clear();
+
         v = ptr;
     }
 
 }
 
-void BoxVisitor::clearBox(box_ptr const& ptr)
+void BoxVisitor::resetBoxSlot(box_ptr const& ptr)
 {
     if (auto it = m_box_map.find(ptr->name); it != m_box_map.end())
     {
@@ -80,14 +82,15 @@ void BoxVisitor::clearBox(box_ptr const& ptr)
     }
 }
 
-void BoxVisitor::clearBoxMap()
+void BoxVisitor::resetAllSlots()
 {
-    m_box_map.clear();
+    for (auto&& it : m_box_map)
+        it.second = nullptr;
 }
 
-void BoxVisitor::setBoxMap(box_ptr const& ptr)
+void BoxVisitor::setBoxSlotAll(box_ptr const& ptr)
 {
-    setBox(ptr);
+    setBoxSlot(ptr);
     for (auto&& it : ptr->child_boxes)
-        setBoxMap(it);
+        setBoxSlotAll(it);
 }

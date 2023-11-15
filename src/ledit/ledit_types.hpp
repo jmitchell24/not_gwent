@@ -18,6 +18,7 @@
 #include <vector>
 #include <optional>
 #include <unordered_map>
+#include <ut/check.hpp>
 
 namespace ledit
 {
@@ -46,12 +47,27 @@ namespace ledit
 
     struct OverlayOptions
     {
-        static constexpr ut::color DEFAULT_BACKGROUND   {15 ,15 ,15 ,240};
-        static constexpr ut::color DEFAULT_BORDER       {110,110,128,128};
+        struct Style { ut::color background, border; };
 
-        ut::color   background =DEFAULT_BACKGROUND;
-        ut::color   border     =DEFAULT_BORDER;
+        static constexpr Style STYLE_PRESET_DEFAULT {  {15,15,15,240}, {110,110,128,128} };
+        static constexpr Style STYLE_PRESET_OPAQUE  {  {15,15,15,255}, {110,110,128,128} };
+        static constexpr Style STYLE_PRESET_FADE    {  {15,15,15,64 }, {255,255,255,255} };
+        static constexpr Style STYLE_PRESET_HIDE    {  { 0, 0, 0,  0}, {  0,  0,  0,  0} };
 
-        bool ignore_mouse=false;
+        std::array<Style, 4> styles
+        {
+            STYLE_PRESET_DEFAULT,
+            STYLE_PRESET_OPAQUE,
+            STYLE_PRESET_FADE,
+            STYLE_PRESET_HIDE
+        };
+
+        int         style_index =0;
+        bool        ignore_mouse=false;
+
+        inline Style& style()
+        {
+            return styles[style_index%styles.size()];
+        }
     };
 }

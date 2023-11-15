@@ -119,6 +119,8 @@ void BoardRow::rebuildLayout()
             layout::RowLayout::DIR_CENTER, m_bounds,
             layout::CardLayout::widthFromHeight(m_bounds.height()),
             m_card_refs.size()+1);
+
+    arrangeRow();
 }
 
 void BoardRow::arrangeRow()

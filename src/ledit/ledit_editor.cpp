@@ -38,21 +38,36 @@ BoxEditor::BoxEditor(ut::cstrparam name)
 
 void BoxEditor::setRoot(rect const& bounds)
 {
-    root_box        = Box::createRoot(bounds);
-    selected_box    = nullptr;
+    root_box                = Box::createRoot(bounds);
+    selected_box_current    = nullptr;
+    selected_box_previous   = nullptr;
 }
 
 rectget_t BoxEditor::getRect(ut::cstrparam s)
 {
-    if (auto box = getBox(s))
+    if (auto box = getBoxSlot(s))
     {
         if (box->getChanged())
         {
-            box->setChanged(false);
+            box->clearChanged();
             return {box->bounds_inner};
         }
     }
     return {};
+}
+
+bool BoxEditor::tryGetRect(ut::cstrparam s, rect& r)
+{
+    if (auto box = getBoxSlot(s))
+    {
+        if (box->getChanged())
+        {
+            box->clearChanged();
+            r = box->bounds_inner;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool BoxEditor::draw()
@@ -64,8 +79,8 @@ bool BoxEditor::draw()
 
     PushID(m_name.c_str());
     drawMainWindow();
-    Box::drawPropertiesWindow(*this);
     Box::drawOverlay(*this);
+    Box::drawPropertiesWindow(*this);
     PopID();
 
     return true;
@@ -125,29 +140,41 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 
     Text("Overlay Options");
 
-    if (ButtonDefault("bg_opacity", opts.background.a != OverlayOptions::DEFAULT_BACKGROUND.a))
-    { opts.background.a = OverlayOptions::DEFAULT_BACKGROUND.a; }
+    {
+        auto& i = opts.style_index;
+        if (ButtonActivated("Default" , i==0)) i=0; SameLine();
+        if (ButtonActivated("Opaque"  , i==1)) i=1; SameLine();
+        if (ButtonActivated("Fade"    , i==2)) i=2; SameLine();
+        if (ButtonActivated("Hide"    , i==3)) i=3;
+    }
 
-    if (int o = int( float(opts.background.a) / 255.0f * 100.0f); SliderInt("Opacity (BG)", &o, 0, 100, "%d%%"))
-        opts.background.a = b8( float(o) / 100.0f * 255 );
 
-    if (ButtonDefault("background", opts.background != OverlayOptions::DEFAULT_BACKGROUND))
-    { opts.background = OverlayOptions::DEFAULT_BACKGROUND; }
+    auto    style_default   = OverlayOptions::STYLE_PRESET_DEFAULT;
+    auto&   style           = opts.style();
 
-    ColorEdit3("Background", opts.background);
+    if (ButtonDefault("bg_opacity", style.background.a != style_default.background.a))
+    { style.background.a = style_default.background.a; }
+
+    if (int o = int( float(style.background.a) / 255.0f * 100.0f); SliderInt("Opacity (BG)", &o, 0, 100, "%d%%"))
+        style.background.a = b8( float(o) / 100.0f * 255 );
+
+    if (ButtonDefault("background", style.background != style_default.background))
+    { style.background = style_default.background; }
+
+    ColorEdit3("Background", style.background);
 
     Dummy(GetItemRectSize());
 
-    if (ButtonDefault("bd_opacity", opts.border.a != OverlayOptions::DEFAULT_BORDER.a))
-    { opts.border.a = OverlayOptions::DEFAULT_BORDER.a; }
+    if (ButtonDefault("bd_opacity", style.border.a != style_default.border.a))
+    { style.border.a = style_default.border.a; }
 
-    if (int o = int( float(opts.border.a) / 255.0f * 100.0f); SliderInt("Opacity (BD)", &o, 0, 100, "%d%%"))
-        opts.border.a = b8( float(o) / 100.0f * 255 );
+    if (int o = int( float(style.border.a) / 255.0f * 100.0f); SliderInt("Opacity (BD)", &o, 0, 100, "%d%%"))
+        style.border.a = b8( float(o) / 100.0f * 255 );
 
-    if (ButtonDefault("border", opts.border != OverlayOptions::DEFAULT_BORDER))
-    { opts.border = OverlayOptions::DEFAULT_BORDER; }
+    if (ButtonDefault("border", style.border != style_default.border))
+    { style.border = style_default.border; }
 
-    ColorEdit3("Border", opts.border);
+    ColorEdit3("Border", style.border);
 
     Dummy(GetItemRectSize());
 
@@ -249,13 +276,14 @@ void BoxEditor::loadFile(ut::cstrparam filename)
     box_ptr new_root = Box::createRoot(root_box->sizer);
     if (new_root->loadYaml(filename))
     {
-        m_current_file  = filename;
-        root_box        = new_root;
-        selected_box    = root_box;
+        m_current_file          = filename;
+        root_box                = new_root;
+        selected_box_current    = root_box;
+        selected_box_previous   = nullptr;
 
 
-
-        setBoxMap(root_box);
+        resetAllSlots();
+        setBoxSlotAll(root_box);
     }
 }
 

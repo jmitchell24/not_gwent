@@ -34,13 +34,15 @@ namespace ledit
         box_ptr         parent;
         boxlist_t       child_boxes;
 
-        void setChanged(bool b);
+        void setChangedAll();
+        void clearChanged();
         bool getChanged() const;
 
         box_ptr  ptr();
         box_cptr ptr() const;
 
         box_ptr  deepCopy(box_ptr const& parent);
+        void mutate(box_ptr const& original);
 
         box_ptr tryGetBox(ut::vec2 const& mp);
 
@@ -98,14 +100,14 @@ namespace ledit
         // child action
         //
 
-        void insertChildEnd(BoxVisitor& v);
-        void insertChildStart(BoxVisitor& v);
+        void insertChildEnd();
+        void insertChildStart();
         void insertChild(boxlist_t::iterator const& pos, box_ptr const& box);
 
-        void parentActionDelete   (BoxVisitor& v);
-        void parentActionClone    (BoxVisitor& v);
-        void parentActionMoveInc  (BoxVisitor& v);
-        void parentActionMoveDec  (BoxVisitor& v);
+        void parentActionDelete     (BoxVisitor& v);
+        void parentActionClone      (BoxVisitor& v);
+        void parentActionMoveInc    (BoxVisitor& v);
+        void parentActionMoveDec    (BoxVisitor& v);
 
         void applyChildActions();
 

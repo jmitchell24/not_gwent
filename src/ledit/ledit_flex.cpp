@@ -41,10 +41,7 @@ bool Flex::drawProperties()
     if (ButtonDefault("inner pad", inner_pad != 10))
     { changed=true; inner_pad=10; }
 
-    if (float p = inner_pad; DragFloat("inner_pad", &p, 0.1f, 0.0f))
-    {
-        if (p > 0) { changed=true; inner_pad=p; }
-    }
+    changed|=DragFloat("inner_pad", &inner_pad, 1,0,FLT_MAX);
 
     if (ButtonDefault("type", type != BOX_HBOX))
     { changed=true; type = BOX_HBOX; }

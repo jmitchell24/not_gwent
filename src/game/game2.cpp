@@ -329,24 +329,110 @@ void GameBoard2::drawDebug()
 {
     if (BOX_EDITOR.draw())
     {
-        bool b = false;
-#define GET_RECT(x_) if (auto box = BOX_EDITOR.getRect(#x_)) { (x_) = *box; b = true; }
-        GET_RECT(gb.usr.stats.name)
-        GET_RECT(gb.usr.stats.deck_name)
-        GET_RECT(gb.usr.stats.lead_name)
-        GET_RECT(gb.usr.stats.gems)
-        GET_RECT(gb.usr.stats.score)
-        GET_RECT(gb.usr.stats.avatar)
-#undef GET_RECT
+#define TRY_GET_RECT(x_) BOX_EDITOR.tryGetRect(#x_, x_)
 
-
-        if (b)
         {
-            static int counter=0;
-            TraceLog(LOG_INFO, "Stats layout Gen: %d", ++counter);
-            usr.stats.layout(gb.usr.stats);
+            if (TRY_GET_RECT(gb.usr.player.hand))
+                usr.hand.layout(gb.usr.player.hand);
+
+            if (TRY_GET_RECT(gb.usr.player.deck))
+                usr.deck.layout(gb.usr.player.deck);
+
+            if (TRY_GET_RECT(gb.usr.player.yard))
+                usr.yard.layout(gb.usr.player.yard);
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.usr.stats.name     );
+                b|=TRY_GET_RECT(gb.usr.stats.deck_name);
+                b|=TRY_GET_RECT(gb.usr.stats.lead_name);
+                b|=TRY_GET_RECT(gb.usr.stats.gems     );
+                b|=TRY_GET_RECT(gb.usr.stats.score    );
+                b|=TRY_GET_RECT(gb.usr.stats.avatar   );
+                if (b) usr.stats.layout(gb.usr.stats);
+            }
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.usr.melee.units);
+                b|=TRY_GET_RECT(gb.usr.melee.buff);
+                b|=TRY_GET_RECT(gb.usr.melee.nerf);
+                b|=TRY_GET_RECT(gb.usr.melee.score);
+                if (b) usr.melee.layout(gb.usr.melee);
+            }
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.usr.ranged.units);
+                b|=TRY_GET_RECT(gb.usr.ranged.buff);
+                b|=TRY_GET_RECT(gb.usr.ranged.nerf);
+                b|=TRY_GET_RECT(gb.usr.ranged.score);
+                if (b) usr.melee.layout(gb.usr.ranged);
+            }
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.usr.siege.units);
+                b|=TRY_GET_RECT(gb.usr.siege.buff);
+                b|=TRY_GET_RECT(gb.usr.siege.nerf);
+                b|=TRY_GET_RECT(gb.usr.siege.score);
+                if (b) usr.melee.layout(gb.usr.siege);
+            }
         }
 
+        {
+            if (TRY_GET_RECT(gb.cpu.player.hand))
+                cpu.hand.layout(gb.cpu.player.hand);
+
+            if (TRY_GET_RECT(gb.cpu.player.deck))
+                cpu.deck.layout(gb.cpu.player.deck);
+
+            if (TRY_GET_RECT(gb.cpu.player.yard))
+                cpu.yard.layout(gb.cpu.player.yard);
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.cpu.stats.name     );
+                b|=TRY_GET_RECT(gb.cpu.stats.deck_name);
+                b|=TRY_GET_RECT(gb.cpu.stats.lead_name);
+                b|=TRY_GET_RECT(gb.cpu.stats.gems     );
+                b|=TRY_GET_RECT(gb.cpu.stats.score    );
+                b|=TRY_GET_RECT(gb.cpu.stats.avatar   );
+                if (b) cpu.stats.layout(gb.cpu.stats);
+            }
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.cpu.melee.units);
+                b|=TRY_GET_RECT(gb.cpu.melee.buff);
+                b|=TRY_GET_RECT(gb.cpu.melee.nerf);
+                b|=TRY_GET_RECT(gb.cpu.melee.score);
+                if (b) cpu.melee.layout(gb.cpu.melee);
+            }
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.cpu.ranged.units);
+                b|=TRY_GET_RECT(gb.cpu.ranged.buff);
+                b|=TRY_GET_RECT(gb.cpu.ranged.nerf);
+                b|=TRY_GET_RECT(gb.cpu.ranged.score);
+                if (b) cpu.melee.layout(gb.cpu.ranged);
+            }
+
+            {
+                bool b = false;
+                b|=TRY_GET_RECT(gb.cpu.siege.units);
+                b|=TRY_GET_RECT(gb.cpu.siege.buff);
+                b|=TRY_GET_RECT(gb.cpu.siege.nerf);
+                b|=TRY_GET_RECT(gb.cpu.siege.score);
+                if (b) cpu.melee.layout(gb.cpu.siege);
+            }
+        }
+
+
+
+
+#undef TRY_GET_RECT
     }
 
     if (ImGui::Button("Draw"))

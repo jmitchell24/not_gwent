@@ -20,6 +20,7 @@ namespace ledit
 
         void setRoot(ut::rect const& bounds);
         rectget_t getRect(ut::cstrparam name);
+        bool tryGetRect(ut::cstrparam name, ut::rect& r);
 
         bool draw();
 
