@@ -230,7 +230,7 @@ void Box::drawProperties(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    assert(ptr() == v.selected_box_current);
+    assert(v.isBoxSelectedSingle(ptr()));
 
     Text("Selection");
 
@@ -238,7 +238,7 @@ void Box::drawProperties(BoxVisitor& v)
     {
         if (Button("to parent"))
         {
-            v.setSelectedBox(parent);
+            v.setSelectedBoxSingle(parent);
         }
 
         SameLine();
@@ -253,8 +253,11 @@ void Box::drawProperties(BoxVisitor& v)
 
         SameLine();
 
-        if (ButtonEnabled("mutate", v.selected_box_previous != nullptr))
-            mutate(v.selected_box_previous);
+        if (ButtonEnabled("mutate", v.hasBoxSelectionMulti()))
+        {
+            for (auto&& it: v.boxSelectionMulti())
+                mutate(it);
+        }
 
         SameLine();
 
@@ -305,7 +308,7 @@ void Box::drawProperties(BoxVisitor& v)
 
         auto it = ps.rbegin();
         PushButtonColor((*it)->m_color);
-        if (SmallButton((*it)->getLbl().c_str())) v.setSelectedBox(*it);
+        if (SmallButton((*it)->getLbl().c_str())) v.setSelectedBoxSingle(*it);
         PopButtonColor();
 
         for (++it; it != ps.rend(); ++it)
@@ -314,7 +317,7 @@ void Box::drawProperties(BoxVisitor& v)
             TextUnformatted("/");
             SameLine();
             PushButtonColor((*it)->m_color);
-            if (SmallButton((*it)->getLbl().c_str()))  v.setSelectedBox(*it);
+            if (SmallButton((*it)->getLbl().c_str()))  v.setSelectedBoxSingle(*it);
             PopButtonColor();
         }
     }
@@ -483,7 +486,7 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
 
         if (is_leaf && IsItemClicked(ImGuiMouseButton_Left))
         {
-            v.setSelectedBox(ptr());
+            v.setSelectedBoxSingle(ptr());
         }
 
         PopStyleColor();
@@ -497,8 +500,8 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
     {
         if (v.edit_opts.show_row_select)
         {
-            if (SmallButtonActivated(v.selectedLbl(ptr()), v.isSelected(ptr())))
-                v.setSelectedBox(ptr());
+            if (SmallButtonActivated(v.getBoxSelectionLabel(ptr()), v.isBoxSelectedSingle(ptr())))
+                v.setSelectedBoxSingle(ptr());
             SameLine();
         }
 
@@ -576,11 +579,12 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    if (!v.isSelected(ptr()))
+    if (!v.isBoxSelectedSingle(ptr()))
     {
         auto o = v.getRealRect(bounds_outer);
         auto c = v.overlay_opts.style().border;
-        drawOverlayOutline(o, c, v.isSelectedPrevious(ptr()) ? 3.0f : 1.0f);
+        //drawOverlayOutline(o, c, v.isSelectedMultiselect(ptr()) ? 3.0f : 1.0f);
+        drawOverlayOutline(o, c, 1.0f);
 
         if (!name.empty())
             drawOverlayTextUnselected(o, c, name);
@@ -879,7 +883,7 @@ void Box::insertChild(boxlist_t::iterator const& pos, box_ptr const& box)
 void Box::parentActionDelete(BoxVisitor& v)
 {
     check_null(parent);
-    v.setSelectedBox(parent);
+    v.setSelectedBoxSingle(parent);
     v.resetBoxSlot(ptr());
     parent->m_child_action = {ChildAction::DELETE, ptr()};
 }
@@ -983,11 +987,11 @@ void Box::drawOverlay(BoxVisitor& v)
         dl->AddRectFilled(rr.min, rr.max, bg);
     }
 
-    if (v.selected_box_current)
+    if (auto selected_box = v.boxSelectionSingle())
     {
-        v.selected_box_current->drawOverlaySelectedBelow(v);
+        selected_box->drawOverlaySelectedBelow(v);
         v.root_box->drawOverlayOutlines(v);
-        v.selected_box_current->drawOverlaySelectedAbove(v);
+        selected_box->drawOverlaySelectedAbove(v);
     }
     else
     {
@@ -1016,33 +1020,34 @@ void Box::drawOverlay(BoxVisitor& v)
         {
             if (auto box = v.root_box->tryGetBox(mp))
             {
-                v.setSelectedBox(box);
+                v.setSelectedBoxSingle(box);
             }
             else
             {
-                v.clearSelectedBox();
+                v.clearSelectedBoxSingle();
                 v.edit_opts.is_properties_window_open = false;
             }
         }
 
         if (IsMouseClicked(ImGuiMouseButton_Middle))
         {
-            if (auto parent = v.selected_box_current->parent)
-                v.setSelectedBox(parent);
+            if (auto selected_box = v.boxSelectionSingle())
+                if (auto parent_box = selected_box->parent)
+                    v.setSelectedBoxSingle(parent_box);
         }
 
         if (IsMouseClicked(ImGuiMouseButton_Right))
         {
             if (auto box = v.root_box->tryGetBox(mp))
             {
-                v.setSelectedBox(box);
+                v.setSelectedBoxSingle(box);
                 v.edit_opts.is_properties_window_open = true;
 
                 SetNextWindowPos(GetMousePos());
             }
             else
             {
-                v.clearSelectedBox();
+                v.clearSelectedBoxSingle();
                 v.edit_opts.is_properties_window_open = false;
             }
         }
@@ -1081,7 +1086,7 @@ void Box::drawPropertiesWindow(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    if (v.selected_box_current && v.edit_opts.is_properties_window_open)
+    if (auto selected_box = v.boxSelectionSingle(); selected_box && v.edit_opts.is_properties_window_open)
     {
         auto window_flags =
                 ImGuiWindowFlags_AlwaysAutoResize |
@@ -1089,7 +1094,7 @@ void Box::drawPropertiesWindow(BoxVisitor& v)
 
         if (Begin(BoxEditOptions::SELECTED_BOX_POPUP_LBL, &v.edit_opts.is_properties_window_open, window_flags))
         {
-            v.selected_box_current->drawProperties(v);
+            selected_box->drawProperties(v);
         }
         End();
     }

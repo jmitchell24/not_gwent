@@ -22,57 +22,50 @@ namespace ledit
         OverlayOptions      overlay_opts;
 
         box_ptr             root_box;
-        box_ptr             selected_box_current;
-        box_ptr             selected_box_previous;
-
         vt_type             view_transform;
 
-        boxmap_t const& boxMap() const;
         ut::rect getRealRect(ut::rect const& r) const;
         ut::vec2 getViewPoint(ut::vec2 const& p) const;
 
-        box_ptr     getBoxSlot      (ut::cstrparam s);
-        void        setBoxSlot      (box_ptr const& ptr);
-        void        resetBoxSlot    (box_ptr const& ptr);
-        void        resetAllSlots   ();
+        //
+        // Box Slots
+        //
 
-        inline void setSelectedBox(box_ptr const& ptr)
-        {
-            if (selected_box_current != ptr)
-            {
-                selected_box_previous = selected_box_current;
-                selected_box_current = ptr;
-            }
-        }
+        boxmap_t const& boxMap() const;
+        box_ptr         getBoxSlot      (ut::cstrparam s);
+        void            setBoxSlot      (box_ptr const& ptr);
+        void            resetBoxSlot    (box_ptr const& ptr);
+        void            resetAllSlots   ();
 
-        inline void clearSelectedBox()
-        {
-            selected_box_current = nullptr;
-            selected_box_previous = nullptr;
-        }
+        //
+        // Box Selection
+        //
 
-        inline bool isSelected(box_ptr const& ptr) const
-        {
-            return selected_box_current == ptr;
-        }
+        void setSelectedBoxSingle(box_ptr const& ptr);
+        void setSelectedBoxMulti(box_ptr const& ptr);
+        void toggleSelectedBoxMulti(box_ptr const& ptr);
 
-        inline bool isSelectedPrevious(box_ptr const& ptr) const
-        {
-            return selected_box_previous == ptr;
-        }
+        void clearSelectedBoxSingle();
+        void clearSelectedBoxMulti(box_ptr const& ptr);
+        void clearSelectedBoxMultiAll();
 
-        inline char const* selectedLbl(box_ptr const& ptr) const
-        {
-            if (selected_box_current == ptr)
-                return "1";
-            if (selected_box_previous == ptr)
-                return "2";
-            return " ";
-        }
+        bool isBoxSelectedSingle(box_ptr const& ptr) const;
+        bool isBoxSelectedMulti(box_ptr const& ptR) const;
+        bool hasBoxSelectionSingle() const;
+        bool hasBoxSelectionMulti() const;
+
+        box_ptr boxSelectionSingle() const;
+        boxlist_t boxSelectionMulti() const;
+
+        ut::cstrview getBoxSelectionLabel(box_ptr const& ptr) const;
 
     protected:
         boxmap_t m_box_map;
 
         void setBoxSlotAll(box_ptr const& ptr);
+
+    private:
+        box_ptr   m_selected_box_single;
+        boxlist_t m_selected_box_multi;
     };
 }

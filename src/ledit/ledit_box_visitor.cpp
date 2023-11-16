@@ -44,6 +44,10 @@ vec2 BoxVisitor::getViewPoint(vec2 const& p) const
     return p;
 }
 
+//
+// Box Slot
+//
+
 box_ptr BoxVisitor::getBoxSlot(cstrparam s)
 {
     auto k = s.str();
@@ -93,4 +97,103 @@ void BoxVisitor::setBoxSlotAll(box_ptr const& ptr)
     setBoxSlot(ptr);
     for (auto&& it : ptr->child_boxes)
         setBoxSlotAll(it);
+}
+
+//
+// Box Selection
+//
+
+void BoxVisitor::setSelectedBoxSingle(box_ptr const& ptr)
+{
+    m_selected_box_single = ptr;
+    m_selected_box_multi.clear();
+}
+
+void BoxVisitor::setSelectedBoxMulti(box_ptr const& ptr)
+{
+    for (auto&& it : m_selected_box_multi)
+        if (it == ptr)
+            return;
+    m_selected_box_multi.push_back(ptr);
+}
+
+void BoxVisitor::toggleSelectedBoxMulti(box_ptr const& ptr)
+{
+    auto b = m_selected_box_multi.begin();
+    auto e = m_selected_box_multi.end();
+    for (auto it = b; it != e; ++it)
+    {
+        if (*it == ptr)
+        {
+            m_selected_box_multi.erase(it);
+            return;
+        }
+    }
+    m_selected_box_multi.push_back(ptr);
+}
+
+void BoxVisitor::clearSelectedBoxSingle()
+{
+    m_selected_box_single = nullptr;
+    m_selected_box_multi.clear();
+}
+
+void BoxVisitor::clearSelectedBoxMulti(box_ptr const& ptr)
+{
+    auto b = m_selected_box_multi.begin();
+    auto e = m_selected_box_multi.end();
+    for (auto it = b; it != e; ++it)
+    {
+        if (*it == ptr)
+        {
+            m_selected_box_multi.erase(it);
+            return;
+        }
+    }
+}
+void BoxVisitor::clearSelectedBoxMultiAll()
+{
+    m_selected_box_multi.clear();
+}
+
+bool BoxVisitor::isBoxSelectedSingle(box_ptr const& ptr) const
+{
+    return m_selected_box_single == ptr;
+}
+
+bool BoxVisitor::isBoxSelectedMulti(box_ptr const& ptr) const
+{
+    for (auto&& it : m_selected_box_multi)
+        if (it == ptr)
+            return true;
+    return false;
+}
+
+bool BoxVisitor::hasBoxSelectionSingle() const
+{
+    return m_selected_box_single != nullptr;
+}
+
+bool BoxVisitor::hasBoxSelectionMulti() const
+{
+    return !m_selected_box_multi.empty();
+}
+
+box_ptr BoxVisitor::boxSelectionSingle() const
+{
+    return m_selected_box_single;
+}
+
+boxlist_t BoxVisitor::boxSelectionMulti() const
+{
+    return m_selected_box_multi;
+}
+
+cstrview BoxVisitor::getBoxSelectionLabel(box_ptr const& ptr) const
+{
+    if (isBoxSelectedSingle(ptr))
+        return "o";
+    if (isBoxSelectedMulti(ptr))
+        return "*";
+    return " ";
 }

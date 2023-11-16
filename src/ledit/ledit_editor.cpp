@@ -38,9 +38,9 @@ BoxEditor::BoxEditor(ut::cstrparam name)
 
 void BoxEditor::setRoot(rect const& bounds)
 {
-    root_box                = Box::createRoot(bounds);
-    selected_box_current    = nullptr;
-    selected_box_previous   = nullptr;
+    root_box = Box::createRoot(bounds);
+
+    clearSelectedBoxSingle();
 }
 
 rectget_t BoxEditor::getRect(ut::cstrparam s)
@@ -79,8 +79,8 @@ bool BoxEditor::draw()
 
     PushID(m_name.c_str());
     drawMainWindow();
-    Box::drawOverlay(*this);
     Box::drawPropertiesWindow(*this);
+    Box::drawOverlay(*this);
     PopID();
 
     return true;
@@ -278,9 +278,8 @@ void BoxEditor::loadFile(ut::cstrparam filename)
     {
         m_current_file          = filename;
         root_box                = new_root;
-        selected_box_current    = root_box;
-        selected_box_previous   = nullptr;
 
+        setSelectedBoxSingle(root_box);
 
         resetAllSlots();
         setBoxSlotAll(root_box);
