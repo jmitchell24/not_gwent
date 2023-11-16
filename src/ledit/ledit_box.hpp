@@ -120,10 +120,8 @@ namespace ledit
         bool drawTreeTableRow(BoxVisitor& v, bool is_leaf);
 
         void drawOverlayOutlines     (BoxVisitor& v);
-        void drawOverlaySelectedAbove(BoxVisitor& v);
-        void drawOverlaySelectedBelow(BoxVisitor& v);
-
-
+        void drawOverlaySingleSelectedAbove(BoxVisitor& v);
+        void drawOverlaySingleSelectedBelow(BoxVisitor& v);
 
         static ut::color nextColor();
     };

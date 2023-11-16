@@ -62,8 +62,8 @@ namespace ledit
             STYLE_PRESET_HIDE
         };
 
-        int         style_index =0;
-        bool        ignore_mouse=false;
+        int         style_index         =0;
+        bool        want_capture_mouse  =false;
 
         inline Style& style()
         {

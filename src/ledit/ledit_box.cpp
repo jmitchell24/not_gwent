@@ -243,26 +243,33 @@ void Box::drawProperties(BoxVisitor& v)
 
         SameLine();
 
-        if (ButtonConfirm("delete"))
-            parentActionDelete(v);
-
-        SameLine();
-
-        if (Button("clone"))
-            parentActionClone(v);
-
-        SameLine();
-
-        if (ButtonEnabled("mutate", v.hasBoxSelectionMulti()))
+        if (Button("to multi"))
         {
-            for (auto&& it: v.boxSelectionMulti())
-                mutate(it);
+            v.setMutateSelection(ptr());
         }
 
         SameLine();
 
-        if (Button("reset"))
-            nopath_impl;
+        if (ButtonConfirm("delete"))
+            parentActionDelete(v);
+
+//        SameLine();
+//
+//        if (Button("clone"))
+//            parentActionClone(v);
+
+        SameLine();
+
+        if (ButtonEnabled("mutate", v.canMutate()))
+        {
+            for (auto&& it: v.boxSelectionMulti())
+                it->mutate(ptr());
+        }
+
+//        SameLine();
+//
+//        if (Button("reset"))
+//            nopath_impl;
 
         SameLine();
 
@@ -486,7 +493,10 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
 
         if (is_leaf && IsItemClicked(ImGuiMouseButton_Left))
         {
-            v.setSelectedBoxSingle(ptr());
+            if (IsKeyDown(ImGuiKey_LeftCtrl))
+                v.toggleSelectedBoxMulti(ptr());
+            else
+                v.setSelectedBoxSingle(ptr());
         }
 
         PopStyleColor();
@@ -501,7 +511,12 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
         if (v.edit_opts.show_row_select)
         {
             if (SmallButtonActivated(v.getBoxSelectionLabel(ptr()), v.isBoxSelectedSingle(ptr())))
-                v.setSelectedBoxSingle(ptr());
+            {
+                if (IsKeyDown(ImGuiKey_LeftCtrl))
+                    v.toggleSelectedBoxMulti(ptr());
+                else
+                    v.setSelectedBoxSingle(ptr());
+            }
             SameLine();
         }
 
@@ -554,7 +569,7 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
     return is_open;
 }
 
-void Box::drawOverlaySelectedBelow(BoxVisitor& v)
+void Box::drawOverlaySingleSelectedBelow(BoxVisitor& v)
 {
     using namespace ImGui;
 
@@ -563,7 +578,7 @@ void Box::drawOverlaySelectedBelow(BoxVisitor& v)
     drawOverlayPadding(i, o, m_color.withNormalA(.25f));
 }
 
-void Box::drawOverlaySelectedAbove(BoxVisitor& v)
+void Box::drawOverlaySingleSelectedAbove(BoxVisitor& v)
 {
     using namespace ImGui;
 
@@ -581,10 +596,14 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
 
     if (!v.isBoxSelectedSingle(ptr()))
     {
+        bool is_multi = v.isBoxSelectedMulti(ptr());
+
         auto o = v.getRealRect(bounds_outer);
-        auto c = v.overlay_opts.style().border;
-        //drawOverlayOutline(o, c, v.isSelectedMultiselect(ptr()) ? 3.0f : 1.0f);
-        drawOverlayOutline(o, c, 1.0f);
+        auto c = is_multi ? v.overlay_opts.style().border.opaque() : v.overlay_opts.style().border;
+        auto t = is_multi ? 3.0f : 1.0f;
+
+        drawOverlayOutline(o, c, t);
+        //drawOverlayOutline(o, c, 1.0f);
 
         if (!name.empty())
             drawOverlayTextUnselected(o, c, name);
@@ -922,6 +941,7 @@ void Box::applyChildActions()
             {
                 case ChildAction::DELETE:
                     child_boxes.erase(it);
+                    calcWeightsNormal();
                     break;
 
                 case ChildAction::MOVE_DEC:
@@ -935,7 +955,9 @@ void Box::applyChildActions()
                     break;
 
                 case ChildAction::CLONE:
-                    child_boxes.insert(it+1, (*it)->deepCopy(ptr()));
+                    // TODO: decide what to do about weights
+                    // child_boxes.insert(it+1, (*it)->deepCopy(ptr()));
+                    nopath_impl;
                     break;
 
                 default:nopath_case(ChildAction::Type);
@@ -989,9 +1011,9 @@ void Box::drawOverlay(BoxVisitor& v)
 
     if (auto selected_box = v.boxSelectionSingle())
     {
-        selected_box->drawOverlaySelectedBelow(v);
+        selected_box->drawOverlaySingleSelectedBelow(v);
         v.root_box->drawOverlayOutlines(v);
-        selected_box->drawOverlaySelectedAbove(v);
+        selected_box->drawOverlaySingleSelectedAbove(v);
     }
     else
     {
@@ -1010,17 +1032,26 @@ void Box::drawOverlay(BoxVisitor& v)
         if (IsKeyPressed(ImGuiKey_W))
             idx = (idx+1 % count + count) % count;
         if (IsKeyPressed(ImGuiKey_E))
-            v.overlay_opts.ignore_mouse = !v.overlay_opts.ignore_mouse;
+            v.overlay_opts.want_capture_mouse = !v.overlay_opts.want_capture_mouse;
     }
 
-    if (!io.WantCaptureMouse && !v.overlay_opts.ignore_mouse)
+    if (!io.WantCaptureMouse && v.overlay_opts.want_capture_mouse)
     {
         auto mp = v.getViewPoint(GetMousePos());
+
         if (IsMouseClicked(ImGuiMouseButton_Left))
         {
             if (auto box = v.root_box->tryGetBox(mp))
             {
-                v.setSelectedBoxSingle(box);
+                if (IsKeyDown(ImGuiKey_LeftCtrl))
+                {
+                    v.toggleSelectedBoxMulti(box);
+                }
+                else
+                {
+                    v.setSelectedBoxSingle(box);
+                }
+
             }
             else
             {

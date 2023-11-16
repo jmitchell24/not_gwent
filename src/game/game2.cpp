@@ -206,7 +206,7 @@ void GameBoard2::update(update_param u)
 
     BOX_EDITOR.view_transform = u.view_transform;
 
-    if (!BOX_EDITOR.ignoreMouse())
+    if (BOX_EDITOR.wantCaptureMouse())
         return;
 
     if (CardRef ref; tryGetHoveredCard(mp, ref))

@@ -44,6 +44,7 @@ namespace ledit
         void setSelectedBoxSingle(box_ptr const& ptr);
         void setSelectedBoxMulti(box_ptr const& ptr);
         void toggleSelectedBoxMulti(box_ptr const& ptr);
+        void setMutateSelection(box_ptr const& ptr);
 
         void clearSelectedBoxSingle();
         void clearSelectedBoxMulti(box_ptr const& ptr);
@@ -53,6 +54,9 @@ namespace ledit
         bool isBoxSelectedMulti(box_ptr const& ptR) const;
         bool hasBoxSelectionSingle() const;
         bool hasBoxSelectionMulti() const;
+
+        /// allow mutate only on sibling boxes
+        bool canMutate() const;
 
         box_ptr boxSelectionSingle() const;
         boxlist_t boxSelectionMulti() const;

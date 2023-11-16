@@ -15,8 +15,8 @@ namespace ledit
 
         BoxEditor(ut::cstrparam name);
 
-        inline bool ignoreMouse() const
-        { return overlay_opts.ignore_mouse; }
+        inline bool wantCaptureMouse() const
+        { return overlay_opts.want_capture_mouse; }
 
         void setRoot(ut::rect const& bounds);
         rectget_t getRect(ut::cstrparam name);

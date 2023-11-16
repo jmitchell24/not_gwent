@@ -178,7 +178,7 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 
     Dummy(GetItemRectSize());
 
-    Checkbox("Ignore Mouse Input", &opts.ignore_mouse);
+    Checkbox("Want Mouse Input", &opts.want_capture_mouse);
 }
 
 void BoxEditor::drawMainWindowFileOptions()

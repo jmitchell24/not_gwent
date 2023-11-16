@@ -111,6 +111,8 @@ void BoxVisitor::setSelectedBoxSingle(box_ptr const& ptr)
 
 void BoxVisitor::setSelectedBoxMulti(box_ptr const& ptr)
 {
+    if (m_selected_box_single == ptr)
+        return;
     for (auto&& it : m_selected_box_multi)
         if (it == ptr)
             return;
@@ -119,17 +121,44 @@ void BoxVisitor::setSelectedBoxMulti(box_ptr const& ptr)
 
 void BoxVisitor::toggleSelectedBoxMulti(box_ptr const& ptr)
 {
-    auto b = m_selected_box_multi.begin();
-    auto e = m_selected_box_multi.end();
-    for (auto it = b; it != e; ++it)
+    if (m_selected_box_single == ptr)
+        return;
+    if (hasBoxSelectionSingle())
     {
-        if (*it == ptr)
+        auto b = m_selected_box_multi.begin();
+        auto e = m_selected_box_multi.end();
+        for (auto it = b; it != e; ++it)
         {
-            m_selected_box_multi.erase(it);
-            return;
+            if (*it == ptr)
+            {
+                m_selected_box_multi.erase(it);
+                return;
+            }
         }
+        m_selected_box_multi.push_back(ptr);
     }
-    m_selected_box_multi.push_back(ptr);
+}
+
+void BoxVisitor::setMutateSelection(box_ptr const& ptr)
+{
+    if (ptr)
+    {
+        m_selected_box_single = nullptr;
+        m_selected_box_multi.clear();
+
+        if (auto parent = ptr->parent)
+        {
+            for (auto&& it : parent->child_boxes)
+            {
+                if (it == ptr)
+                    m_selected_box_single = it;
+                else
+                    m_selected_box_multi.push_back(it);
+            }
+        }
+
+        check(m_selected_box_single != nullptr, "invalid box hierarchy detected");
+    }
 }
 
 void BoxVisitor::clearSelectedBoxSingle()
@@ -177,6 +206,25 @@ bool BoxVisitor::hasBoxSelectionSingle() const
 bool BoxVisitor::hasBoxSelectionMulti() const
 {
     return !m_selected_box_multi.empty();
+}
+
+
+bool BoxVisitor::canMutate() const
+{
+    if (!m_selected_box_single)
+        return false;
+
+    if (m_selected_box_multi.empty())
+        return false;
+
+    auto parent = m_selected_box_single->parent;
+    if (!parent)
+        return false;
+
+    for (auto&& it : m_selected_box_multi)
+        if (parent != it->parent)
+            return false;
+    return true;
 }
 
 box_ptr BoxVisitor::boxSelectionSingle() const
