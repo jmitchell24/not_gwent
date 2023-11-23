@@ -77,6 +77,7 @@ namespace game::layout
 //        WeatherBoard weather;
 
         void layout(ut::rect const& b);
+        void reset();
         void drawDebug();
 
 

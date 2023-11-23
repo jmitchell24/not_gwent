@@ -241,6 +241,16 @@ void BoxEditor::drawMainWindowFileOptions()
         OpenPopup("popup_save_layout");
     }
 
+    SameLine();
+
+    if (Button("As Code..."))
+    {
+        auto s = toCPPString();
+
+        fwrite(s.data(), sizeof(char), s.size(), stdout);
+        fflush(stdout);
+    }
+
     if (BeginPopup("popup_save_layout"))
     {
         for (auto&& it : m_layout_files)

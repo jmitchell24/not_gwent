@@ -116,7 +116,7 @@ namespace gfx
 
         Board makeBoard(rect_ outer, rect_ inner, color_ c)
         {
-            assert(outer.contains(inner));
+            //assert(outer.contains(inner));
 
             auto s0 = m_dimens.shade0(c);
             auto s1 = m_dimens.shade1(c);
@@ -155,25 +155,25 @@ namespace gfx
 
         void drawWoodBoard(rect_ outer, rect_ inner)
         {
-            assert(outer.contains(inner));
+            //assert(outer.contains(inner));
             drawBoard(makeBoard(outer, inner, m_colors.wood));
         }
 
         void drawIronBoard(rect_ outer, rect_ inner)
         {
-            assert(outer.contains(inner));
+            //assert(outer.contains(inner));
             drawBoard(makeBoard(outer, inner, m_colors.iron));
         }
 
         void drawNerfBoard(rect_ outer, rect_ inner)
         {
-            assert(outer.contains(inner));
+            //assert(outer.contains(inner));
             drawBoard(makeBoard(outer, inner, m_colors.nerf));
         }
 
         void drawBuffBoard(rect_ outer, rect_ inner)
         {
-            assert(outer.contains(inner));
+            //assert(outer.contains(inner));
             drawBoard(makeBoard(outer, inner, m_colors.buff));
         }
 
@@ -181,7 +181,7 @@ namespace gfx
 
         Frame makeFrame(rect_ outer, rect_ inner, color_ c)
         {
-            assert(outer.contains(inner));
+            //assert(outer.contains(inner));
 
             auto s0 = m_dimens.shade0(c);
             auto s1 = m_dimens.shade1(c);

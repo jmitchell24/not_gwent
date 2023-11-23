@@ -1,0 +1,119 @@
+type: BOX_HBOX
+weight: 10
+pad: {pad1: 10}
+dim: {units: [1280, 720]}
+pos: {units: [0, 0]}
+children:
+  - type: BOX_VBOX
+    weight: 0.333333343
+    children:
+      - type: BOX_HBOX
+        weight: 0.333333343
+        pad: {pad1: 10}
+        children:
+          - type: BOX_VBOX
+            weight: 0.5
+            children:
+              - type: BOX_VBOX
+                weight: 0.5
+                children:
+                  - type: BOX_HBOX
+                    weight: 0.333333343
+                    name: gb.cpu.stats.name
+                  - type: BOX_HBOX
+                    weight: 0.333333343
+                    name: gb.cpu.stats.deck_name
+                  - type: BOX_HBOX
+                    weight: 0.333333343
+                    name: gb.cpu.stats.lead_name
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.cpu.stats.avatar
+                dim: {aspect: 1}
+                pos: {anchor: ANCHOR_CC}
+          - type: BOX_VBOX
+            weight: 0.5
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.cpu.stats.gems
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.cpu.stats.score
+      - type: BOX_HBOX
+        weight: 0.333333343
+      - type: BOX_HBOX
+        weight: 0.333333343
+        pad: {pad1: 10}
+        children:
+          - type: BOX_VBOX
+            weight: 0.5
+            children:
+              - type: BOX_VBOX
+                inner_pad: 0
+                weight: 0.5
+                children:
+                  - type: BOX_HBOX
+                    weight: 0.333333343
+                    name: gb.usr.stats.name
+                  - type: BOX_HBOX
+                    weight: 0.333333343
+                    name: gb.usr.stats.deck_name
+                  - type: BOX_HBOX
+                    weight: 0.333333343
+                    name: gb.usr.stats.lead_name
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.usr.stats.avatar
+                dim: {aspect: 1}
+                pos: {anchor: ANCHOR_CC}
+          - type: BOX_VBOX
+            weight: 0.5
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.usr.stats.gems
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.usr.stats.score
+  - type: BOX_VBOX
+    weight: 0.333333343
+    children:
+      - type: BOX_HBOX
+        weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.333333343
+            name: gb.cpu.player.deck
+          - type: BOX_HBOX
+            weight: 0.333333343
+            name: gb.cpu.player.hand
+          - type: BOX_HBOX
+            weight: 0.333333343
+            name: gb.cpu.player.yard
+      - type: BOX_HBOX
+        weight: 0.125
+      - type: BOX_HBOX
+        weight: 0.125
+      - type: BOX_HBOX
+        weight: 0.125
+      - type: BOX_HBOX
+        weight: 0.125
+      - type: BOX_HBOX
+        weight: 0.125
+      - type: BOX_HBOX
+        weight: 0.125
+      - type: BOX_HBOX
+        weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.333333343
+            name: gb.usr.player.deck
+          - type: BOX_HBOX
+            weight: 0.333333343
+            name: gb.usr.player.hand
+          - type: BOX_HBOX
+            weight: 0.333333343
+            name: gb.usr.player.yard
+  - type: BOX_HBOX
+    weight: 0.333333343

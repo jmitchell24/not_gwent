@@ -5,6 +5,12 @@
 #include "scene/scene_stage.hpp"
 
 //
+// gfx
+//
+#include "gfx/gfx_prototype.hpp"
+using namespace gfx;
+
+//
 // raylib
 //
 #include <raylib.h>
@@ -40,30 +46,75 @@ void Stage::drawDebug()
 {
     using namespace ImGui;
 
-    Begin("Stage");
+    if (m_show_debug_scene)
+    {
+        if (Begin("Scene"))
+        {
+            BeginChild(m_selected->name(), {0, 0}, true);
+            m_selected->drawDebug();
+            EndChild();
+        }
+        End();
+    }
 
-    Value("FPS", GetFPS());
-    Value("Frame MS", GetFrameTime());
+    if (m_show_debug_graphics)
+    {
+        Begin("Graphics");
+        DRECT.drawDebug();
+        PROTO.drawDebug();
+        End();
+    }
 
 
-    End();
-    Begin("Scene");
+}
 
-    if (BeginCombo("Scene", m_selected->name()))
+void Stage::drawDebugMenu()
+{
+    using namespace ImGui;
+
+    if (BeginMenu("File"))
+    {
+        if (MenuItem("Exit"))
+        {
+            should_exit = true;
+        }
+        EndMenu();
+    }
+
+    if (BeginMenu("Edit"))
+    {
+        EndMenu();
+    }
+
+    if (BeginMenu("View"))
+    {
+        if (MenuItem("Scene Debug", nullptr, m_show_debug_scene))
+            m_show_debug_scene = !m_show_debug_scene;
+
+        if (MenuItem("Graphics Debug", nullptr, m_show_debug_graphics))
+            m_show_debug_graphics = !m_show_debug_graphics;
+        EndMenu();
+    }
+
+    if (BeginMenu("Scene"))
     {
         for (auto&& it : m_scenes)
         {
-            if (ImGui::Selectable(it->name(), m_selected == it))
-            {
+            if (MenuItem(it->name(), nullptr, m_selected == it))
                 m_selected = it;
-            }
         }
-        EndCombo();
+
+
+        EndMenu();
     }
 
-    BeginChild(m_selected->name(), {0,0}, true);
-    m_selected->drawDebug();
-    EndChild();
+    if (BeginMenu("Help"))
+    {
+        EndMenu();
+    }
 
-    End();
+    Separator();
+
+    Value("FPS", GetFPS());
+    Value("Frame MS", GetFrameTime());
 }

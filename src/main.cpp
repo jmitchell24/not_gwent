@@ -33,6 +33,7 @@ using namespace gfx;
 #include "rlgl.h"
 #include "rlImGui/rlImGui.h"
 #include "rlImGui/extras/IconsFontAwesome5.h"
+#include "rlImGui/extras/fantasque_sans_mono_regular.hpp"
 
 #include "rlImGui/imgui/imgui_mods.hpp"
 
@@ -63,11 +64,11 @@ size_t constexpr static SCREEN_WIDTH    = 1920;
 size_t constexpr static SCREEN_HEIGHT   = 1080;
 
 #define EXPAND_SCENES(SCENE) \
-    SCENE(SceneGameBoard2Test)  \
     SCENE(SceneCardTest      )  \
+    SCENE(SceneProtoTest     )  \
+    SCENE(SceneGameBoard2Test)  \
     SCENE(SceneMathTest      )  \
     SCENE(SceneNanoVGTest    )  \
-    SCENE(SceneProtoTest     )  \
     SCENE(SceneDemoWindow    )  \
 
 #define SCENE_VAR(a_) a_    obj_##a_;
@@ -89,10 +90,17 @@ int main()
 
     rlImGuiBeginInitImGui();
     rlImGuiAddFontAwesomeIconFonts(9);
-    rlImGuiReloadFonts();
+    rlImGuiAddFantasqueSansMono(16);
     rlImGuiEndInitImGui();
 
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    {
+        using namespace ImGui;
+        auto& io = GetIO();
+
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    }
+
+
 
 #if 0
     //
@@ -111,7 +119,7 @@ int main()
     stage.load();
     stage.layout();
 
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && !stage.should_exit)
     {
         BeginDrawing();
         ClearBackground(GRAY);
@@ -124,37 +132,37 @@ int main()
             (float)Context::VIEW_HEIGHT
         );
 
+        auto update = Context::createUpdateData(view_transform);
+
         DRECT.view_transform = view_transform;
-
-//        VIRT.layout(
-//            viewport,
-//            (float)Context::VIEW_WIDTH,
-//            (float)Context::VIEW_HEIGHT
-//        );
-
 
         rlPushMatrix();
         rlMultMatrixf(view_transform.translate.data());
 
-        stage.update(Context::createUpdateData(view_transform));
+        stage.update(update);
         stage.draw();
 
         rlPopMatrix();
-
-
-
 
         rlDrawRenderBatchActive();
 
         rlImGuiBegin();
 
-        {
-            ImGui::RenderDockspace();
 
-            ImGui::Begin("Graphics");
-            DRECT.drawDebug();
-            PROTO.drawDebug();
-            ImGui::End();
+
+        {
+            using namespace ImGui;
+
+            if (BeginMainMenuBar())
+            {
+                stage.drawDebugMenu();
+                EndMainMenuBar();
+            }
+
+
+            RenderDockspace();
+
+
 
             stage.drawDebug();
         }

@@ -24,4 +24,5 @@ public:
     virtual void update     (update_param u){}
     virtual void draw       (){}
     virtual void drawDebug  (){}
+    virtual void drawDebugMenu() {}
 };

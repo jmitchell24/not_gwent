@@ -1,0 +1,18 @@
+type: BOX_VBOX
+weight: 1
+pad: {pad4: [20, 20, 0, 197]}
+dim: {units: [402.797241, 576]}
+pos: {units: [438.601379, 72]}
+children:
+  - type: BOX_HBOX
+    weight: 0.470999986
+    name: strength
+    dim: {aspect: 1}
+  - type: BOX_HBOX
+    weight: 0.264500022
+    name: ability
+    dim: {aspect: 1}
+  - type: BOX_HBOX
+    weight: 0.264500022
+    name: row
+    dim: {aspect: 1}

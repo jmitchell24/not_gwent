@@ -64,7 +64,6 @@ void drawOverlayPadding(rect const& outer, rect const& inner, color const& c)
     dl->AddQuadFilled(o.tr(), o.br(), i.br(), i.tr(), ToU32(c));
     dl->AddQuadFilled(o.br(), o.bl(), i.bl(), i.br(), ToU32(c));
     dl->AddQuadFilled(o.bl(), o.tl(), i.tl(), i.bl(), ToU32(c));
-
     dl->Flags = prev_flags;
 }
 
@@ -81,7 +80,7 @@ void drawOverlayTextSelected(rect const& rect, color const& c, cstrparam text)
     auto pos        = rr.center() - sz2;
 
     dl->AddRectFilled(rr_bg.min, rr_bg.max, ToU32(c));
-    dl->AddText(pos, 0xffffffff, text.begin(), text.end());
+    dl->AddText(pos, 0xff000000, text.begin(), text.end());
 }
 
 void drawOverlayTextUnselected(rect const& rect, color const& c, cstrparam text)
@@ -648,7 +647,7 @@ bool Box::loadYaml(cstrparam filename)
         {
             auto text = gulp::file_to_string(file);
             fromYaml(YAML::Load(text), ptr());
-            normalizeWeights();
+            //normalizeWeights();
             if (parent)
                 calcLayout(parent->bounds_outer);
             else
@@ -705,7 +704,8 @@ void Box::setBounds(rect const& inner, rect const& outer)
 void Box::calcLayout(rect const& p)
 {
     rect i, o;
-    sizer.getInnerOuter(p, i, o);
+    //sizer.getInnerOuter(p, i, o);
+    sizer.getMarginPadding(p, o, i);
     setBounds(i, o);
 
     if (child_boxes.empty())

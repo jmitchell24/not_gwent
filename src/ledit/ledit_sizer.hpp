@@ -22,6 +22,11 @@
     VAR(pad, PAD_TWO , Pad2, "pad2", ut::vec2 ) \
     VAR(pad, PAD_FOUR, Pad4, "pad4", ut::vec4 )
 
+#define EXPAND_MRG(VAR) \
+    VAR(mrg, MRG_ONE , Mrg1, "mrg1", float    ) \
+    VAR(mrg, MRG_TWO , Mrg2, "mrg2", ut::vec2 ) \
+    VAR(mrg, MRG_FOUR, Mrg4, "mrg4", ut::vec4 )
+
 #define EXPAND_POS(VAR) \
     VAR(pos, POS_ANCHOR , PosAnchor , "anchor" , AnchorType) \
     VAR(pos, POS_PERCENT, PosPercent, "percent", ut::vec2  ) \
@@ -43,23 +48,29 @@ namespace ledit
         enum PadType { PAD_NONE EXPAND_PAD(VAR_ENUM) };
         using pad_type = std::variant<std::monostate EXPAND_PAD(VAR_TYPE)>;
 
+        enum MrgType { MRG_NONE EXPAND_MRG(VAR_ENUM) };
+        using mrg_type = std::variant<std::monostate EXPAND_MRG(VAR_TYPE)>;
+
         enum DimType { DIM_NONE EXPAND_DIM(VAR_ENUM) };
         using dim_type = std::variant<std::monostate EXPAND_DIM(VAR_TYPE)>;
 
         enum PosType { POS_NONE EXPAND_POS(VAR_ENUM) };
         using pos_type = std::variant<std::monostate EXPAND_POS(VAR_TYPE)>;
 
+        mrg_type mrg;
         pad_type pad;
         dim_type dim;
         pos_type pos;
 
+        inline MrgType mrgType() const { return (MrgType)mrg.index(); }
         inline PadType padType() const { return (PadType)pad.index(); }
         inline DimType dimType() const { return (DimType)dim.index(); }
         inline PosType posType() const { return (PosType)pos.index(); }
 
         inline bool isDefault() const
-        { return !(pad.index()==0 || dim.index()==0 || pos.index()==0); }
+        { return !(mrg.index()==0 || pad.index()==0 || dim.index()==0 || pos.index()==0); }
 
+        EXPAND_MRG(VAR_FUNC)
         EXPAND_PAD(VAR_FUNC)
         EXPAND_DIM(VAR_FUNC)
         EXPAND_POS(VAR_FUNC)
@@ -67,10 +78,12 @@ namespace ledit
         void reset();
         bool drawProperties();
 
+        ut::rect getMrg  (ut::rect parent) const;
         ut::rect getPad  (ut::rect parent) const;
         ut::vec2 getDim  (ut::rect parent) const;
         ut::rect getPos  (ut::rect parent, ut::vec2 sz) const;
 
         void getInnerOuter(ut::rect const& parent, ut::rect& inner, ut::rect& outer) const;
+        void getMarginPadding(ut::rect const& parent, ut::rect& margin, ut::rect& padding) const;
     };
 }

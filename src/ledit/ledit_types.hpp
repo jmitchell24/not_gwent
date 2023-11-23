@@ -17,7 +17,7 @@
 #include <memory>
 #include <vector>
 #include <optional>
-#include <unordered_map>
+#include <map>
 #include <ut/check.hpp>
 
 namespace ledit
@@ -25,7 +25,7 @@ namespace ledit
     class Box;
     using box_ptr   = std::shared_ptr<Box>;
     using box_cptr  = std::shared_ptr<Box const>;
-    using boxmap_t  = std::unordered_map<std::string, box_ptr>;
+    using boxmap_t  = std::map<std::string, box_ptr>;
     using boxlist_t = std::vector<box_ptr>;
 
     using rectget_t  = std::optional<ut::rect>;
@@ -62,8 +62,8 @@ namespace ledit
             STYLE_PRESET_HIDE
         };
 
-        int         style_index         =0;
-        bool        want_capture_mouse  =false;
+        int         style_index         =2;
+        bool        want_capture_mouse  =true;
 
         inline Style& style()
         {

@@ -46,39 +46,77 @@ bool Sizer::drawProperties()
     bool changed=false;
 
     //
+    // Margin
+    //
+
+    if (ButtonDefault("Margin", mrg.index()>0))
+    { changed=true; mrg = monostate{}; }
+
+    BeginGroup();
+    switch (mrgType())
+    {
+        case MRG_NONE:
+            if (BeginCombo("Margin", "..."))
+            {
+                if (Selectable("Margin"     )) { changed=true; setMrg1({}); }
+                if (Selectable("Margin hv"  )) { changed=true; setMrg2({}); }
+                if (Selectable("Margin ltrb")) { changed=true; setMrg4({}); }
+                EndCombo();
+            }
+            break;
+
+        case MRG_ONE:
+            changed|=DragFloat("Margin", &getMrg1(), 1,0,FLT_MAX);
+            break;
+
+        case MRG_TWO:
+            changed|=DragFloat("Margin horz", &getMrg2().x, 1,0,FLT_MAX);
+            changed|=DragFloat("Margin vert", &getMrg2().y, 1,0,FLT_MAX);
+            break;
+
+        case MRG_FOUR:
+            changed|=DragFloat("Margin left"  , &getMrg4().x, 1,0,FLT_MAX);
+            changed|=DragFloat("Margin top"   , &getMrg4().y, 1,0,FLT_MAX);
+            changed|=DragFloat("Margin right" , &getMrg4().z, 1,0,FLT_MAX);
+            changed|=DragFloat("Margin bottom", &getMrg4().w, 1,0,FLT_MAX);
+            break;
+    }
+    EndGroup();
+
+    //
     // Padding
     //
 
-    if (ButtonDefault("pad", pad.index()>0))
+    if (ButtonDefault("Padding", pad.index()>0))
     { changed=true; pad = monostate{}; }
 
     BeginGroup();
     switch (padType())
     {
         case PAD_NONE:
-            if (BeginCombo("pad", "..."))
+            if (BeginCombo("Padding", "..."))
             {
-                if (Selectable("pad"     )) { changed=true; setPad1({}); }
-                if (Selectable("pad hv"  )) { changed=true; setPad2({}); }
-                if (Selectable("pad ltrb")) { changed=true; setPad4({}); }
+                if (Selectable("Padding"     )) { changed=true; setPad1({}); }
+                if (Selectable("Padding hv"  )) { changed=true; setPad2({}); }
+                if (Selectable("Padding ltrb")) { changed=true; setPad4({}); }
                 EndCombo();
             }
             break;
 
         case PAD_ONE:
-            changed|=DragFloat("pad", &getPad1(), 1,0,FLT_MAX);
+            changed|=DragFloat("Padding", &getPad1(), 1,0,FLT_MAX);
             break;
 
         case PAD_TWO:
-            changed|=DragFloat("horz", &getPad2().x, 1,0,FLT_MAX);
-            changed|=DragFloat("vert", &getPad2().y, 1,0,FLT_MAX);
+            changed|=DragFloat("Padding horz", &getPad2().x, 1,0,FLT_MAX);
+            changed|=DragFloat("Padding vert", &getPad2().y, 1,0,FLT_MAX);
             break;
 
         case PAD_FOUR:
-            changed|=DragFloat("left"  , &getPad4().x, 1,0,FLT_MAX);
-            changed|=DragFloat("top"   , &getPad4().y, 1,0,FLT_MAX);
-            changed|=DragFloat("right" , &getPad4().z, 1,0,FLT_MAX);
-            changed|=DragFloat("bottom", &getPad4().w, 1,0,FLT_MAX);
+            changed|=DragFloat("Padding left"  , &getPad4().x, 1,0,FLT_MAX);
+            changed|=DragFloat("Padding top"   , &getPad4().y, 1,0,FLT_MAX);
+            changed|=DragFloat("Padding right" , &getPad4().z, 1,0,FLT_MAX);
+            changed|=DragFloat("Padding bottom", &getPad4().w, 1,0,FLT_MAX);
             break;
     }
     EndGroup();
@@ -179,6 +217,19 @@ bool Sizer::drawProperties()
     return changed;
 }
 
+rect Sizer::getMrg(rect b) const
+{
+    switch (mrgType())
+    {
+        case MRG_NONE: return b;
+        case MRG_ONE : return b.deflated(getMrg1());
+        case MRG_TWO : return b.deflated(getMrg2().x, getMrg2().y);
+        case MRG_FOUR: return b.deflated(getMrg4().x, getMrg4().y, getMrg4().z, getMrg4().w);
+        default:nopath_case(MrgType);
+    }
+    return b;
+}
+
 rect Sizer::getPad(rect b) const
 {
     switch (padType())
@@ -252,4 +303,13 @@ void Sizer::getInnerOuter(rect const& parent, rect& inner, rect& outer) const
     auto sz = getDim(parent);
     outer   = getPos(parent, sz);
     inner   = getPad(outer);
+}
+
+void Sizer::getMarginPadding(ut::rect const& parent, ut::rect& margin, ut::rect& padding) const
+{
+    auto sz = getDim(parent);
+    auto r  = getPos(parent, sz);
+
+    margin  = getMrg(r);
+    padding = getPad(margin);
 }

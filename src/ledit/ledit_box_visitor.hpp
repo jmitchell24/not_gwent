@@ -27,6 +27,8 @@ namespace ledit
         ut::rect getRealRect(ut::rect const& r) const;
         ut::vec2 getViewPoint(ut::vec2 const& p) const;
 
+        std::string toCPPString();
+
         //
         // Box Slots
         //

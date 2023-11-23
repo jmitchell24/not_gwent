@@ -239,6 +239,17 @@ namespace box_props
             throw Exception(n.Mark(), "invalid box type");
     }
 
+    SAVE_FUNC(inner_pad, em, box)
+    {
+        if (box->flex.inner_pad != 10)
+            em << Key << "inner_pad" << Value << box->flex.inner_pad;
+    }
+
+    LOAD_FUNC(inner_pad, n, box)
+    {
+        box->flex.inner_pad = n["inner_pad"].as<float>(10);
+    }
+
     SAVE_FUNC(weight, em, box)
     {
         if (box->weight != 1.0f)
@@ -261,6 +272,9 @@ namespace box_props
         box->name = n["name"].as<string>("");
     }
 
+    SAVE_FUNC(mrg, em, box) { if (box->sizer.mrg.index() > 0) em << Key << "mrg" << box->sizer.mrg; }
+    LOAD_FUNC(mrg, n , box) { if (auto np = n["mrg"]) box->sizer.mrg = np.as<Sizer::mrg_type>(); }
+
     SAVE_FUNC(pad, em, box) { if (box->sizer.pad.index() > 0) em << Key << "pad" << box->sizer.pad; }
     LOAD_FUNC(pad, n , box) { if (auto np = n["pad"]) box->sizer.pad = np.as<Sizer::pad_type>(); }
 
@@ -280,8 +294,10 @@ void ::ledit::emitYaml(YAML::Emitter& em, box_ptr const& box)
 
     em << BeginMap;
     box_props::type     (em, box);
+    box_props::inner_pad(em, box);
     box_props::weight   (em, box);
     box_props::name     (em, box);
+    box_props::mrg      (em, box);
     box_props::pad      (em, box);
     box_props::dim      (em, box);
     box_props::pos      (em, box);
@@ -301,12 +317,14 @@ void ::ledit::fromYaml(YAML::Node const& node, box_ptr const& box)
 {
     using namespace YAML;
 
-    box_props::type   (node, box);
-    box_props::weight (node, box);
-    box_props::name   (node, box);
-    box_props::pad    (node, box);
-    box_props::dim    (node, box);
-    box_props::pos    (node, box);
+    box_props::type     (node, box);
+    box_props::weight   (node, box);
+    box_props::inner_pad(node, box);
+    box_props::name     (node, box);
+    box_props::mrg      (node, box);
+    box_props::pad      (node, box);
+    box_props::dim      (node, box);
+    box_props::pos      (node, box);
 
     if (auto ch = node["children"])
     {

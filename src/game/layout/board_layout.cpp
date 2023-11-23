@@ -167,8 +167,6 @@ void GameBoard::layout(rect const& b)
     //card_size = CardLayout::sizeFromHeight(usr.player.bounds.height());
 }
 
-
-
 void GameBoard::drawDebug()
 {
 
