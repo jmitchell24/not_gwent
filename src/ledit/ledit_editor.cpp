@@ -32,9 +32,11 @@ using namespace std;
 // Implementation -> BoxEditor
 //
 
-BoxEditor::BoxEditor(ut::cstrparam name)
-    : m_name{name.str()}
-{ }
+BoxEditor::BoxEditor(cstrparam name)
+    : BoxVisitor{name.str()}
+{
+    m_source_code.SetReadOnly(true);
+}
 
 void BoxEditor::setRoot(rect const& bounds)
 {
@@ -43,27 +45,56 @@ void BoxEditor::setRoot(rect const& bounds)
     clearSelectedBoxSingle();
 }
 
-rectget_t BoxEditor::getRect(ut::cstrparam s)
+bool BoxEditor::tryGetRects(ut::cstrparam name, BoxRects& rects)
 {
-    if (auto box = getBoxSlot(s))
+    if (auto box = getBoxSlot(name))
     {
         if (box->getChanged())
         {
             box->clearChanged();
-            return {box->bounds_inner};
+            rects = box->rects;
+            return true;
         }
     }
-    return {};
+    return false;
 }
 
-bool BoxEditor::tryGetRect(ut::cstrparam s, rect& r)
+bool BoxEditor::tryGetOuter(cstrparam name, rect& outer)
 {
-    if (auto box = getBoxSlot(s))
+    if (auto box = getBoxSlot(name))
     {
         if (box->getChanged())
         {
             box->clearChanged();
-            r = box->bounds_inner;
+            outer = box->rects.outer;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BoxEditor::tryGetBorder(cstrparam name, rect& border)
+{
+    if (auto box = getBoxSlot(name))
+    {
+        if (box->getChanged())
+        {
+            box->clearChanged();
+            border = box->rects.border;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BoxEditor::tryGetInner(cstrparam name, rect& inner)
+{
+    if (auto box = getBoxSlot(name))
+    {
+        if (box->getChanged())
+        {
+            box->clearChanged();
+            inner = box->rects.inner;
             return true;
         }
     }
@@ -79,6 +110,7 @@ bool BoxEditor::draw()
 
     PushID(m_name.c_str());
     drawMainWindow();
+    drawCodeWindow();
     Box::drawPropertiesWindow(*this);
     Box::drawOverlay(*this);
     PopID();
@@ -90,34 +122,48 @@ void BoxEditor::drawMainWindow()
 {
     using namespace ImGui;
 
-    auto lbl = PRINTER("Box Editor '%s'###box_hierarchy", m_name.c_str());
+    auto lbl = PRINTER("Box Editor [%s]###box_hierarchy", m_name.c_str());
 
     if (Begin(lbl))
     {
-        if (BeginTabBar("tabs"))
-        {
-            if (BeginTabItem("Options"))
-            {
-                drawMainWindowBoxEditOptions(edit_opts);
-                Separator();
-                drawMainWindowOverlayOptions(overlay_opts);
-                Separator();
-                drawMainWindowFileOptions();
-                Separator();
-                Box::drawBoxHierarchy(*this);
-                EndTabItem();
-            }
-            EndTabBar();
-        }
+        if (CollapsingHeader("Row Options"))
+            drawMainWindowBoxEditOptions(edit_opts);
+
+        if (CollapsingHeader("Overlay Options"))
+            drawMainWindowOverlayOptions(overlay_opts);
+
+        if (CollapsingHeader("File Options"))
+            drawMainWindowFileOptions();
+
+        if (CollapsingHeader("Binds"))
+            drawMainWindowBindOptions();
+
+        if (CollapsingHeader("Hierarchy"))
+            Box::drawBoxHierarchy(*this);
     }
     End();
+}
+
+void BoxEditor::drawCodeWindow()
+{
+    using namespace ImGui;
+
+    auto lbl = PRINTER("Code [%s]###code_window", m_name.c_str());
+
+    if (m_is_code_window_open)
+    {
+        if (Begin(lbl, &m_is_code_window_open))
+        {
+
+        }
+        End();
+    }
+
 }
 
 void BoxEditor::drawMainWindowBoxEditOptions(BoxEditOptions &opts)
 {
     using namespace ImGui;
-
-    Text("Row Options");
 
     Columns(3, "row-columns", false);
     Checkbox("add", &opts.show_row_add);
@@ -137,8 +183,6 @@ void BoxEditor::drawMainWindowBoxEditOptions(BoxEditOptions &opts)
 void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 {
     using namespace ImGui;
-
-    Text("Overlay Options");
 
     {
         auto& i = opts.style_index;
@@ -184,8 +228,6 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 void BoxEditor::drawMainWindowFileOptions()
 {
     using namespace ImGui;
-
-    Text("File Options");
 
     if (m_current_file.empty())
     {
@@ -247,9 +289,32 @@ void BoxEditor::drawMainWindowFileOptions()
     {
         auto s = toCPPString();
 
+        m_source_code.SetText(s);
+
         fwrite(s.data(), sizeof(char), s.size(), stdout);
         fflush(stdout);
+
+//        OpenPopup("popup_copy_code");
     }
+
+//    if (BeginPopupModal("popup_copy_code"))
+//    {
+//        BeginChild("source_code_child", );
+//        m_source_code.Render("source_code", ImVec2{0, 500});
+//        EndChild();
+//
+//
+//
+//
+//        Separator();
+//
+//        if (Button("Copy to clipboard")) { }
+//
+//        SetItemDefaultFocus();
+//        SameLine();
+//        if (ImGui::Button("Close", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+//        EndPopup();
+//    }
 
     if (BeginPopup("popup_save_layout"))
     {
@@ -278,6 +343,71 @@ void BoxEditor::drawMainWindowFileOptions()
         }
 
         EndPopup();
+    }
+}
+
+void BoxEditor::drawMainWindowBindOptions()
+{
+    using namespace ImGui;
+
+    ImGuiTableFlags table_flags =
+            ImGuiTableFlags_BordersV            |
+            ImGuiTableFlags_BordersOuterH       |
+            ImGuiTableFlags_SizingFixedFit      |
+            ImGuiTableFlags_ScrollX             |
+            ImGuiTableFlags_RowBg               |
+            ImGuiTableFlags_NoBordersInBody;
+
+    if (BeginTable("slots", 2, table_flags, ImVec2{0, 150}))
+    {
+        TableSetupColumn("Name");
+        TableSetupColumn("Box");
+        TableHeadersRow();
+
+        for (auto&& it : boxMap())
+        {
+            if (TableNextColumn())
+                TextUnformatted(it.first);
+
+
+            if (auto box = it.second)
+            {
+                if (TableNextColumn())
+                {
+                    PushID(it.first.c_str());
+                    box->drawBreadcrumbs(*this);
+                    PopID();
+                }
+            }
+            else if (TableNextColumn())
+            {
+                TextUnformatted("---"_sv);
+            }
+
+        }
+
+        EndTable();
+    }
+
+    if (getEmptySlotCount() == 0)
+    {
+        if (Button("to Console"))
+        {
+
+        }
+        SameLine();
+        if (Button("to Clipboard"))
+        {
+
+        }
+    }
+    else
+    {
+        PushItemDisabled();
+        Button("to Console");
+        SameLine();
+        Button("to Clipboard");
+        PopItemDisabled();
     }
 }
 

@@ -351,7 +351,7 @@ void GameBoard2::drawDebug()
 {
     if (BOX_EDITOR.draw())
     {
-#define TRY_GET_RECT(x_) BOX_EDITOR.tryGetRect(#x_, x_)
+#define TRY_GET_RECT(x_) BOX_EDITOR.tryGetBorder(#x_, x_)
 
         {
             if (TRY_GET_RECT(gb.usr.player.hand))

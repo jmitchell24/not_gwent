@@ -5,7 +5,7 @@ dim: {units: [1280, 720]}
 pos: {units: [0, 0]}
 children:
   - type: BOX_VBOX
-    weight: 0.333333343
+    weight: 0.262499988
     children:
       - type: BOX_HBOX
         weight: 0.333333343
@@ -77,7 +77,7 @@ children:
                 weight: 0.5
                 name: gb.usr.stats.score
   - type: BOX_VBOX
-    weight: 0.333333343
+    weight: 0.474999994
     children:
       - type: BOX_HBOX
         weight: 0.125
@@ -107,13 +107,13 @@ children:
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.333333343
+            weight: 0.125999987
             name: gb.usr.player.deck
           - type: BOX_HBOX
-            weight: 0.333333343
+            weight: 0.748000026
             name: gb.usr.player.hand
           - type: BOX_HBOX
-            weight: 0.333333343
+            weight: 0.125999987
             name: gb.usr.player.yard
   - type: BOX_HBOX
-    weight: 0.333333343
+    weight: 0.262499988

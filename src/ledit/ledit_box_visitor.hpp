@@ -24,9 +24,12 @@ namespace ledit
         box_ptr             root_box;
         vt_type             view_transform;
 
+        explicit BoxVisitor(ut::cstrparam name);
+
+        std::string const& name() const;
+
         ut::rect getRealRect(ut::rect const& r) const;
         ut::vec2 getViewPoint(ut::vec2 const& p) const;
-
         std::string toCPPString();
 
         //
@@ -34,10 +37,11 @@ namespace ledit
         //
 
         boxmap_t const& boxMap() const;
-        box_ptr         getBoxSlot      (ut::cstrparam s);
-        void            setBoxSlot      (box_ptr const& ptr);
-        void            resetBoxSlot    (box_ptr const& ptr);
-        void            resetAllSlots   ();
+        size_t getEmptySlotCount() const;
+        box_ptr getBoxSlot(ut::cstrparam s);
+        void setBoxSlot(box_ptr const& ptr);
+        void resetBoxSlot(box_ptr const& ptr);
+        void resetAllSlots();
 
         //
         // Box Selection
@@ -66,12 +70,13 @@ namespace ledit
         ut::cstrview getBoxSelectionLabel(box_ptr const& ptr) const;
 
     protected:
-        boxmap_t m_box_map;
+        std::string m_name;
+        boxmap_t    m_box_map;
 
         void setBoxSlotAll(box_ptr const& ptr);
 
     private:
-        box_ptr   m_selected_box_single;
-        boxlist_t m_selected_box_multi;
+        box_ptr     m_selected_box_single;
+        boxlist_t   m_selected_box_multi;
     };
 }

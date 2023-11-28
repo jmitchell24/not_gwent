@@ -305,11 +305,10 @@ void Sizer::getInnerOuter(rect const& parent, rect& inner, rect& outer) const
     inner   = getPad(outer);
 }
 
-void Sizer::getMarginPadding(ut::rect const& parent, ut::rect& margin, ut::rect& padding) const
+void Sizer::getBoxRects(rect const& parent, BoxRects& child) const
 {
     auto sz = getDim(parent);
-    auto r  = getPos(parent, sz);
-
-    margin  = getMrg(r);
-    padding = getPad(margin);
+    child.outer     = getPos(parent, sz);
+    child.border    = getMrg(child.outer);
+    child.inner     = getPad(child.border);
 }

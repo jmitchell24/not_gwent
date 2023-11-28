@@ -28,8 +28,7 @@ namespace ledit
         Flex            flex;
         Sizer           sizer;
 
-        ut::rect        bounds_inner;
-        ut::rect        bounds_outer;
+        BoxRects        rects;
 
         box_ptr         parent;
         boxlist_t       child_boxes;
@@ -59,6 +58,8 @@ namespace ledit
         static bool isRoot(box_ptr const& box)
         { return box && box->parent == nullptr; }
 
+        void drawBreadcrumbs(BoxVisitor& v);
+
         static box_ptr create       (box_ptr const& parent);
         static box_ptr createRoot   (ut::rect const& bounds);
         static box_ptr createRoot   (Sizer const& sizer);
@@ -80,7 +81,9 @@ namespace ledit
         // layout
         //
 
-        void setBounds(ut::rect const& inner, ut::rect const& outer);
+//        void setBounds(ut::rect const& bounds,
+//                       ut::rect const& bounds_margin,
+//                       ut::rect const& bounds_padding);
 
         void calcLayout    (ut::rect const& b);
         void calcLayoutVbox(ut::rect const& b);

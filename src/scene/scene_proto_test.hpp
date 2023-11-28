@@ -87,7 +87,7 @@ public:
 
         if (editor.draw())
         {
-#define TRY_GET_RECT(x_) editor.tryGetRect(#x_, x_)
+#define TRY_GET_RECT(x_) editor.tryGetBorder(#x_, x_)
 
             {
                 bool b = false;

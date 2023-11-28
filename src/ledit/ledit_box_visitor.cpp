@@ -21,6 +21,15 @@ using namespace std;
 // BoxVisitor -> Implementation
 //
 
+BoxVisitor::BoxVisitor(cstrparam name)
+    : m_name{name.str()}
+{ }
+
+string const& BoxVisitor::name() const
+{
+    return m_name;
+}
+
 boxmap_t const& BoxVisitor::boxMap() const
 {
     return m_box_map;
@@ -59,10 +68,10 @@ string BoxVisitor::toCPPString()
         {
             ss << PRINTER("%-30s = rect(%8.3ff, %8.3ff, %8.3ff, %8.3ff);\n",
                     box->name.c_str(),
-                    box->bounds_inner.pack[0],
-                    box->bounds_inner.pack[1],
-                    box->bounds_inner.pack[2],
-                    box->bounds_inner.pack[3]);
+                    box->rects.inner.pack[0],
+                    box->rects.inner.pack[1],
+                    box->rects.inner.pack[2],
+                    box->rects.inner.pack[3]);
         }
     }
 
@@ -117,6 +126,15 @@ void BoxVisitor::resetAllSlots()
 {
     for (auto&& it : m_box_map)
         it.second = nullptr;
+}
+
+size_t BoxVisitor::getEmptySlotCount() const
+{
+    size_t count = 0;
+    for (auto&& it : m_box_map)
+        if (it.second == nullptr)
+            ++count;
+    return count;
 }
 
 void BoxVisitor::setBoxSlotAll(box_ptr const& ptr)

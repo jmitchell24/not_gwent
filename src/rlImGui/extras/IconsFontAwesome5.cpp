@@ -6,7 +6,7 @@
 void rlImGuiAddFontAwesomeIconFonts(float size)
 {
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontDefault();
+    //io.Fonts->AddFontDefault();
 
     // merge in icons from FontkAwesome
     static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };

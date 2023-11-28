@@ -23,17 +23,21 @@
 namespace ledit
 {
     class Box;
+    struct BoxRects;
     using box_ptr   = std::shared_ptr<Box>;
     using box_cptr  = std::shared_ptr<Box const>;
     using boxmap_t  = std::map<std::string, box_ptr>;
     using boxlist_t = std::vector<box_ptr>;
 
-    using rectget_t  = std::optional<ut::rect>;
+    struct BoxRects
+    {
+        ut::rect outer;
+        ut::rect border;
+        ut::rect inner;
+    };
 
     struct BoxEditOptions
     {
-        static constexpr ut::cstrview SELECTED_BOX_POPUP_LBL = "selected_box_popup";
-
         bool show_row_select    = true;
         bool show_row_add       = false;
         bool show_row_delete    = false;

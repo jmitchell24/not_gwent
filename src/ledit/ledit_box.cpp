@@ -10,11 +10,11 @@ using namespace ledit;
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
+#include "rlImGui/extras/IconsFontAwesome5.h"
 
 //
 // ut
 //
-#include <ut/check.hpp>
 #include <ut/algo.hpp>
 
 using namespace ut;
@@ -50,7 +50,7 @@ void drawOverlayOutline(rect const& rect, color const &c, float thickness)
     dl->Flags = prev_flags;
 }
 
-void drawOverlayPadding(rect const& outer, rect const& inner, color const& c)
+void drawOverlayFrame(rect const& outer, rect const& inner, color const& c)
 {
     using namespace ImGui;
 
@@ -200,7 +200,7 @@ box_ptr Box::tryGetBox(vec2 const& mp)
             return box;
     }
 
-    if (auto r = bounds_outer; r.contains(mp))
+    if (auto r = rects.border; r.contains(mp))
         return ptr();
     return nullptr;
 }
@@ -293,40 +293,15 @@ void Box::drawProperties(BoxVisitor& v)
 
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("bounds_content", "%s", to_string(bounds_outer.cast<int>().psize()).c_str());
+    LabelText("Outer", "%s", to_string(rects.outer.cast<int>().psize()).c_str());
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("bounds_pad", "%s", to_string(bounds_inner.cast<int>().psize()).c_str());
+    LabelText("Border", "%s", to_string(rects.border.cast<int>().psize()).c_str());
+    ButtonEnabled(" ", false);
+    SameLine();
+    LabelText("Inner", "%s", to_string(rects.inner.cast<int>().psize()).c_str());
 
-    {
-        box_ptr b = ptr();
-        vector<box_ptr> ps;
-
-        do
-        {
-            ps.push_back(b);
-            b = b->parent;
-        } while (b);
-
-
-        ButtonEnabled(" ", false);
-        SameLine();
-
-        auto it = ps.rbegin();
-        PushButtonColor((*it)->m_color);
-        if (SmallButton((*it)->getLbl().c_str())) v.setSelectedBoxSingle(*it);
-        PopButtonColor();
-
-        for (++it; it != ps.rend(); ++it)
-        {
-            SameLine();
-            TextUnformatted("/");
-            SameLine();
-            PushButtonColor((*it)->m_color);
-            if (SmallButton((*it)->getLbl().c_str()))  v.setSelectedBoxSingle(*it);
-            PopButtonColor();
-        }
-    }
+    drawBreadcrumbs(v);
 
 
     if (ButtonDefault("name", !name.empty()))
@@ -572,16 +547,19 @@ void Box::drawOverlaySingleSelectedBelow(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    auto i = v.getRealRect(bounds_inner);
-    auto o = v.getRealRect(bounds_outer);
-    drawOverlayPadding(i, o, m_color.withNormalA(.25f));
+    auto o = v.getRealRect(rects.outer);
+    auto b = v.getRealRect(rects.border);
+    auto i = v.getRealRect(rects.inner);
+
+    drawOverlayFrame(o, b, m_color.withNormalA(.25f));
+    drawOverlayFrame(b, i, m_color.withNormalA(.50f));
 }
 
 void Box::drawOverlaySingleSelectedAbove(BoxVisitor& v)
 {
     using namespace ImGui;
 
-    auto o = v.getRealRect(bounds_outer);
+    auto o = v.getRealRect(rects.border);
     auto c = m_color;
     drawOverlayOutline(o, c, 3.0f);
 
@@ -597,7 +575,7 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
     {
         bool is_multi = v.isBoxSelectedMulti(ptr());
 
-        auto o = v.getRealRect(bounds_outer);
+        auto o = v.getRealRect(rects.border);
         auto c = is_multi ? v.overlay_opts.style().border.opaque() : v.overlay_opts.style().border;
         auto t = is_multi ? 3.0f : 1.0f;
 
@@ -649,7 +627,7 @@ bool Box::loadYaml(cstrparam filename)
             fromYaml(YAML::Load(text), ptr());
             //normalizeWeights();
             if (parent)
-                calcLayout(parent->bounds_outer);
+                calcLayout(parent->rects.inner);
             else
                 calcLayout(rect{});
             return true;
@@ -692,21 +670,23 @@ bool Box::saveYaml(cstrparam filename)
 // layout
 //
 
-void Box::setBounds(rect const& inner, rect const& outer)
-{
-//    m_changed |= bounds_inner != inner;
-//    m_changed |= bounds_outer != outer;
-
-    bounds_inner = inner;
-    bounds_outer = outer;
-}
+//void Box::setBounds(rect const& inner, rect const& outer)
+//{
+////    m_changed |= bounds_inner != inner;
+////    m_changed |= bounds_outer != outer;
+//
+//    bounds_inner = inner;
+//    bounds_outer = outer;
+//}
 
 void Box::calcLayout(rect const& p)
 {
-    rect i, o;
+//    rect i, o;
     //sizer.getInnerOuter(p, i, o);
-    sizer.getMarginPadding(p, o, i);
-    setBounds(i, o);
+//    sizer.getMarginPadding(p, o, i);
+//    setBounds(i, o);
+
+    sizer.getBoxRects(p, rects);
 
     if (child_boxes.empty())
         return;
@@ -714,13 +694,13 @@ void Box::calcLayout(rect const& p)
     switch (flex.type)
     {
         case BOX_VBOX:
-            calcLayoutVbox(bounds_inner);
+            calcLayoutVbox(rects.inner);
             break;
         case BOX_HBOX:
-            calcLayoutHbox(bounds_inner);
+            calcLayoutHbox(rects.inner);
             break;
         case BOX_SBOX:
-            calcLayoutSbox(bounds_inner);
+            calcLayoutSbox(rects.inner);
             break;
         default:
             nopath_case(BoxType);
@@ -992,6 +972,45 @@ box_ptr Box::createRoot(Sizer const& sizer)
     return box;
 }
 
+void Box::drawBreadcrumbs(BoxVisitor& v)
+{
+    using namespace ImGui;
+
+    box_ptr b = ptr();
+    vector<box_ptr> ps;
+
+    do
+    {
+        ps.push_back(b);
+        b = b->parent;
+    } while (b);
+
+    PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0,0});
+
+    auto it = ps.rbegin();
+
+    PushID(it->get());
+    PushButtonColor((*it)->m_color);
+    if (SmallButton((*it)->getLbl().c_str()))
+        v.setSelectedBoxSingle(*it);
+    PopButtonColor();
+    PopID();
+
+    for (++it; it != ps.rend(); ++it)
+    {
+        SameLine();
+
+        PushID(it->get());
+        PushButtonColor((*it)->m_color);
+        if (SmallButton(PRINTER(ICON_FA_CARET_RIGHT " %s", (*it)->getLbl().c_str())))
+            v.setSelectedBoxSingle(*it);
+        PopButtonColor();
+        PopID();
+    }
+
+    PopStyleVar();
+}
+
 void Box::drawOverlay(BoxVisitor& v)
 {
     using namespace ImGui;
@@ -1002,7 +1021,7 @@ void Box::drawOverlay(BoxVisitor& v)
     v.root_box->calcLayout(rect{});
 
     {
-        auto rr = v.getRealRect(v.root_box->bounds_outer).round();
+        auto rr = v.getRealRect(v.root_box->rects.outer).round();
         auto dl = GetBackgroundDrawList();
         auto bg = ToU32(v.overlay_opts.style().background);
 
@@ -1100,7 +1119,6 @@ void Box::drawBoxHierarchy(BoxVisitor& v)
         ImGuiTableFlags_RowBg           |
         ImGuiTableFlags_NoBordersInBody;
 
-    Text("Box Hierarchy");
     if (BeginTable("grids", 2, table_flags))
     {
         TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
@@ -1123,7 +1141,9 @@ void Box::drawPropertiesWindow(BoxVisitor& v)
                 ImGuiWindowFlags_AlwaysAutoResize |
                 ImGuiWindowFlags_NoDocking;
 
-        if (Begin(BoxEditOptions::SELECTED_BOX_POPUP_LBL, &v.edit_opts.is_properties_window_open, window_flags))
+        auto lbl = PRINTER("Box Properties [%s]###selected_box_popup", v.name().c_str());
+
+        if (Begin(lbl, &v.edit_opts.is_properties_window_open, window_flags))
         {
             selected_box->drawProperties(v);
         }

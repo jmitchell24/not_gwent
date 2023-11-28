@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ledit/ledit_enums.hpp"
+#include "ledit/ledit_types.hpp"
 
 #include <ut/math.hpp>
 #include <ut/string.hpp>
@@ -84,6 +85,6 @@ namespace ledit
         ut::rect getPos  (ut::rect parent, ut::vec2 sz) const;
 
         void getInnerOuter(ut::rect const& parent, ut::rect& inner, ut::rect& outer) const;
-        void getMarginPadding(ut::rect const& parent, ut::rect& margin, ut::rect& padding) const;
+        void getBoxRects(ut::rect const& parent, BoxRects& child) const;
     };
 }

@@ -89,8 +89,8 @@ int main()
     //
 
     rlImGuiBeginInitImGui();
-    rlImGuiAddFontAwesomeIconFonts(9);
     rlImGuiAddFantasqueSansMono(16);
+    rlImGuiAddFontAwesomeIconFonts(14);
     rlImGuiEndInitImGui();
 
     {

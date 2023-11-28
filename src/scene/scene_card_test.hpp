@@ -84,23 +84,19 @@ public:
 
         if (editor.draw())
         {
-            if (auto box = editor.getRect("strength"))
+            if (editor.tryGetBorder("strength", r_strength))
             {
-                r_strength = *box;
                 TraceLog(LOG_INFO, "getRect 'strength'");
             }
 
-            if (auto box = editor.getRect("ability"))
+            if (editor.tryGetBorder("ability", r_ability))
             {
-                r_ability = *box;
                 TraceLog(LOG_INFO, "getRect 'ability'");
             }
 
-            if (auto box = editor.getRect("row"))
+            if (editor.tryGetBorder("row", r_row))
             {
-                r_row = *box;
                 TraceLog(LOG_INFO, "getRect 'row'");
-
             }
         }
     }
