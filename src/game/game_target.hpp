@@ -13,13 +13,15 @@ namespace game
     //
 
     struct TargetDefault;
-    struct TargetCommanderHorn;
+    struct TargetBuff;
+    struct TargetNerf;
     struct TargetUnitRow;
     struct TargetUnitCard;
 
     using Target = std::variant<
             TargetDefault,
-            TargetCommanderHorn,
+            TargetBuff,
+            TargetNerf,
             TargetUnitRow,
             TargetUnitCard
     >;
@@ -33,8 +35,17 @@ namespace game
 
     };
 
-    struct TargetCommanderHorn
+    struct TargetBuff
     {
+        size_t hand_idx;
+    };
+
+    struct TargetNerf
+    {
+        bool target_melee;      /// will melee (both players) be targeted?
+        bool target_ranged;     /// will ranged (both players) be targeted?
+        bool target_siege;      /// will siege (both players) be targeted?
+        bool has_nerf_value;    /// will the nerf be turned on or off?
         size_t hand_idx;
     };
 

@@ -11,8 +11,8 @@ namespace ledit
 {
     struct Flex
     {
-        BoxType     type        = BOX_HBOX;
-        float       inner_pad   = 10;
+        BoxType type      = BOX_HBOX;
+        float   inner_pad = 10;
 
         void reset();
 
@@ -21,3 +21,4 @@ namespace ledit
     };
 
 }
+

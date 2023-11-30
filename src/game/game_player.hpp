@@ -61,7 +61,8 @@ namespace game
         void operator()(TargetDefault const& t);
         void operator()(TargetUnitRow const& t);
         void operator()(TargetUnitCard const& t);
-        void operator()(TargetCommanderHorn const& t);
+        void operator()(TargetBuff const& t);
+        void operator()(TargetNerf const& t);
     };
 
     struct CastTarget
@@ -73,6 +74,7 @@ namespace game
         bool operator()(TargetDefault const& t);
         bool operator()(TargetUnitRow const& t) ;
         bool operator()(TargetUnitCard const& t) ;
-        bool operator()(TargetCommanderHorn const& t) ;
+        bool operator()(TargetBuff const& t);
+        bool operator()(TargetNerf const& t);
     };
 }

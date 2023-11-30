@@ -120,12 +120,9 @@ void ChangePlayerTarget::operator()(TargetUnitRow const& t)
     if (t.target_opponent)
         nopath_impl;
 
-    if (t.target_melee)
-        player.melee.units.setHighlight();
-    if (t.target_ranged)
-        player.ranged.units.setHighlight();
-    if (t.target_siege)
-        player.siege.units.setHighlight();
+    if (t.target_melee) player.melee.units.setHighlight();
+    if (t.target_ranged) player.ranged.units.setHighlight();
+    if (t.target_siege) player.siege.units.setHighlight();
 }
 
 void ChangePlayerTarget::operator()(TargetUnitCard const& t)
@@ -134,13 +131,22 @@ void ChangePlayerTarget::operator()(TargetUnitCard const& t)
     nopath_impl;
 }
 
-void ChangePlayerTarget::operator()(TargetCommanderHorn const& t)
+void ChangePlayerTarget::operator()(TargetBuff const& t)
 {
     player.clearAllHighlights();
 
-    player.melee.cmdr_horn.setHighlight();
-    player.ranged.cmdr_horn.setHighlight();
-    player.siege.cmdr_horn.setHighlight();
+    player.melee.units.setHighlight();
+    player.ranged.units.setHighlight();
+    player.siege.units.setHighlight();
+}
+
+void ChangePlayerTarget::operator()(TargetNerf const& t)
+{
+    player.clearAllHighlights();
+
+    if (t.target_melee) player.melee.units.setHighlight();
+    if (t.target_ranged) player.ranged.units.setHighlight();
+    if (t.target_siege) player.siege.units.setHighlight();
 }
 
 //
@@ -182,25 +188,41 @@ bool CastTarget::operator()(TargetUnitCard const& t)
     return false;
 }
 
-bool CastTarget::operator()(TargetCommanderHorn const& t)
+bool CastTarget::operator()(TargetBuff const& t)
 {
-    if (player.melee.cmdr_horn.isTargeted(mp))
+    if (player.melee.units.isTargeted(mp))
     {
-        cast = CastCommanderHorn{CastCommanderHorn::MELEE, t.hand_idx};
+        cast = CastRowBuff{CastRowBuff::MELEE, t.hand_idx};
         player.changeTarget(TargetDefault{});
         return true;
     }
 
-    if (player.ranged.cmdr_horn.isTargeted(mp))
+    if (player.ranged.units.isTargeted(mp))
     {
-        cast = CastCommanderHorn{CastCommanderHorn::RANGED, t.hand_idx};
+        cast = CastRowBuff{CastRowBuff::RANGED, t.hand_idx};
         player.changeTarget(TargetDefault{});
         return true;
     }
 
-    if (player.siege.cmdr_horn.isTargeted(mp))
+    if (player.siege.units.isTargeted(mp))
     {
-        cast = CastCommanderHorn{CastCommanderHorn::SIEGE, t.hand_idx};
+        cast = CastRowBuff{CastRowBuff::SIEGE, t.hand_idx};
+        player.changeTarget(TargetDefault{});
+        return true;
+    }
+    return false;
+}
+
+bool CastTarget::operator()(TargetNerf const& t)
+{
+
+    bool target_melee  = t.target_melee  && player.melee.units.isTargeted(mp);
+    bool target_ranged = t.target_ranged && player.ranged.units.isTargeted(mp);
+    bool target_siege  = t.target_siege  && player.siege.units.isTargeted(mp);
+
+    if (target_melee || target_ranged || target_siege)
+    {
+        cast = CastRowNerf{t.target_melee, t.target_ranged, t.target_siege, t.has_nerf_value, t.hand_idx};
         player.changeTarget(TargetDefault{});
         return true;
     }
@@ -225,7 +247,7 @@ bool CastTarget::operator()(TargetDefault const& t)
                 switch (special.type)
                 {
                     case ng::SPECIAL_CMDR_HORN:
-                        player.changeTarget(TargetCommanderHorn { tc.idx });
+                        player.changeTarget(TargetBuff { tc.idx });
                         return false;
 
                     case ng::SPECIAL_DECOY:
@@ -236,15 +258,25 @@ bool CastTarget::operator()(TargetDefault const& t)
                         nopath_impl;
                         return false;
 
-                    case ng::SPECIAL_IMP_FOG:
-                    case ng::SPECIAL_TOR_RAIN:
+
                     case ng::SPECIAL_BITING_FROST:
-                    case ng::SPECIAL_CLEAR_WEATHER:
-                        nopath_impl;
+                        player.changeTarget(TargetNerf{true, false, false, true, tc.idx});
+                        return false;
+
+                    case ng::SPECIAL_IMP_FOG:
+                        player.changeTarget(TargetNerf{false, true, false, true, tc.idx});
+                        return false;
+
+                    case ng::SPECIAL_TOR_RAIN:
+                        player.changeTarget(TargetNerf{false, false, true, true, tc.idx});
                         return false;
 
                     case ng::SPECIAL_SKELLIGE_STORM:
-                        nopath_impl;
+                        player.changeTarget(TargetNerf{false, true, true, true, tc.idx});
+                        return false;
+
+                    case ng::SPECIAL_CLEAR_WEATHER:
+                        player.changeTarget(TargetNerf{true, true, true, false, tc.idx});
                         return false;
 
                     default:nopath_case(ng::SpecialType);

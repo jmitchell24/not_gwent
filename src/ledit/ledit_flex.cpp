@@ -9,6 +9,7 @@ using namespace ledit;
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
+#include "rlImGui/extras/IconsFontAwesome5.h"
 
 //
 // ut
@@ -26,8 +27,8 @@ using namespace std;
 
 void Flex::reset()
 {
-    type        = BOX_HBOX;
-    inner_pad   = 10;
+    type      = BOX_HBOX;
+    inner_pad = 10;
 }
 
 #define CASE_SELECTABLE(x_) if (Selectable(#x_, type == (x_))) { changed=true; type = x_; }
@@ -38,12 +39,12 @@ bool Flex::drawProperties()
 
     bool changed = false;
 
-    if (ButtonDefault("inner pad", inner_pad != 10))
+    if (ButtonDefault("Gap", inner_pad != 10))
     { changed=true; inner_pad=10; }
 
-    changed|=DragFloat("inner_pad", &inner_pad, 1,0,FLT_MAX);
+    changed|=DragFloat("Gap", &inner_pad, 1,0,FLT_MAX);
 
-    if (ButtonDefault("type", type != BOX_HBOX))
+    if (ButtonDefault("Type", type != BOX_HBOX))
     { changed=true; type = BOX_HBOX; }
 
     if (BeginCombo("Type", box_to_string(type)))
@@ -63,7 +64,7 @@ bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
 
     if (edit_opts.show_row_type)
     {
-        if (SmallButton("t"))
+        if (SmallButton(ICON_FA_CAR))
             OpenPopup("show-row-type");
 
         if (BeginPopup("show-row-type"))

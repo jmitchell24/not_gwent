@@ -283,39 +283,6 @@ void BoxEditor::drawMainWindowFileOptions()
         OpenPopup("popup_save_layout");
     }
 
-    SameLine();
-
-    if (Button("As Code..."))
-    {
-        auto s = toCPPString();
-
-        m_source_code.SetText(s);
-
-        fwrite(s.data(), sizeof(char), s.size(), stdout);
-        fflush(stdout);
-
-//        OpenPopup("popup_copy_code");
-    }
-
-//    if (BeginPopupModal("popup_copy_code"))
-//    {
-//        BeginChild("source_code_child", );
-//        m_source_code.Render("source_code", ImVec2{0, 500});
-//        EndChild();
-//
-//
-//
-//
-//        Separator();
-//
-//        if (Button("Copy to clipboard")) { }
-//
-//        SetItemDefaultFocus();
-//        SameLine();
-//        if (ImGui::Button("Close", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-//        EndPopup();
-//    }
-
     if (BeginPopup("popup_save_layout"))
     {
         for (auto&& it : m_layout_files)
@@ -389,16 +356,21 @@ void BoxEditor::drawMainWindowBindOptions()
         EndTable();
     }
 
-    if (getEmptySlotCount() == 0)
+    if (auto num_empty_slots = getEmptySlotCount(); num_empty_slots == 0)
     {
         if (Button("to Console"))
         {
-
+            auto s = BoxVisitor::toCPPString();
+            fwrite(s.data(), sizeof(char), s.size(), stdout);
+            fflush(stdout);
         }
+
         SameLine();
+
         if (Button("to Clipboard"))
         {
-
+            auto s = BoxVisitor::toCPPString();
+            SetClipboardText(s.c_str());
         }
     }
     else
@@ -408,6 +380,10 @@ void BoxEditor::drawMainWindowBindOptions()
         SameLine();
         Button("to Clipboard");
         PopItemDisabled();
+        SameLine();
+        PushStyleColor(ImGuiCol_Text, colors::red);
+        Text("%zu unassigned binds", num_empty_slots);
+        PopStyleColor();
     }
 }
 

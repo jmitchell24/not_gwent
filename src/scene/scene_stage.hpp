@@ -28,6 +28,6 @@ public:
 private:
     scenelist_type  m_scenes;
     Scene*          m_selected;
-    bool            m_show_debug_scene=true;
-    bool            m_show_debug_graphics=false;
+    bool            m_show_debug_scene      =   true;
+    bool            m_show_debug_graphics   =   false;
 };

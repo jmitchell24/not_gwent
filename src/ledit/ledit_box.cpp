@@ -233,44 +233,37 @@ void Box::drawProperties(BoxVisitor& v)
 
     Text("Selection");
 
+    BeginGroup();
     if (parent)
     {
-        if (Button("to parent"))
+        if (Button("to Parent"))
         {
             v.setSelectedBoxSingle(parent);
         }
 
         SameLine();
 
-        if (Button("to multi"))
+        if (Button("to Multi"))
         {
             v.setMutateSelection(ptr());
         }
 
         SameLine();
 
-        if (ButtonConfirm("delete"))
+        if (ButtonConfirm("Delete"))
             parentActionDelete(v);
-
-//        SameLine();
-//
-//        if (Button("clone"))
-//            parentActionClone(v);
 
         SameLine();
 
-        if (ButtonEnabled("mutate", v.canMutate()))
+        if (ButtonEnabled("Mutate", v.canMutate()))
         {
             for (auto&& it: v.boxSelectionMulti())
                 it->mutate(ptr());
         }
 
-//        SameLine();
-//
-//        if (Button("reset"))
-//            nopath_impl;
-
         SameLine();
+
+        PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0,0});
 
         if (Button("--"))
             parentActionMoveDec(v);
@@ -279,15 +272,18 @@ void Box::drawProperties(BoxVisitor& v)
 
         if (Button("++"))
             parentActionMoveInc(v);
+
+        PopStyleVar();
     }
     else
     {
         PushItemDisabled();
-        Button("parent");
+        Button("to Parent");
         SameLine();
-        Button("delete");
+        Button("Delete");
         PopItemDisabled();
     }
+    EndGroup();
 
     Separator();
 
@@ -301,15 +297,17 @@ void Box::drawProperties(BoxVisitor& v)
     SameLine();
     LabelText("Inner", "%s", to_string(rects.inner.cast<int>().psize()).c_str());
 
+    ButtonEnabled(" ", false);
+    SameLine();
     drawBreadcrumbs(v);
 
 
-    if (ButtonDefault("name", !name.empty()))
+    if (ButtonDefault("Name", !name.empty()))
     { v.resetBoxSlot(ptr()); }
 
     PushStyleColor(ImGuiCol_Text, ToU32(m_color));
 
-    if (BeginCombo("name###name_get", name.c_str()))
+    if (BeginCombo("Name###name_get", name.c_str()))
     {
         for (auto&& it : v.boxMap())
         {
@@ -372,7 +370,7 @@ void Box::drawProperties(BoxVisitor& v)
             SetTooltip("Uniform Distribution with Anchor");
         SameLine();
 
-        if (float w = weight; SliderFloat("weight", &w, 0, 1))
+        if (float w = weight; SliderFloat("Weight", &w, 0, 1))
         {
             if (w > 0 && w < 1)
             {
@@ -407,7 +405,7 @@ void Box::drawProperties(BoxVisitor& v)
 
         bool show_row_select = v.edit_opts.show_row_select;
         v.edit_opts.show_row_select = false;
-        for (auto &&it: child_boxes)
+        for (auto&& it: child_boxes)
             it->drawTreeTableRow(v, true);
         v.edit_opts.show_row_select = show_row_select;
 
@@ -482,6 +480,8 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
 
     if (TableNextColumn())
     {
+
+
         if (v.edit_opts.show_row_select)
         {
             if (SmallButtonActivated(v.getBoxSelectionLabel(ptr()), v.isBoxSelectedSingle(ptr())))
@@ -508,6 +508,8 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
             SameLine();
         }
 
+        PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0,0});
+
         if (parent && v.edit_opts.show_row_move)
         {
             if (SmallButton("--"))
@@ -519,6 +521,8 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
             SameLine();
         }
 
+        PopStyleVar();
+
         if (v.edit_opts.show_row_rename)
         {
             if (SmallButton("n"))
@@ -528,7 +532,7 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
             {
                 std::array<char, 20> static name_buffer;
                 ::strncpy(name_buffer.data(), name.c_str(), name_buffer.size());
-                if (InputText("name", name_buffer.data(), name_buffer.size()))
+                if (InputText("Name", name_buffer.data(), name_buffer.size()))
                     name = name_buffer.data();
                 EndPopup();
             }
@@ -536,6 +540,8 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
         }
 
         flex.drawRowControls(v.edit_opts);
+
+
     }
 
     PopID();
@@ -580,7 +586,6 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
         auto t = is_multi ? 3.0f : 1.0f;
 
         drawOverlayOutline(o, c, t);
-        //drawOverlayOutline(o, c, 1.0f);
 
         if (!name.empty())
             drawOverlayTextUnselected(o, c, name);
@@ -670,22 +675,8 @@ bool Box::saveYaml(cstrparam filename)
 // layout
 //
 
-//void Box::setBounds(rect const& inner, rect const& outer)
-//{
-////    m_changed |= bounds_inner != inner;
-////    m_changed |= bounds_outer != outer;
-//
-//    bounds_inner = inner;
-//    bounds_outer = outer;
-//}
-
 void Box::calcLayout(rect const& p)
 {
-//    rect i, o;
-    //sizer.getInnerOuter(p, i, o);
-//    sizer.getMarginPadding(p, o, i);
-//    setBounds(i, o);
-
     sizer.getBoxRects(p, rects);
 
     if (child_boxes.empty())
@@ -985,6 +976,7 @@ void Box::drawBreadcrumbs(BoxVisitor& v)
         b = b->parent;
     } while (b);
 
+    BeginGroup();
     PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0,0});
 
     auto it = ps.rbegin();
@@ -1009,6 +1001,7 @@ void Box::drawBreadcrumbs(BoxVisitor& v)
     }
 
     PopStyleVar();
+    EndGroup();
 }
 
 void Box::drawOverlay(BoxVisitor& v)

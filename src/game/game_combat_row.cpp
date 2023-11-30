@@ -6,6 +6,15 @@
 using namespace game;
 
 //
+// gfx
+//
+
+#include "gfx/gfx_draw.hpp"
+#include "gfx/gfx_spinner.hpp"
+#include "game/asset/assets.hpp"
+using namespace gfx;
+
+//
 // ut
 //
 using namespace ut;
@@ -17,8 +26,8 @@ using namespace ut;
 bool CombatRow::tryGetHoveredCard(vec2 const& mp, CardRef& ref)
 {
     return
-        cmdr_horn.tryGetHoveredCard(mp, ref) ||
-        weather.tryGetHoveredCard(mp, ref) ||
+        //cmdr_horn.tryGetHoveredCard(mp, ref) ||
+        //weather.tryGetHoveredCard(mp, ref) ||
         units  .tryGetHoveredCard(mp, ref);
 }
 
@@ -26,12 +35,12 @@ int CombatRow::updateScore()
 {
     int total_strength = units.getTotalStrength();
 
-    if (!weather.isEmpty())
+    if (has_nerf)
     {
-        total_strength = units.numCards();
+        total_strength = (int)units.numCards();
     }
 
-    if (!cmdr_horn.isEmpty())
+    if (has_buff)
     {
         total_strength *= 2;
     }
@@ -43,8 +52,12 @@ int CombatRow::updateScore()
 
 void CombatRow::layout(layout::CombatRow const& l)
 {
-    cmdr_horn.layout(l.buff);
-    weather.layout(l.nerf);
+    //cmdr_horn.layout(l.buff);
+    //weather.layout(l.nerf);
+
+    m_rect_buff = l.buff;
+    m_rect_nerf = l.nerf;
+
     units.layout(l.units);
     m_score.layout(l.score.anchorCCtoCC(l.score.size()/2));
 }
@@ -56,16 +69,20 @@ void CombatRow::update(float dt)
 
 void CombatRow::drawAboveCards()
 {
-    cmdr_horn.drawAboveCards();
-    weather.drawAboveCards();
+    //cmdr_horn.drawAboveCards();
+    //weather.drawAboveCards();
     units.drawAboveCards();
 }
 
 void CombatRow::drawUnderCards()
 {
-    cmdr_horn.drawUnderCards();
-    weather.drawUnderCards();
+    //cmdr_horn.drawUnderCards();
+    //weather.drawUnderCards();
     units.drawUnderCards();
 
     m_score.draw();
+
+
+    drawTextCCtoCC(m_rect_nerf, "nerf", has_nerf ? colors::orangered : colors::dimgray);
+    drawTextCCtoCC(m_rect_buff, "buff", has_buff ? colors::lightcyan : colors::dimgray);
 }

@@ -13,11 +13,17 @@
 
 namespace game
 {
+
+
     class CombatRow
     {
     public:
-        board::BoardSlot    cmdr_horn;
-        board::BoardSlot    weather;
+        //board::BoardSlot    cmdr_horn;
+        //board::BoardSlot    weather;
+
+        bool has_buff = false;
+        bool has_nerf = false;
+
         board::BoardRow     units;
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
@@ -30,12 +36,15 @@ namespace game
 
         void clearHighlight()
         {
-            cmdr_horn.clearHighlight();
-            weather.clearHighlight();
+            //cmdr_horn.clearHighlight();
+            //weather.clearHighlight();
             units.clearHighlight();
         }
 
     private:
+        ut::rect m_rect_buff;
+        ut::rect m_rect_nerf;
+
         gfx::Spinner m_score {gfx::Spinner::HORZ};
 
     };

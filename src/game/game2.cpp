@@ -349,6 +349,8 @@ void GameBoard2::drawUnderCards()
 
 void GameBoard2::drawDebug()
 {
+    using namespace ImGui;
+
     if (BOX_EDITOR.draw())
     {
 #define TRY_GET_RECT(x_) BOX_EDITOR.tryGetBorder(#x_, x_)
@@ -457,21 +459,27 @@ void GameBoard2::drawDebug()
 #undef TRY_GET_RECT
     }
 
-    if (ImGui::Button("Draw"))
+    if (Button("Draw"))
     {
         auto idx = 0;
         boss.stackToRow(usr.deck, usr.hand, idx);
     }
 
-    ImGui::SameLine();
+#define TOP_DECK(x_) \
+    if (Button(PRINTER("Draw %s", x_.name.c_str()))) { usr.deck.pushNgCard(x_); boss.stackToRow(usr.deck, usr.hand, 0); }
 
-    if (ImGui::Button("Discard"))
+    TOP_DECK(ng::cards::special_frost_1)
+    TOP_DECK(ng::cards::special_clearsky_1)
+    TOP_DECK(ng::cards::special_fog_1)
+    TOP_DECK(ng::cards::special_horn_1)
+    TOP_DECK(ng::cards::special_rain_1)
+    TOP_DECK(ng::cards::special_skellige_storm_1)
+
+    if (Button("Discard"))
     {
         auto idx = usr.hand.numCards()-1;
         boss.rowToStack(usr.hand, usr.yard, idx);
     }
-
-    ImGui::SameLine();
 
     gb.drawDebug();
     usr.drawDebug();
@@ -482,20 +490,20 @@ void GameBoard2::drawDebug()
     {
         auto& ng = card_hover->ng;
 
-        ImGui::BeginTooltip();
+        BeginTooltip();
 
 
 
 
-        ImGui::BeginStruct(ng.name);
+        BeginStruct(ng.name);
 
-        ImGui::StructField("id"         , PRINTER("%d", ng.id));
-        ImGui::StructField("type"       , ng::toString(ng.type));
-        ImGui::StructField("deck"       , ng::toString(ng.deck));
-        ImGui::StructField("expansion"  , ng::toString(ng.expansion));
-        ImGui::StructField("filename"   , ng.filename);
+        StructField("id"         , PRINTER("%d", ng.id));
+        StructField("type"       , ng::toString(ng.type));
+        StructField("deck"       , ng::toString(ng.deck));
+        StructField("expansion"  , ng::toString(ng.expansion));
+        StructField("filename"   , ng.filename);
 
-        ImGui::EndStruct();
+        EndStruct();
 
         struct V
         {
@@ -503,26 +511,26 @@ void GameBoard2::drawDebug()
 
             void operator()(ng::SpecialCard const& c)
             {
-                ImGui::BeginStruct("Special");
-                ImGui::StructField("type", ng::toString(c.type));
-                ImGui::EndStruct();
+                BeginStruct("Special");
+                StructField("type", ng::toString(c.type));
+                EndStruct();
             }
 
             void operator()(ng::UnitCard const& c)
             {
-                ImGui::BeginStruct("Unit");
-                ImGui::StructField("strength"   , PRINTER("%d", c.strength));
-                ImGui::StructField("is_hero"    , c.is_hero ? "yes" : "no");
-                ImGui::StructField("ability"    , ng::toString(c.ability));
-                ImGui::StructField("row"        , ng::toString(c.row));
-                ImGui::EndStruct();
+                BeginStruct("Unit");
+                StructField("strength"   , PRINTER("%d", c.strength));
+                StructField("is_hero"    , c.is_hero ? "yes" : "no");
+                StructField("ability"    , ng::toString(c.ability));
+                StructField("row"        , ng::toString(c.row));
+                EndStruct();
             }
 
             void operator()(ng::LeaderCard const& c)
             {
-                ImGui::BeginStruct("Leader");
-                ImGui::StructField("type", ng::toString(c.type));
-                ImGui::EndStruct();
+                BeginStruct("Leader");
+                StructField("type", ng::toString(c.type));
+                EndStruct();
             }
         };
 
@@ -556,17 +564,52 @@ void DoCastingThing::operator() (CastSpy const& c)
     nopath_impl;
 }
 
-void DoCastingThing::operator() (CastCommanderHorn const& c)
+void DoCastingThing::operator() (CastRowBuff const& c)
 {
     switch (c.row)
     {
-        case CastCommanderHorn::MELEE : gb.boss.rowToSlot(gb.usr.hand, gb.usr.melee.cmdr_horn , c.hand_idx); break;
-        case CastCommanderHorn::RANGED: gb.boss.rowToSlot(gb.usr.hand, gb.usr.ranged.cmdr_horn, c.hand_idx); break;
-        case CastCommanderHorn::SIEGE : gb.boss.rowToSlot(gb.usr.hand, gb.usr.siege.cmdr_horn , c.hand_idx); break;
+        case CastRowBuff::MELEE:
+            gb.usr.melee.has_buff = true;
+            gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
+            break;
+
+        case CastRowBuff::RANGED:
+            gb.usr.ranged.has_buff = true;
+            gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
+            break;
+
+        case CastRowBuff::SIEGE:
+            gb.usr.siege.has_buff = true;
+            gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
+            break;
 
         default:
-            nopath_case(CastCommanderHorn::Row);
+            nopath_case(CastRowBuff::Row);
     }
+}
+
+void DoCastingThing::operator() (CastRowNerf const& c)
+{
+    if (c.change_melee)
+    {
+        gb.usr.melee.has_nerf = c.has_nerf_value;
+        gb.cpu.melee.has_nerf = c.has_nerf_value;
+
+    }
+
+    if (c.change_ranged)
+    {
+        gb.usr.ranged.has_nerf = c.has_nerf_value;
+        gb.cpu.ranged.has_nerf = c.has_nerf_value;
+    }
+
+    if (c.change_siege)
+    {
+        gb.usr.siege.has_nerf = c.has_nerf_value;
+        gb.cpu.siege.has_nerf = c.has_nerf_value;
+    }
+
+    gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
 }
 
 void DoCastingThing::operator() (CastScorch const& c)

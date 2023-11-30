@@ -17,8 +17,6 @@ namespace game
     {
         Player usr, cpu;
 
-
-
         CardRef card_hover;
 
         layout::GameBoard gb;
@@ -51,7 +49,8 @@ namespace game
         GameBoard2& gb;
         void operator() (CastUnit const& c);
         void operator() (CastSpy const& c);
-        void operator() (CastCommanderHorn const& c);
+        void operator() (CastRowBuff const& c);
+        void operator() (CastRowNerf const& c);
         void operator() (CastScorch const& c);
         void operator() (CastLeaderAbility const& c);
         void operator() (CastWeather const& c);

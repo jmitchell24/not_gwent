@@ -68,9 +68,6 @@ namespace ledit
         inline DimType dimType() const { return (DimType)dim.index(); }
         inline PosType posType() const { return (PosType)pos.index(); }
 
-        inline bool isDefault() const
-        { return !(mrg.index()==0 || pad.index()==0 || dim.index()==0 || pos.index()==0); }
-
         EXPAND_MRG(VAR_FUNC)
         EXPAND_PAD(VAR_FUNC)
         EXPAND_DIM(VAR_FUNC)
@@ -79,12 +76,11 @@ namespace ledit
         void reset();
         bool drawProperties();
 
-        ut::rect getMrg  (ut::rect parent) const;
-        ut::rect getPad  (ut::rect parent) const;
-        ut::vec2 getDim  (ut::rect parent) const;
-        ut::rect getPos  (ut::rect parent, ut::vec2 sz) const;
+        ut::rect getMrg(ut::rect parent) const;
+        ut::rect getPad(ut::rect parent) const;
+        ut::vec2 getDim(ut::rect parent) const;
+        ut::rect getPos(ut::rect parent, ut::vec2 sz) const;
 
-        void getInnerOuter(ut::rect const& parent, ut::rect& inner, ut::rect& outer) const;
         void getBoxRects(ut::rect const& parent, BoxRects& child) const;
     };
 }

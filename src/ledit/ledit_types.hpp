@@ -67,7 +67,7 @@ namespace ledit
         };
 
         int         style_index         =2;
-        bool        want_capture_mouse  =true;
+        bool        want_capture_mouse  =false;
 
         inline Style& style()
         {

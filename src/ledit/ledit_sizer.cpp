@@ -10,11 +10,11 @@ using namespace ledit;
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
+#include "rlImGui/extras/IconsFontAwesome5.h"
 
 //
 // ut
 //
-#include <ut/check.hpp>
 using namespace ut;
 
 //
@@ -125,34 +125,34 @@ bool Sizer::drawProperties()
     // Scale
     //
 
-    if (ButtonDefault("dim", dim.index()>0))
+    if (ButtonDefault("Dimensions", dim.index()>0))
     { changed=true; dim = monostate{}; }
 
     BeginGroup();
     switch (dimType())
     {
         case DIM_NONE:
-            if (BeginCombo("dim", "..."))
+            if (BeginCombo("Dimensions", "..."))
             {
-                if (Selectable("aspect" )) { changed=true; setDimAspect (1);              }
-                if (Selectable("percent")) { changed=true; setDimPercent({1,1});          }
-                if (Selectable("units"  )) { changed=true; setDimUnits  ({100,100});      }
+                if (Selectable("Aspect" )) { changed=true; setDimAspect (1);              }
+                if (Selectable("Percent")) { changed=true; setDimPercent({1,1});          }
+                if (Selectable("Units"  )) { changed=true; setDimUnits  ({100,100});      }
                 EndCombo();
             }
             break;
 
         case DIM_ASPECT:
-            changed|=DragFloat("aspect", &getDimAspect(), 0.01, 0.5, 2);
+            changed|=DragFloat("Aspect", &getDimAspect(), 0.01, 0.5, 2);
             break;
 
         case DIM_PERCENT:
-            changed|=SliderFloat("percent w", &getDimPercent().x, 0, 1);
-            changed|=SliderFloat("percent h", &getDimPercent().y, 0, 1);
+            changed|=SliderFloat("Percent W", &getDimPercent().x, 0, 1);
+            changed|=SliderFloat("Percent H", &getDimPercent().y, 0, 1);
             break;
 
         case DIM_UNITS:
-            changed|=DragFloat("units w", &getDimUnits().x, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
-            changed|=DragFloat("units h", &getDimUnits().y, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("Units W", &getDimUnits().x, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("Units H", &getDimUnits().y, 1, 0, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
             break;
     }
     EndGroup();
@@ -161,18 +161,18 @@ bool Sizer::drawProperties()
     // Position
     //
 
-    if (ButtonDefault("pos", pos.index()>0))
+    if (ButtonDefault("Position", pos.index()>0))
     { changed=true; pos = monostate{}; }
 
     BeginGroup();
     switch (posType())
     {
         case POS_NONE:
-            if (BeginCombo("pos", "..."))
+            if (BeginCombo("Position", "..."))
             {
-                if (Selectable("anchor" )) { changed=true; setPosAnchor(ANCHOR_CC);   }
-                if (Selectable("percent")) { changed=true; setPosPercent({});         }
-                if (Selectable("units"  )) { changed=true; setPosUnits({});           }
+                if (Selectable("Anchor" )) { changed=true; setPosAnchor(ANCHOR_CC);   }
+                if (Selectable("Percent")) { changed=true; setPosPercent({});         }
+                if (Selectable("Units"  )) { changed=true; setPosUnits({});           }
                 EndCombo();
             }
             break;
@@ -203,13 +203,13 @@ bool Sizer::drawProperties()
             break;
 
         case POS_PERCENT:
-            changed|=SliderFloat("percent x", &getPosPercent().x, 0, 1);
-            changed|=SliderFloat("percent y", &getPosPercent().y, 0, 1);
+            changed|=SliderFloat("Percent X", &getPosPercent().x, 0, 1);
+            changed|=SliderFloat("Percent Y", &getPosPercent().y, 0, 1);
             break;
 
         case POS_UNITS:
-            changed|=DragFloat("units x", &getPosUnits().x, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
-            changed|=DragFloat("units y", &getPosUnits().y, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("Units X", &getPosUnits().x, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+            changed|=DragFloat("Units Y", &getPosUnits().y, 1, -FLT_MAX, FLT_MAX, "%.0f", ImGuiSliderFlags_AlwaysClamp);
             break;
     }
     EndGroup();
@@ -287,28 +287,10 @@ rect Sizer::getPos(rect b, vec2 sz) const
     return b.withSize(sz);
 }
 
-//rect Sizer::getOuter(rect const& parent) const
-//{
-//    auto sz = getDim(parent);
-//    return getPos(parent, sz);
-//}
-//
-//rect Sizer::getInner(rect const& parent) const
-//{
-//    return getPad(getOuter(parent));
-//}
-
-void Sizer::getInnerOuter(rect const& parent, rect& inner, rect& outer) const
-{
-    auto sz = getDim(parent);
-    outer   = getPos(parent, sz);
-    inner   = getPad(outer);
-}
-
 void Sizer::getBoxRects(rect const& parent, BoxRects& child) const
 {
     auto sz = getDim(parent);
-    child.outer     = getPos(parent, sz);
-    child.border    = getMrg(child.outer);
-    child.inner     = getPad(child.border);
+    child.outer  = getPos(parent, sz);
+    child.border = getMrg(child.outer);
+    child.inner  = getPad(child.border);
 }

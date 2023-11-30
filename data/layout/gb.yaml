@@ -8,13 +8,14 @@ children:
     weight: 0.262499988
     children:
       - type: BOX_HBOX
-        weight: 0.333333343
+        weight: 0.394500017
         pad: {pad1: 10}
         children:
           - type: BOX_VBOX
             weight: 0.5
             children:
               - type: BOX_VBOX
+                inner_pad: 0
                 weight: 0.5
                 children:
                   - type: BOX_HBOX
@@ -41,9 +42,9 @@ children:
                 weight: 0.5
                 name: gb.cpu.stats.score
       - type: BOX_HBOX
-        weight: 0.333333343
+        weight: 0.210999995
       - type: BOX_HBOX
-        weight: 0.333333343
+        weight: 0.394500017
         pad: {pad1: 10}
         children:
           - type: BOX_VBOX
