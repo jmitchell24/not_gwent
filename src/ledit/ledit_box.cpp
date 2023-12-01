@@ -323,6 +323,8 @@ void Box::drawProperties(BoxVisitor& v)
                 v.resetBoxSlot(ptr());
                 name = key;
                 v.setBoxSlot(ptr());
+
+                setChangedAll();
             }
             PopStyleColor();
         }

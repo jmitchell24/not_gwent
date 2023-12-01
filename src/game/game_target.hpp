@@ -4,6 +4,18 @@
 
 #pragma once
 
+#include "game_cast.hpp"
+
+//
+// ut
+//
+#include <ut/math.hpp>
+
+//
+// std
+//
+
+#include <cstddef>
 #include <variant>
 
 namespace game
@@ -12,6 +24,8 @@ namespace game
     // Declarations
     //
 
+    class Player;
+
     struct TargetDefault;
     struct TargetBuff;
     struct TargetNerf;
@@ -19,11 +33,11 @@ namespace game
     struct TargetUnitCard;
 
     using Target = std::variant<
-            TargetDefault,
-            TargetBuff,
-            TargetNerf,
-            TargetUnitRow,
-            TargetUnitCard
+        TargetDefault,
+        TargetBuff,
+        TargetNerf,
+        TargetUnitRow,
+        TargetUnitCard
     >;
 
     //
@@ -61,5 +75,37 @@ namespace game
     struct TargetUnitCard
     {
         size_t hand_idx;
+    };
+}
+
+namespace game::visitors
+{
+    struct ChangeTarget
+    {
+        Player& player;
+        Player& opponent;
+
+        void operator()(TargetDefault const& t);
+        void operator()(TargetUnitRow const& t);
+        void operator()(TargetUnitCard const& t);
+        void operator()(TargetBuff const& t);
+        void operator()(TargetNerf const& t);
+
+
+    };
+
+    struct CastTarget
+    {
+        Player& player;
+        Player& opponent;
+        Cast&   cast;
+
+        ut::vec2 const& mp;
+
+        bool operator()(TargetDefault const& t);
+        bool operator()(TargetUnitRow const& t) ;
+        bool operator()(TargetUnitCard const& t) ;
+        bool operator()(TargetBuff const& t);
+        bool operator()(TargetNerf const& t);
     };
 }

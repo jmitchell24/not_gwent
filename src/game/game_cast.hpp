@@ -2,9 +2,13 @@
 // Created by james on 9/29/23.
 //
 
-
 #pragma once
 
+//
+// std
+//
+
+#include <cstddef>
 #include <variant>
 
 namespace game
@@ -13,7 +17,8 @@ namespace game
     // Declarations
     //
 
-
+    class Player;
+    class GameBoard2;
 
     struct CastUnit;
     struct CastSpy;
@@ -21,20 +26,15 @@ namespace game
     struct CastRowNerf;
     struct CastScorch;
     struct CastLeaderAbility;
-    struct CastWeather;
 
     using Cast = std::variant<
-            CastUnit,
-            CastSpy,
-            CastRowBuff,
-            CastRowNerf,
-            CastScorch,
-            CastLeaderAbility,
-            CastWeather
-        >;
-
-
-
+        CastUnit,
+        CastSpy,
+        CastRowBuff,
+        CastRowNerf,
+        CastScorch,
+        CastLeaderAbility
+    >;
 
     //
     // Casts
@@ -75,21 +75,22 @@ namespace game
     {
 
     };
+}
 
-    struct CastWeather
+namespace game::visitors
+{
+    struct CardCaster
     {
+        GameBoard2& gb;
 
+        Player& player;
+        Player& opponent;
+
+        void operator() (CastUnit const& c);
+        void operator() (CastSpy const& c);
+        void operator() (CastRowBuff const& c);
+        void operator() (CastRowNerf const& c);
+        void operator() (CastScorch const& c);
+        void operator() (CastLeaderAbility const& c);
     };
-
-
-
-
-
-
-
-
-
-
-
-
 }

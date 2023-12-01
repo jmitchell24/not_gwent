@@ -2,25 +2,40 @@
 // Created by james on 9/15/23.
 //
 
-#include <ut/check.hpp>
-#include <ut/random.hpp>
+
 #include "game/game2.hpp"
+#include "game/asset/assets.hpp"
 using namespace game;
 
+//
+// ng
+//
 #include "ng/ng_card_data.hpp"
 
+//
+// gfx
+//
+#include "gfx/gfx_draw.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
+using namespace gfx;
 
-#include "game/asset/assets.hpp"
-
+//
+// ledit
+//
 #include "ledit/ledit_editor.hpp"
 using namespace ledit;
 
-#include "gfx/gfx_draw.hpp"
-using namespace gfx;
-
+//
+// ut
+//
+#include <ut/check.hpp>
+#include <ut/random.hpp>
 #include <ut/random.hpp>
 using namespace ut;
+
+//
+// std
+//
 
 #include <algorithm>
 using namespace std;
@@ -246,70 +261,29 @@ void GameBoard2::update(update_param u)
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
-        if (Cast cast; usr.tryCast(mp, cast))
+        if (Cast cast; usr.tryCast(mp, cpu, cast))
         {
-            std::visit(DoCastingThing{*this}, cast);
+            std::visit(visitors::CardCaster{*this, usr, cpu}, cast);
             updateScores(usr);
+            updateScores(cpu);
+        }
+
+        if (Cast cast; cpu.tryCast(mp, usr, cast))
+        {
+            std::visit(visitors::CardCaster{*this, cpu, usr}, cast);
+            updateScores(usr);
+            updateScores(cpu);
         }
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
     {
-        usr.cancelCast();
+        usr.cancelCast(cpu);
+        cpu.cancelCast(usr);
     }
 
 
 }
-
-
-
-//void GameBoard2::playCard(Player& player, size_t idx)
-//{
-//    CardRef ref = player.hand.getCard(idx);
-//    ng::Card ng = ref->ng;
-//
-//    switch (ng.type)
-//    {
-//        case ng::Card::TYPE_SPECIAL:
-//        {
-//            auto special = ng.asSpecialCard();
-//            break;
-//        }
-//
-//        case ng::Card::TYPE_UNIT:
-//        {
-//            auto unit = ng.asUnitCard();
-//
-//            break;
-//        }
-//
-//        default:
-//            nopath_case(ng::Card::Type);
-//            break;
-//    }
-//    if (ng.isUnitCard())
-//    {
-//        auto unit = ref->ng.asUnitCard();
-//        switch (unit.row)
-//        {
-//
-//            case ng::UnitCard::ROW_MELEE    : boss.rowToRow(player.hand, player.melee.units , idx, 0); updateScores(player); break;
-//            case ng::UnitCard::ROW_RANGED   : boss.rowToRow(player.hand, player.ranged.units, idx, 0); updateScores(player); break;
-//            case ng::UnitCard::ROW_SIEGE    : boss.rowToRow(player.hand, player.siege.units, idx, 0); updateScores(player); break;
-//
-//            //default:assert_case(ng::UnitCard::Row);
-//        }
-//
-//
-//    }
-//    else if (ng.isSpecialCard())
-//    {
-//        if (ref->ng.asSpecialCard().type == ng::SpecialCard::SPECIAL_CMDR_HORN)
-//        {
-//            //boss.rowToSlot(player.hand, )
-//        }
-//    }
-//}
 
 int GameBoard2::updatePlayerScore(Player& player)
 {
@@ -543,84 +517,54 @@ void GameBoard2::drawDebug()
     }
 }
 
-//
-// DoCastingThing
-//
 
-void DoCastingThing::operator() (CastUnit const& c)
+
+#if 0
+void GameBoard2::playCard(Player& player, size_t idx)
 {
-    switch (c.row)
+    CardRef ref = player.hand.getCard(idx);
+    ng::Card ng = ref->ng;
+
+    switch (ng.type)
     {
-
-        case CastUnit::MELEE : gb.boss.rowToRow(gb.usr.hand, gb.usr.melee.units , c.hand_idx, 0); break;
-        case CastUnit::RANGED: gb.boss.rowToRow(gb.usr.hand, gb.usr.ranged.units, c.hand_idx, 0); break;
-        case CastUnit::SIEGE : gb.boss.rowToRow(gb.usr.hand, gb.usr.siege.units , c.hand_idx, 0); break;
-        default:nopath_case(CastUnit::Row);
-    }
-}
-
-void DoCastingThing::operator() (CastSpy const& c)
-{
-    nopath_impl;
-}
-
-void DoCastingThing::operator() (CastRowBuff const& c)
-{
-    switch (c.row)
-    {
-        case CastRowBuff::MELEE:
-            gb.usr.melee.has_buff = true;
-            gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
+        case ng::Card::TYPE_SPECIAL:
+        {
+            auto special = ng.asSpecialCard();
             break;
+        }
 
-        case CastRowBuff::RANGED:
-            gb.usr.ranged.has_buff = true;
-            gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
-            break;
+        case ng::Card::TYPE_UNIT:
+        {
+            auto unit = ng.asUnitCard();
 
-        case CastRowBuff::SIEGE:
-            gb.usr.siege.has_buff = true;
-            gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
             break;
+        }
 
         default:
-            nopath_case(CastRowBuff::Row);
+            nopath_case(ng::Card::Type);
+            break;
     }
-}
-
-void DoCastingThing::operator() (CastRowNerf const& c)
-{
-    if (c.change_melee)
+    if (ng.isUnitCard())
     {
-        gb.usr.melee.has_nerf = c.has_nerf_value;
-        gb.cpu.melee.has_nerf = c.has_nerf_value;
+        auto unit = ref->ng.asUnitCard();
+        switch (unit.row)
+        {
+
+            case ng::UnitCard::ROW_MELEE    : boss.rowToRow(player.hand, player.melee.units , idx, 0); updateScores(player); break;
+            case ng::UnitCard::ROW_RANGED   : boss.rowToRow(player.hand, player.ranged.units, idx, 0); updateScores(player); break;
+            case ng::UnitCard::ROW_SIEGE    : boss.rowToRow(player.hand, player.siege.units, idx, 0); updateScores(player); break;
+
+            //default:assert_case(ng::UnitCard::Row);
+        }
+
 
     }
-
-    if (c.change_ranged)
+    else if (ng.isSpecialCard())
     {
-        gb.usr.ranged.has_nerf = c.has_nerf_value;
-        gb.cpu.ranged.has_nerf = c.has_nerf_value;
+        if (ref->ng.asSpecialCard().type == ng::SpecialCard::SPECIAL_CMDR_HORN)
+        {
+            //boss.rowToSlot(player.hand, )
+        }
     }
-
-    if (c.change_siege)
-    {
-        gb.usr.siege.has_nerf = c.has_nerf_value;
-        gb.cpu.siege.has_nerf = c.has_nerf_value;
-    }
-
-    gb.boss.rowToStack(gb.usr.hand, gb.usr.yard, c.hand_idx);
 }
-
-void DoCastingThing::operator() (CastScorch const& c)
-{
-    nopath_impl;
-}
-void DoCastingThing::operator() (CastLeaderAbility const& c)
-{
-    nopath_impl;
-}
-void DoCastingThing::operator() (CastWeather const& c)
-{
-    nopath_impl;
-}
+#endif

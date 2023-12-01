@@ -73,10 +73,10 @@ children:
             children:
               - type: BOX_HBOX
                 weight: 0.5
-                name: gb.usr.stats.gems
+                name: gb.usr.stats.score
               - type: BOX_HBOX
                 weight: 0.5
-                name: gb.usr.stats.score
+                name: gb.usr.stats.gems
   - type: BOX_VBOX
     weight: 0.474999994
     children:
@@ -84,13 +84,13 @@ children:
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.333333343
+            weight: 0.25
             name: gb.cpu.player.deck
           - type: BOX_HBOX
-            weight: 0.333333343
+            weight: 0.5
             name: gb.cpu.player.hand
           - type: BOX_HBOX
-            weight: 0.333333343
+            weight: 0.25
             name: gb.cpu.player.yard
       - type: BOX_HBOX
         weight: 0.125
@@ -98,8 +98,35 @@ children:
         weight: 0.125
       - type: BOX_HBOX
         weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.134499997
+          - type: BOX_HBOX
+            weight: 0.731000006
+          - type: BOX_VBOX
+            weight: 0.134499997
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.cpu.melee.buff
+              - type: BOX_HBOX
+                weight: 0.5
+                name: gb.cpu.melee.nerf
       - type: BOX_HBOX
         weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.136500001
+          - type: BOX_HBOX
+            weight: 0.726999998
+            name: gb.usr.melee.units
+          - type: BOX_VBOX
+            weight: 0.136500001
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+              - type: BOX_HBOX
+                weight: 0.5
       - type: BOX_HBOX
         weight: 0.125
       - type: BOX_HBOX
