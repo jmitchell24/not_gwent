@@ -12,15 +12,13 @@ namespace game::layout
 {
     struct RowLayout
     {
-        enum Direction { DIR_LEFT, DIR_CENTER };
-
         ut::rect    bounds;
 
         size_t      card_count;
         float       card_width;
         float       card_gap;
 
-        static RowLayout create(Direction direction, ut::rect const& bounds, float card_width, size_t card_count);
+        static RowLayout create(ut::rect const& bounds, float card_width, size_t card_count);
         bool tryGetIndex(ut::vec2 const& mp, size_t& idx) const;
 
         ut::vec2 getPos(size_t idx) const;

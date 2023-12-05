@@ -12,6 +12,10 @@
 
 namespace game::board
 {
+    using card_indices_t = std::vector<size_t>;
+    using card_indices_param = std::vector<size_t> const&;
+
+
     class BoardRow
     {
     public:
@@ -21,10 +25,38 @@ namespace game::board
         inline size_t numCards()            const { return m_card_refs.size(); }
         inline bool   hasCard (CardRef ref) const { return getIdx(ref) >= 0; }
 
-        bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
-        bool tryGetHoveredIndex(ut::vec2 const& mp, size_t& idx);
+        inline bool hasCardAny(cardrefs_param refs) const
+        {
+            for (auto&& it: refs)
+                if (hasCard(it))
+                    return true;
+            return false;
+        }
 
-        bool tryGetTargetedCard(ut::vec2 const& mp, TargetedCard& target)
+        inline bool hasCardAll(cardrefs_param refs) const
+        {
+            for (auto&& it: refs)
+                if (!hasCard(it))
+                    return false;
+            return true;
+        }
+
+        inline bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref) const
+        {
+            if (size_t idx; m_layout_row.tryGetIndex(mp,idx))
+            {
+                ref = m_card_refs[idx];
+                return true;
+            }
+            return false;
+        }
+
+        inline bool tryGetHoveredIndex(ut::vec2 const& mp, size_t& idx) const
+        {
+            return m_layout_row.tryGetIndex(mp, idx);
+        }
+
+        inline bool tryGetTargetedCard(ut::vec2 const& mp, TargetedCard& target) const
         {
             if (size_t idx; tryGetHoveredIndex(mp, idx))
             {
@@ -34,18 +66,52 @@ namespace game::board
             return false;
         }
 
+        //
+        // single-ref container functions
+        //
 
-
-        void setHighlight() { m_highlighted = true; }
-        void clearHighlight() { m_highlighted = false; }
-
+        void addCard(size_t idx, CardRef ref);
+        void removeCard(size_t idx);
+        void removeCard(CardRef ref);
         CardRef giveCard(size_t idx);
-
-        void addCard      (size_t idx, CardRef ref);
-        void removeCard   (size_t idx);
-        void removeCard   (CardRef ref);
         CardRef getCard(size_t idx) const;
 
+        //
+        // multi-ref container functions
+        //
+
+        void addCardMulti(size_t idx, cardrefs_param refs);
+        void removeCardMulti(card_indices_param indices);
+        cardrefs_t giveCardMulti(card_indices_param indices);
+        cardrefs_t getCardMulti(card_indices_param indices) const;
+        card_indices_t getCardIndices(cardrefs_param refs) const;
+
+        //
+        // template container functions
+        //
+
+        template <typename Predicate>
+        inline card_indices_t getCardIndicesIf(Predicate&& p)
+        {
+            card_indices_t indices;
+            for (size_t i = 0; i < m_card_refs.size(); ++i)
+                if (p(m_card_refs[i]))
+                    indices.push_back(i);
+            return indices;
+        }
+
+        //
+        // game object functions
+        //
+
+        void setRowHighlight();
+        void clearRowHighlight();
+        void setCardHighlight(size_t idx);
+        void clearCardHighlight();
+
+        int getTotalStrength() const;
+        int getMaxStrength() const;
+        bool isTargeted(ut::vec2 const& mp);
 
         void layout (ut::rect const& b);
         void update (float dt);
@@ -53,18 +119,18 @@ namespace game::board
         void drawUnderCards();
         void drawDebug     ();
 
-        int getTotalStrength();
-
-        bool isTargeted(const ut::vec2 &vec);
-
     private:
         ut::rect            m_bounds;
         layout::RowLayout   m_layout_row;
-        layout::RowLayout   m_layout_row_next;
-
         cardrefs_t          m_card_refs;
+        bool                m_row_highlight = false;
+        ssize_t             m_card_highlight = -1;
 
-        bool m_highlighted = false;
+        //layout::RowLayout   m_layout_row_next;
+
+        //
+        // helper functions
+        //
 
         ssize_t getIdx(CardRef ref) const;
         void    rebuildLayout();

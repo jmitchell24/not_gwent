@@ -24,9 +24,10 @@ namespace game
         bool has_buff = false;
         bool has_nerf = false;
 
-        board::BoardRow     units;
+        board::BoardRow units;
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
+
         int updateScore();
 
         void layout(layout::CombatRow const& l);
@@ -38,7 +39,8 @@ namespace game
         {
             //cmdr_horn.clearHighlight();
             //weather.clearHighlight();
-            units.clearHighlight();
+            units.clearCardHighlight();
+            units.clearRowHighlight();
         }
 
     private:

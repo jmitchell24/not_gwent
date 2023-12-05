@@ -16,22 +16,11 @@ using namespace ut;
 // CardList::CardLayout -> Implementation
 //
 
-RowLayout RowLayout::create(Direction direction, rect const &bounds, float card_width, size_t card_count)
+RowLayout RowLayout::create(rect const &bounds, float card_width, size_t card_count)
 {
     if (float w = card_width * float(card_count); w < bounds.width())
     {
-        switch (direction)
-        {
-            case DIR_LEFT  :
-                return {bounds.anchorTLtoTL(w, bounds.height()), card_count, card_width, card_width};
-            case DIR_CENTER:
-                return {bounds.anchorCCtoCC(w, bounds.height()), card_count, card_width, card_width};
-
-            default:
-                assert_case(Direction);
-        }
-
-        return {{}, 0, 0.0f, 0.0f};
+        return {bounds.anchorCCtoCC(w, bounds.height()), card_count, card_width, card_width};
     }
 
     return {bounds, card_count, card_width, (bounds.width() - card_width) / float(card_count - 1)};

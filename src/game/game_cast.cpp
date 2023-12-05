@@ -8,6 +8,17 @@ using namespace game;
 using namespace game::visitors;
 
 //
+// Helper functions
+//
+
+inline static void scorchRow(board::BoardRow& row, int max_strength)
+{
+
+
+
+}
+
+//
 // CardCaster -> Implementation
 //
 
@@ -77,8 +88,37 @@ void CardCaster::operator() (CastRowNerf const& c)
 
 void CardCaster::operator() (CastScorch const& c)
 {
-    nopath_impl;
+    int max_strength = 0;
+
+    if (int x = player.melee.units.getMaxStrength();    x > max_strength) { max_strength = x; }
+    if (int x = player.ranged.units.getMaxStrength();   x > max_strength) { max_strength = x; }
+    if (int x = player.siege.units.getMaxStrength();    x > max_strength) { max_strength = x; }
+
+    if (int x = opponent.melee.units.getMaxStrength();  x > max_strength) { max_strength = x; }
+    if (int x = opponent.ranged.units.getMaxStrength(); x > max_strength) { max_strength = x; }
+    if (int x = opponent.siege.units.getMaxStrength();  x > max_strength) { max_strength = x; }
+
+    auto p = [max_strength](CardRef ref)
+    {
+        int strength = (int) ref->ng.asUnitCard().strength;
+        return strength == max_strength;
+    };
+
+#define SCORCH_ROW(row_, stack_) \
+    gb.boss.rowToStack(row_, stack_, (row_).getCardIndicesIf(p));
+
+    SCORCH_ROW(player.melee.units, player.yard);
+    SCORCH_ROW(player.ranged.units, player.yard);
+    SCORCH_ROW(player.siege.units, player.yard);
+
+    SCORCH_ROW(opponent.melee.units, opponent.yard);
+    SCORCH_ROW(opponent.ranged.units, opponent.yard);
+    SCORCH_ROW(opponent.siege.units, opponent.yard);
+#undef SCORCH_ROW
+
+    gb.boss.rowToStack(player.hand, player.yard, c.hand_idx);
 }
+
 void CardCaster::operator() (CastLeaderAbility const& c)
 {
     nopath_impl;

@@ -434,20 +434,35 @@ void GameBoard2::drawDebug()
     }
 
     if (Button("Draw"))
+        OpenPopup("draw_popup");
+
+    if (BeginPopup("draw_popup"))
     {
-        auto idx = 0;
-        boss.stackToRow(usr.deck, usr.hand, idx);
+        if (MenuItem("Top Deck"))
+        {
+            boss.stackToRow(usr.deck, usr.hand, 0);
+        }
+
+#define TOP_DECK(x_) if (MenuItem(PRINTER("%s", (x_).name.c_str()))) { usr.deck.pushNgCard((x_)); boss.stackToRow(usr.deck, usr.hand, 0); }
+        if (BeginMenu("Weather"))
+        {
+            TOP_DECK(ng::cards::special_frost_1)
+            TOP_DECK(ng::cards::special_clearsky_1)
+            TOP_DECK(ng::cards::special_fog_1)
+            TOP_DECK(ng::cards::special_horn_1)
+            TOP_DECK(ng::cards::special_rain_1)
+            TOP_DECK(ng::cards::special_skellige_storm_1)
+            EndMenu();
+        }
+
+        TOP_DECK(ng::cards::special_scorch_1)
+        TOP_DECK(ng::cards::special_dummy_1)
+#undef TOP_DECK
+
+        EndPopup();
     }
 
-#define TOP_DECK(x_) \
-    if (Button(PRINTER("Draw %s", x_.name.c_str()))) { usr.deck.pushNgCard(x_); boss.stackToRow(usr.deck, usr.hand, 0); }
 
-    TOP_DECK(ng::cards::special_frost_1)
-    TOP_DECK(ng::cards::special_clearsky_1)
-    TOP_DECK(ng::cards::special_fog_1)
-    TOP_DECK(ng::cards::special_horn_1)
-    TOP_DECK(ng::cards::special_rain_1)
-    TOP_DECK(ng::cards::special_skellige_storm_1)
 
     if (Button("Discard"))
     {

@@ -68,7 +68,7 @@ namespace game
 
     struct CastScorch
     {
-
+        size_t hand_idx;
     };
 
     struct CastLeaderAbility

@@ -5,6 +5,9 @@
 #include "game/board/board_boss.hpp"
 using namespace game::board;
 
+#include <ut/check.hpp>
+using namespace ut;
+
 void BoardBoss::slotToRow(BoardSlot& slot, BoardRow& row, size_t idx)
 {
     CardRef ref = slot.giveCard();
@@ -29,6 +32,21 @@ void BoardBoss::rowToStack(BoardRow& row, BoardStack& stack, size_t idx)
     TANK.elevateCard(card.id);
 
     m_terminal_cards.push_back(card);
+}
+
+void BoardBoss::rowToStack(BoardRow& row, BoardStack& stack, card_indices_param indices)
+{
+    if (row.isEmpty()) return;
+    if (indices.empty()) return;
+
+    auto refs = row.giveCardMulti(indices);
+
+    for (auto&& it: refs)
+    {
+        stack.pushCard(it);
+        TANK.elevateCard(it.id);
+        m_terminal_cards.push_back(it);
+    }
 }
 
 void BoardBoss::stackToRow(BoardStack& stack, BoardRow& row, size_t idx)

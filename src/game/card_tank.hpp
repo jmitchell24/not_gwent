@@ -10,38 +10,10 @@
 
 #include <functional>
 
-#define ENUM_GAME_CARD_TANK_TARGETS \
-    CASE(cpu_hand           , CPU_HAND          ) \
-    CASE(cpu_deck           , CPU_DECK          ) \
-    CASE(cpu_yard           , CPU_YARD          ) \
-    CASE(cpu_special_melee  , CPU_SPECIAL_MELEE ) \
-    CASE(cpu_special_ranged , CPU_SPECIAL_RANGED) \
-    CASE(cpu_special_siege  , CPU_SPECIAL_SIEGE ) \
-    CASE(cpu_combat_melee   , CPU_COMBAT_MELEE  ) \
-    CASE(cpu_combat_ranged  , CPU_COMBAT_RANGED ) \
-    CASE(cpu_combat_siege   , CPU_COMBAT_SIEGE  ) \
-    CASE(usr_hand           , USR_HAND          ) \
-    CASE(usr_deck           , USR_DECK          ) \
-    CASE(usr_yard           , USR_YARD          ) \
-    CASE(usr_special_melee  , USR_SPECIAL_MELEE ) \
-    CASE(usr_special_ranged , USR_SPECIAL_RANGED) \
-    CASE(usr_special_siege  , USR_SPECIAL_SIEGE ) \
-    CASE(usr_combat_melee   , USR_COMBAT_MELEE  ) \
-    CASE(usr_combat_ranged  , USR_COMBAT_RANGED ) \
-    CASE(usr_combat_siege   , USR_COMBAT_SIEGE  )
-
 namespace game
 {
-//    enum CardTankTarget
-//    {
-//#define CASE(x_, y_) TARGET_##y_,
-//ENUM_GAME_CARD_TANK_TARGETS
-//#undef CASE
-//        TARGET_ENUM_COUNT_
-//    };
-
-
     using cardrefs_t = std::vector<CardRef>;
+    using cardrefs_param = std::vector<CardRef> const&;
 
     class CardTank
     {

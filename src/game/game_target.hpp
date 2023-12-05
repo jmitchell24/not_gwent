@@ -29,15 +29,17 @@ namespace game
     struct TargetDefault;
     struct TargetBuff;
     struct TargetNerf;
-    struct TargetUnitRow;
-    struct TargetUnitCard;
+    struct TargetCastUnit;
+    struct TargetScorch;
+    struct TargetDecoy;
 
     using Target = std::variant<
         TargetDefault,
         TargetBuff,
         TargetNerf,
-        TargetUnitRow,
-        TargetUnitCard
+        TargetCastUnit,
+        TargetScorch,
+        TargetDecoy
     >;
 
     //
@@ -63,7 +65,7 @@ namespace game
         size_t hand_idx;
     };
 
-    struct TargetUnitRow
+    struct TargetCastUnit
     {
         bool target_melee;
         bool target_ranged;
@@ -72,7 +74,12 @@ namespace game
         size_t hand_idx;
     };
 
-    struct TargetUnitCard
+    struct TargetScorch
+    {
+        size_t hand_idx;
+    };
+
+    struct TargetDecoy
     {
         size_t hand_idx;
     };
@@ -86,8 +93,9 @@ namespace game::visitors
         Player& opponent;
 
         void operator()(TargetDefault const& t);
-        void operator()(TargetUnitRow const& t);
-        void operator()(TargetUnitCard const& t);
+        void operator()(TargetCastUnit const& t);
+        void operator()(TargetScorch const& t);
+        void operator()(TargetDecoy const& t);
         void operator()(TargetBuff const& t);
         void operator()(TargetNerf const& t);
 
@@ -103,8 +111,9 @@ namespace game::visitors
         ut::vec2 const& mp;
 
         bool operator()(TargetDefault const& t);
-        bool operator()(TargetUnitRow const& t) ;
-        bool operator()(TargetUnitCard const& t) ;
+        bool operator()(TargetCastUnit const& t) ;
+        bool operator()(TargetScorch const& t) ;
+        bool operator()(TargetDecoy const& t);
         bool operator()(TargetBuff const& t);
         bool operator()(TargetNerf const& t);
     };
