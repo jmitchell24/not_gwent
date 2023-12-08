@@ -9,30 +9,27 @@
     CASE(5 , HEARTS_OF_STONE, MONSTERS       , MONSTERS_EREDIN_5             , monsters_eredin_5             , "Eredin Bréacc Glas: The Treacherous"   , "monsters_eredin_5.png"            , EREDIN_5)
 
 #define NG_ENUM_CARDS_SPECIALS \
-    CASE(63, BASE_GAME      , NEUTRAL        , SPECIAL_FROST_1               , special_frost_1               , "Biting Frost (1 of 3)"                 , "special_frost.png"                , BITING_FROST) \
-    CASE(64, BASE_GAME      , NEUTRAL        , SPECIAL_FROST_2               , special_frost_2               , "Biting Frost (2 of 3)"                 , "special_frost.png"                , BITING_FROST) \
-    CASE(65, BASE_GAME      , NEUTRAL        , SPECIAL_FROST_3               , special_frost_3               , "Biting Frost (3 of 3)"                 , "special_frost.png"                , BITING_FROST) \
-    CASE(66, BASE_GAME      , NEUTRAL        , SPECIAL_CLEARSKY_1            , special_clearsky_1            , "Clear Weather (1 of 3)"                , "special_clearsky.png"             , CLEAR_WEATHER) \
-    CASE(67, BASE_GAME      , NEUTRAL        , SPECIAL_CLEARSKY_2            , special_clearsky_2            , "Clear Weather (2 of 3)"                , "special_clearsky.png"             , CLEAR_WEATHER) \
-    CASE(68, BASE_GAME      , NEUTRAL        , SPECIAL_CLEARSKY_3            , special_clearsky_3            , "Clear Weather (3 of 3)"                , "special_clearsky.png"             , CLEAR_WEATHER) \
-    CASE(69, BASE_GAME      , NEUTRAL        , SPECIAL_HORN_1                , special_horn_1                , "Commander's Horn (1 of 3)"             , "special_horn.png"                 , CMDR_HORN) \
-    CASE(70, BASE_GAME      , NEUTRAL        , SPECIAL_HORN_2                , special_horn_2                , "Commander's Horn (2 of 3)"             , "special_horn.png"                 , CMDR_HORN) \
-    CASE(71, BASE_GAME      , NEUTRAL        , SPECIAL_HORN_3                , special_horn_3                , "Commander's Horn (3 of 3)"             , "special_horn.png"                 , CMDR_HORN) \
-    CASE(72, BASE_GAME      , NEUTRAL        , SPECIAL_DUMMY_1               , special_dummy_1               , "Decoy (1 of 3)"                        , "special_dummy.png"                , DECOY) \
-    CASE(73, BASE_GAME      , NEUTRAL        , SPECIAL_DUMMY_2               , special_dummy_2               , "Decoy (2 of 3)"                        , "special_dummy.png"                , DECOY) \
-    CASE(74, BASE_GAME      , NEUTRAL        , SPECIAL_DUMMY_3               , special_dummy_3               , "Decoy (3 of 3)"                        , "special_dummy.png"                , DECOY) \
-    CASE(75, BASE_GAME      , NEUTRAL        , SPECIAL_FOG_1                 , special_fog_1                 , "Impenetrable Fog (1 of 3)"             , "special_fog.png"                  , IMP_FOG) \
-    CASE(76, BASE_GAME      , NEUTRAL        , SPECIAL_FOG_2                 , special_fog_2                 , "Impenetrable Fog (2 of 3)"             , "special_fog.png"                  , IMP_FOG) \
-    CASE(77, BASE_GAME      , NEUTRAL        , SPECIAL_FOG_3                 , special_fog_3                 , "Impenetrable Fog (3 of 3)"             , "special_fog.png"                  , IMP_FOG) \
-    CASE(78, BASE_GAME      , NEUTRAL        , SPECIAL_SCORCH_1              , special_scorch_1              , "Scorch (1 of 3)"                       , "special_scorch.png"               , SCORCH) \
-    CASE(79, BASE_GAME      , NEUTRAL        , SPECIAL_SCORCH_2              , special_scorch_2              , "Scorch (2 of 3)"                       , "special_scorch.png"               , SCORCH) \
-    CASE(80, BASE_GAME      , NEUTRAL        , SPECIAL_SCORCH_3              , special_scorch_3              , "Scorch (3 of 3)"                       , "special_scorch.png"               , SCORCH) \
-    CASE(81, BASE_GAME      , NEUTRAL        , SPECIAL_RAIN_1                , special_rain_1                , "Torrential Rain (1 of 3)"              , "special_rain.png"                 , TOR_RAIN) \
-    CASE(82, BASE_GAME      , NEUTRAL        , SPECIAL_RAIN_2                , special_rain_2                , "Torrential Rain (2 of 3)"              , "special_rain.png"                 , TOR_RAIN) \
-    CASE(83, BASE_GAME      , NEUTRAL        , SPECIAL_RAIN_3                , special_rain_3                , "Torrential Rain (3 of 3)"              , "special_rain.png"                 , TOR_RAIN) \
-    CASE(84, BLOOD_AND_WINE , NEUTRAL        , SPECIAL_SKELLIGE_STORM_1      , special_skellige_storm_1      , "Skellige Storm (1 of 3)"               , "special_skellige_storm.png"       , SKELLIGE_STORM) \
-    CASE(85, BLOOD_AND_WINE , NEUTRAL        , SPECIAL_SKELLIGE_STORM_2      , special_skellige_storm_2      , "Skellige Storm (2 of 3)"               , "special_skellige_storm.png"       , SKELLIGE_STORM) \
-    CASE(86, BLOOD_AND_WINE , NEUTRAL        , SPECIAL_SKELLIGE_STORM_3      , special_skellige_storm_3      , "Skellige Storm (3 of 3)"               , "special_skellige_storm.png"       , SKELLIGE_STORM)
+    CASE(66, BASE_GAME      , NEUTRAL        , SPECIAL_FROST_1               , special_frost_1               , "Biting Frost (1 of 3)"                 , "special_frost.png"           , BITING_FROST   ) \
+    CASE(67, BASE_GAME      , NEUTRAL        , SPECIAL_FROST_2               , special_frost_2               , "Biting Frost (2 of 3)"                 , "special_frost.png"           , BITING_FROST   ) \
+    CASE(68, BASE_GAME      , NEUTRAL        , SPECIAL_FROST_3               , special_frost_3               , "Biting Frost (3 of 3)"                 , "special_frost.png"           , BITING_FROST   ) \
+    CASE(69, BASE_GAME      , NEUTRAL        , SPECIAL_CLEARSKY_1            , special_clearsky_1            , "Clear Weather (1 of 3)"                , "special_clearsky.png"        , CLEAR_WEATHER  ) \
+    CASE(70, BASE_GAME      , NEUTRAL        , SPECIAL_CLEARSKY_2            , special_clearsky_2            , "Clear Weather (2 of 3)"                , "special_clearsky.png"        , CLEAR_WEATHER  ) \
+    CASE(71, BASE_GAME      , NEUTRAL        , SPECIAL_CLEARSKY_3            , special_clearsky_3            , "Clear Weather (3 of 3)"                , "special_clearsky.png"        , CLEAR_WEATHER  ) \
+    CASE(72, BASE_GAME      , NEUTRAL        , SPECIAL_HORN_1                , special_horn_1                , "Commander's Horn (1 of 3)"             , "special_horn.png"            , CMDR_HORN      ) \
+    CASE(73, BASE_GAME      , NEUTRAL        , SPECIAL_HORN_2                , special_horn_2                , "Commander's Horn (2 of 3)"             , "special_horn.png"            , CMDR_HORN      ) \
+    CASE(74, BASE_GAME      , NEUTRAL        , SPECIAL_HORN_3                , special_horn_3                , "Commander's Horn (3 of 3)"             , "special_horn.png"            , CMDR_HORN      ) \
+    CASE(75, BASE_GAME      , NEUTRAL        , SPECIAL_FOG_1                 , special_fog_1                 , "Impenetrable Fog (1 of 3)"             , "special_fog.png"             , IMP_FOG        ) \
+    CASE(76, BASE_GAME      , NEUTRAL        , SPECIAL_FOG_2                 , special_fog_2                 , "Impenetrable Fog (2 of 3)"             , "special_fog.png"             , IMP_FOG        ) \
+    CASE(77, BASE_GAME      , NEUTRAL        , SPECIAL_FOG_3                 , special_fog_3                 , "Impenetrable Fog (3 of 3)"             , "special_fog.png"             , IMP_FOG        ) \
+    CASE(78, BASE_GAME      , NEUTRAL        , SPECIAL_SCORCH_1              , special_scorch_1              , "Scorch (1 of 3)"                       , "special_scorch.png"          , SCORCH         ) \
+    CASE(79, BASE_GAME      , NEUTRAL        , SPECIAL_SCORCH_2              , special_scorch_2              , "Scorch (2 of 3)"                       , "special_scorch.png"          , SCORCH         ) \
+    CASE(80, BASE_GAME      , NEUTRAL        , SPECIAL_SCORCH_3              , special_scorch_3              , "Scorch (3 of 3)"                       , "special_Scorch.png"          , SCORCH         ) \
+    CASE(81, BASE_GAME      , NEUTRAL        , SPECIAL_RAIN_1                , special_rain_1                , "Torrential Rain (1 of 3)"              , "special_rain.png"            , TOR_RAIN       ) \
+    CASE(82, BASE_GAME      , NEUTRAL        , SPECIAL_RAIN_2                , special_rain_2                , "Torrential Rain (2 of 3)"              , "special_rain.png"            , TOR_RAIN       ) \
+    CASE(83, BASE_GAME      , NEUTRAL        , SPECIAL_RAIN_3                , special_rain_3                , "Torrential Rain (3 of 3)"              , "special_rain.png"            , TOR_RAIN       ) \
+    CASE(84, BLOOD_AND_WINE , NEUTRAL        , SPECIAL_SKELLIGE_STORM_1      , special_skellige_storm_1      , "Skellige Storm (1 of 3)"               , "special_skellige_storm.png"  , SKELLIGE_STORM ) \
+    CASE(85, BLOOD_AND_WINE , NEUTRAL        , SPECIAL_SKELLIGE_STORM_2      , special_skellige_storm_2      , "Skellige Storm (2 of 3)"               , "special_skellige_storm.png"  , SKELLIGE_STORM ) \
+    CASE(86, BLOOD_AND_WINE , NEUTRAL        , SPECIAL_SKELLIGE_STORM_3      , special_skellige_storm_3      , "Skellige Storm (3 of 3)"               , "special_skellige_storm.png"  , SKELLIGE_STORM )
 
 
 // id, expansion, deck, symbol, name, strength, is hero?, combat row, ability, texture name
@@ -95,7 +92,10 @@
     CASE(59, HEARTS_OF_STONE, NEUTRAL        , NEUTRAL_GAUNTER_DARKNESS_2    , neutral_gaunter_darkness_2    , "Gaunter O'Dimm: Darkness (2 of 3)"     , "neutral_gaunter_darkness.png"     , 4 , false , RANGED         , MUSTER  ) \
     CASE(60, HEARTS_OF_STONE, NEUTRAL        , NEUTRAL_GAUNTER_DARKNESS_3    , neutral_gaunter_darkness_3    , "Gaunter O'Dimm: Darkness (3 of 3)"     , "neutral_gaunter_darkness.png"     , 4 , false , RANGED         , MUSTER  ) \
     CASE(61, HEARTS_OF_STONE, NEUTRAL        , NEUTRAL_GAUNTER               , neutral_gaunter               , "Gaunter O'Dimm"                        , "neutral_gaunter.png"              , 2 , false , SIEGE          , MUSTER  ) \
-    CASE(62, HEARTS_OF_STONE, NEUTRAL        , NEUTRAL_OLGIERD               , neutral_olgierd               , "Olgierd von Everec"                    , "neutral_olgierd.png"              , 6 , false , MELEE_RANGED   , MORALE  )
+    CASE(62, HEARTS_OF_STONE, NEUTRAL        , NEUTRAL_OLGIERD               , neutral_olgierd               , "Olgierd von Everec"                    , "neutral_olgierd.png"              , 6 , false , MELEE_RANGED   , MORALE  ) \
+    CASE(63, BASE_GAME      , NEUTRAL        , NEUTRAL_DUMMY_1               , neutral_dummy_1               , "Decoy (1 of 3)"                        , "neutral_dummy.png"                , 0 , false , MELEE_RANGED_SIEGE, DECOY   ) \
+    CASE(64, BASE_GAME      , NEUTRAL        , NEUTRAL_DUMMY_2               , neutral_dummy_2               , "Decoy (2 of 3)"                        , "neutral_dummy.png"                , 0 , false , MELEE_RANGED_SIEGE, DECOY   ) \
+    CASE(65, BASE_GAME      , NEUTRAL        , NEUTRAL_DUMMY_3               , neutral_dummy_3               , "Decoy (3 of 3)"                        , "neutral_dummy.png"                , 0 , false , MELEE_RANGED_SIEGE, DECOY   )
 
 
 #define NG_ENUM_CARDS_UNITS         \

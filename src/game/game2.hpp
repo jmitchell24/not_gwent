@@ -20,6 +20,7 @@ namespace game
         CardRef card_hover;
 
         layout::GameBoard gb;
+        layout::CardPicker card_picker;
         board::BoardBoss boss;
 
         GameBoard2();
@@ -29,6 +30,7 @@ namespace game
         void drawAboveCards();
         void drawUnderCards();
         void drawDebug     ();
+        void drawDebugMenu ();
 
         bool    tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
         int     updatePlayerScore(Player& player);
@@ -36,5 +38,8 @@ namespace game
     };
 
 
+    struct CardPicker
+    {
 
+    };
 }

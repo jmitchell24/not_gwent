@@ -32,7 +32,7 @@ using namespace gfx;
 #include "raylib.h"
 #include "rlgl.h"
 #include "rlImGui/rlImGui.h"
-#include "rlImGui/extras/IconsFontAwesome5.h"
+#include "rlImGui/extras/lucide_icons.hpp"
 #include "rlImGui/extras/fantasque_sans_mono_regular.hpp"
 
 #include "rlImGui/imgui/imgui_mods.hpp"
@@ -90,7 +90,7 @@ int main()
 
     rlImGuiBeginInitImGui();
     rlImGuiAddFantasqueSansMono(16);
-    rlImGuiAddFontAwesomeIconFonts(14);
+    rlImGuiAddLucideIcons(14);
     rlImGuiEndInitImGui();
 
     {
@@ -155,16 +155,15 @@ int main()
 
             if (BeginMainMenuBar())
             {
+                ledit::GLOBAL_OPTIONS.drawDebugMenu();
                 stage.drawDebugMenu();
                 EndMainMenuBar();
             }
 
-
             RenderDockspace();
 
-
-
             stage.drawDebug();
+            ledit::GLOBAL_OPTIONS.drawDebug();
         }
         rlImGuiEnd();
 

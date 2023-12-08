@@ -27,6 +27,7 @@ namespace YAML
     //
     // vecnf<D>
     //
+
     template<size_t D> struct convert<vecnf<D>>
     {
         static Node encode(vecnf<D> const& v)
@@ -59,6 +60,29 @@ namespace YAML
         for (auto&& it : v.pack)
             em << it;
         return em << EndSeq;
+    }
+
+    //
+    // color
+    //
+
+    template<> struct convert<color>
+    {
+        using var_type = color;
+        static Node encode(var_type const& x)
+        {
+            return Node{to_string(x)};
+        }
+
+        static bool decode(Node const& n, var_type& x)
+        {
+            return color::tryParseRGBA(n.as<string>().c_str(), x);
+        }
+    };
+
+    inline Emitter& operator<<(Emitter& em, color const& x)
+    {
+        return em << Value << to_string(x);
     }
 
     //
@@ -209,6 +233,42 @@ namespace YAML
         return em;
     }
 
+    //
+    // style
+    //
+
+    template<> struct convert<OverlayOptions::Style>
+    {
+        using var_type = OverlayOptions::Style;
+        static Node encode(var_type const& x)
+        {
+            Node n;
+            n["background"] = x.background;
+            n["border"] = x.border;
+            return n;
+        }
+
+        static bool decode(Node const& n, var_type& x)
+        {
+            if (!n.IsMap())
+                return false;
+
+            if (auto np = n["background"])  x.background    = np.as<color>(); else return false;
+            if (auto np = n["border"])      x.border        = np.as<color>(); else return false;
+
+            return true;
+        }
+    };
+
+    inline Emitter& operator<<(Emitter& em, OverlayOptions::Style const& x)
+    {
+        em << Flow << BeginMap;
+        em << Key << "background" << Value << x.background;
+        em << Key << "border" << Value << x.border;
+        em << EndMap;
+        return em;
+    }
+
 
 #undef VAR_ENCODE
 #undef VAR_DECODE
@@ -340,4 +400,55 @@ void ::ledit::fromYaml(YAML::Node const& node, box_ptr const& box)
         else
             throw Exception(ch.Mark(), "invalid children seq");
     }
+}
+
+void ::ledit::emitYaml(YAML::Emitter& em, BoxEditOptions const& opts)
+{
+    using namespace YAML;
+
+#define SAVE(x_) em << Key << #x_ << Value << opts.x_;
+    SAVE(show_row_add)
+    SAVE(show_row_delete)
+    SAVE(show_row_move)
+    SAVE(show_row_rename)
+    SAVE(show_row_weight)
+    SAVE(show_row_type)
+#undef SAVE
+}
+
+void ::ledit::fromYaml(YAML::Node const& node, BoxEditOptions& opts)
+{
+    using namespace YAML;
+
+#define LOAD(x_) if (auto np = node[#x_]) { opts.x_ = np.as<bool>(false); }
+    LOAD(show_row_add)
+    LOAD(show_row_delete)
+    LOAD(show_row_move)
+    LOAD(show_row_rename)
+    LOAD(show_row_weight)
+    LOAD(show_row_type)
+#undef LOAD
+}
+
+void ::ledit::emitYaml(YAML::Emitter& em, OverlayOptions const& opts)
+{
+    using namespace YAML;
+
+    em << Key << "style_preset_default" << Value << opts.styles[0];
+    em << Key << "style_preset_opaque"  << Value << opts.styles[1];
+    em << Key << "style_preset_fade"    << Value << opts.styles[2];
+    em << Key << "style_preset_hide"    << Value << opts.styles[3];
+    em << Key << "style_index"          << Value << opts.style_index;
+}
+
+void ::ledit::fromYaml(YAML::Node const& node, OverlayOptions& opts)
+{
+    using namespace YAML;
+
+    if (auto np = node["style_preset_default"]) { opts.styles[0] = np.as<OverlayOptions::Style>(OverlayOptions::STYLE_PRESET_DEFAULT); }
+    if (auto np = node["style_preset_opaque"])  { opts.styles[1] = np.as<OverlayOptions::Style>(OverlayOptions::STYLE_PRESET_OPAQUE); }
+    if (auto np = node["style_preset_fade"])    { opts.styles[2] = np.as<OverlayOptions::Style>(OverlayOptions::STYLE_PRESET_FADE); }
+    if (auto np = node["style_preset_hide"])    { opts.styles[3] = np.as<OverlayOptions::Style>(OverlayOptions::STYLE_PRESET_HIDE); }
+    if (auto np = node["style_index"])          { opts.style_index = clamp(np.as<int>(2), 0, 3); }
+
 }

@@ -7,6 +7,7 @@
 #include "game/game_stats.hpp"
 #include "game/game_target.hpp"
 #include "game/game_combat_row.hpp"
+#include "game/board/board_hand.hpp"
 
 namespace game
 {
@@ -17,7 +18,7 @@ namespace game
         board::BoardStack  deck{board::BoardStack::DECK};
         board::BoardStack  yard{board::BoardStack::YARD};
         board::BoardSlot   lead;
-        board::BoardRow    hand;
+        board::BoardHand   hand;
 
         CombatRow melee;
         CombatRow ranged;
@@ -43,6 +44,7 @@ namespace game
             melee.clearHighlight();
             ranged.clearHighlight();
             siege.clearHighlight();
+            hand.clearCardHighlight();
         }
 
         void changeTarget(Target t, Player& opponent);

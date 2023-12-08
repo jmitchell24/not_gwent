@@ -14,7 +14,7 @@ using namespace ledit;
 //
 // ImGui
 //
-#include "rlImGui/ed/TextEditor.h"
+#include "rlImGui/extras/lucide_icons.hpp"
 #include "rlImGui/imgui/imgui_mods.hpp"
 
 //
@@ -34,9 +34,7 @@ using namespace std;
 
 BoxEditor::BoxEditor(cstrparam name)
     : BoxVisitor{name.str()}
-{
-    m_source_code.SetReadOnly(true);
-}
+{}
 
 void BoxEditor::setRoot(rect const& bounds)
 {
@@ -110,54 +108,97 @@ bool BoxEditor::draw()
 
     PushID(m_name.c_str());
     drawMainWindow();
-    drawCodeWindow();
     Box::drawPropertiesWindow(*this);
     Box::drawOverlay(*this);
     PopID();
 
+    if (m_name != GLOBAL_OPTIONS.active_editor_name)
+    {
+        is_overlay_visible = false;
+        want_capture_mouse = false;
+    }
+
     return true;
+}
+
+void BoxEditor::drawMenu()
+{
+
 }
 
 void BoxEditor::drawMainWindow()
 {
     using namespace ImGui;
 
-    auto lbl = PRINTER("Box Editor [%s]###box_hierarchy", m_name.c_str());
+    auto lbl = PRINTER("Box Editor [%s]###box_hierarchy_%s", m_name.c_str(), m_name.c_str());
 
     if (Begin(lbl))
     {
-        if (CollapsingHeader("Row Options"))
-            drawMainWindowBoxEditOptions(edit_opts);
+        drawMainWindowOptions();
 
-        if (CollapsingHeader("Overlay Options"))
-            drawMainWindowOverlayOptions(overlay_opts);
-
-        if (CollapsingHeader("File Options"))
+        if (CollapsingHeader("File"))
             drawMainWindowFileOptions();
 
-        if (CollapsingHeader("Binds"))
+        if (CollapsingHeader(PRINTER("Binds [%d/%d]###binds", getFilledSlotCount(), getSlotCount())))
             drawMainWindowBindOptions();
 
-        if (CollapsingHeader("Hierarchy"))
+        if (CollapsingHeader("Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
             Box::drawBoxHierarchy(*this);
     }
     End();
 }
 
-void BoxEditor::drawCodeWindow()
+void BoxEditor::drawMainWindowOptions()
 {
     using namespace ImGui;
 
-    auto lbl = PRINTER("Code [%s]###code_window", m_name.c_str());
-
-    if (m_is_code_window_open)
+    if (ButtonActivated(ICON_LC_MOUSE_POINTER_SQUARE, m_name == GLOBAL_OPTIONS.active_editor_name))
     {
-        if (Begin(lbl, &m_is_code_window_open))
-        {
-
-        }
-        End();
+        GLOBAL_OPTIONS.active_editor_name = m_name;
+        is_overlay_visible = true;
+        want_capture_mouse = true;
     }
+
+    if (IsItemHovered())
+        SetTooltip("Select Editor [%s]", m_name.c_str());
+
+    if (m_name == GLOBAL_OPTIONS.active_editor_name)
+    {
+        SameLine();
+        if (Button(ICON_LC_X))
+        {
+            GLOBAL_OPTIONS.active_editor_name.clear();
+        }
+
+        if (IsItemHovered())
+            SetTooltip("Unselect Editor");
+
+        SameLine();
+        if (ButtonSelected(is_overlay_visible ? ICON_LC_EYE "###vis" : ICON_LC_EYE_OFF "###vis", is_overlay_visible))
+        {
+            is_overlay_visible = !is_overlay_visible;
+        }
+
+        SameLine();
+        if (ButtonSelected(ICON_LC_MOUSE "###input", want_capture_mouse))
+        {
+            want_capture_mouse = !want_capture_mouse;
+        }
+
+        if (!is_overlay_visible)
+        {
+            want_capture_mouse = false;
+        }
+    }
+
+    SameLine();
+    if (Button(ICON_LC_SETTINGS))
+    {
+        GLOBAL_OPTIONS.showDebugWindow();
+    }
+
+    if (IsItemHovered())
+        SetTooltip("Global Editor Settings...");
 
 }
 
@@ -222,7 +263,7 @@ void BoxEditor::drawMainWindowOverlayOptions(OverlayOptions& opts)
 
     Dummy(GetItemRectSize());
 
-    Checkbox("Want Mouse Input", &opts.want_capture_mouse);
+    Checkbox("Want Mouse Input", &want_capture_mouse);
 }
 
 void BoxEditor::drawMainWindowFileOptions()
@@ -238,6 +279,15 @@ void BoxEditor::drawMainWindowFileOptions()
         TextUnformatted(m_current_file);
     }
 
+    if (ButtonSelected(ICON_LC_SAVE, m_autosave))
+    {
+        m_autosave = !m_autosave;
+    }
+
+    if (IsItemHovered())
+        SetTooltip("Autosave");
+
+    SameLine();
     if (Button("Load..."))
     {
         using namespace filesystem;
@@ -318,12 +368,12 @@ void BoxEditor::drawMainWindowBindOptions()
     using namespace ImGui;
 
     ImGuiTableFlags table_flags =
-            ImGuiTableFlags_BordersV            |
-            ImGuiTableFlags_BordersOuterH       |
-            ImGuiTableFlags_SizingFixedFit      |
-            ImGuiTableFlags_ScrollX             |
-            ImGuiTableFlags_RowBg               |
-            ImGuiTableFlags_NoBordersInBody;
+        ImGuiTableFlags_BordersV            |
+        ImGuiTableFlags_BordersOuterH       |
+        ImGuiTableFlags_SizingFixedFit      |
+        ImGuiTableFlags_ScrollX             |
+        ImGuiTableFlags_RowBg               |
+        ImGuiTableFlags_NoBordersInBody;
 
     if (BeginTable("slots", 2, table_flags, ImVec2{0, 150}))
     {
@@ -335,7 +385,6 @@ void BoxEditor::drawMainWindowBindOptions()
         {
             if (TableNextColumn())
                 TextUnformatted(it.first);
-
 
             if (auto box = it.second)
             {

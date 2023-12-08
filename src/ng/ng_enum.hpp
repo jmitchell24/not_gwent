@@ -20,7 +20,6 @@
     CASE(4, EREDIN_5, Eredin5 , "Eredin: 5"           )
 
 #define NG_ENUM_SPECIAL_TYPE \
-    CASE(0, DECOY          , Decoy        , "Decoy"           ) \
     CASE(1, CMDR_HORN      , CmdrHorn     , "Commander Horn"  ) \
     CASE(2, SCORCH         , Scorch       , "Scorch"          ) \
     CASE(3, BITING_FROST   , BitingFrost  , "Biting Frost"    ) \
@@ -32,13 +31,14 @@
 #define NG_ENUM_ABILITY_TYPE \
     CASE(0, NONE     , None     , "---"         ) \
     CASE(1, SPY      , Spy      , "Spy"         ) \
-    CASE(2, BOND     , Bond     , "Bond"        ) \
-    CASE(3, MORALE   , Morale   , "Morale"      ) \
-    CASE(4, MEDIC    , Medic    , "Medic"       ) \
-    CASE(5, AGILE    , Agile    , "Agile"       ) \
-    CASE(6, MUSTER   , Muster   , "Muster"      ) \
-    CASE(7, SCORCH   , Scorch   , "Scorch"      ) \
-    CASE(8, BERSERKER, Berserker, "Berserker"   )
+    CASE(2, DECOY    , Decoy    , "Decoy"       ) \
+    CASE(3, BOND     , Bond     , "Bond"        ) \
+    CASE(4, MORALE   , Morale   , "Morale"      ) \
+    CASE(5, MEDIC    , Medic    , "Medic"       ) \
+    CASE(6, AGILE    , Agile    , "Agile"       ) \
+    CASE(7, MUSTER   , Muster   , "Muster"      ) \
+    CASE(8, SCORCH   , Scorch   , "Scorch"      ) \
+    CASE(9, BERSERKER, Berserker, "Berserker"   )
 
 #define NG_ENUM_DECK_TYPE \
     CASE(0, NEUTRAL        , Neutral       , "Neutral"         ) \
@@ -112,7 +112,9 @@ NG_ENUM_EXPANSION_TYPE
 NG_FLAG_ROW
 #undef CASE
 
-        ROW_MELEE_RANGED = ROW_MELEE | ROW_RANGED
+        ROW_MELEE_RANGED        = ROW_MELEE | ROW_RANGED,
+        ROW_MELEE_RANGED_SIEGE  = ROW_MELEE | ROW_RANGED | ROW_SIEGE,
+        ROW_ALL                 = ROW_MELEE | ROW_RANGED | ROW_SIEGE,
     };
 
     using RowFlag = int;

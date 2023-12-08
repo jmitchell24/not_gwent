@@ -1785,6 +1785,7 @@ void rlImGuiAddFantasqueSansMono(float size)
     font_config.PixelSnapH = false;
     font_config.OversampleH = 5;
     font_config.OversampleV = 5;
+    font_config.FontDataOwnedByAtlas = false;
 
     static const ImWchar ranges[] = { 0x0020, 0x00FF, 0, };
 

@@ -128,6 +128,16 @@ void BoxVisitor::resetAllSlots()
         it.second = nullptr;
 }
 
+size_t BoxVisitor::getSlotCount() const
+{
+    return m_box_map.size();
+}
+
+size_t BoxVisitor::getFilledSlotCount() const
+{
+    return m_box_map.size() - getEmptySlotCount();
+}
+
 size_t BoxVisitor::getEmptySlotCount() const
 {
     size_t count = 0;

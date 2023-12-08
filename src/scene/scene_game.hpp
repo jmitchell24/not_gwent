@@ -44,6 +44,11 @@ public:
         game::TANK.drawDebug();
     }
 
+    void drawDebugMenu() override
+    {
+        m_gb.drawDebugMenu();
+    }
+
 private:
     game::GameBoard2 m_gb;
 };

@@ -18,11 +18,13 @@ namespace ledit
     public:
         using vt_type = std::optional<gfx::ViewTransform>;
 
-        BoxEditOptions      edit_opts;
-        OverlayOptions      overlay_opts;
+        bool is_properties_window_open  = false;
+        bool is_overlay_visible         = false;
+        bool want_capture_mouse         = false;
+        bool show_row_select            = true;
 
-        box_ptr             root_box;
-        vt_type             view_transform;
+        box_ptr root_box;
+        vt_type view_transform;
 
         explicit BoxVisitor(ut::cstrparam name);
 
@@ -37,6 +39,8 @@ namespace ledit
         //
 
         boxmap_t const& boxMap() const;
+        size_t getSlotCount() const;
+        size_t getFilledSlotCount() const;
         size_t getEmptySlotCount() const;
         box_ptr getBoxSlot(ut::cstrparam s);
         void setBoxSlot(box_ptr const& ptr);

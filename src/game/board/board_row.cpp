@@ -2,6 +2,10 @@
 using namespace game::board;
 using namespace game;
 
+//
+// gfx
+//
+
 #include "gfx/gfx_draw.hpp"
 using namespace gfx;
 
@@ -35,9 +39,55 @@ inline static bool hasIdxAll(card_indices_param indices, size_t sz)
 // CardRow2 -> Implementation
 //
 
-//
-// CardRow2 -> single-ref container functions
-//
+bool BoardRow::isEmpty() const
+{ return m_card_refs.empty(); }
+
+size_t BoardRow::numCards() const
+{ return m_card_refs.size(); }
+
+bool BoardRow::hasCard(CardRef ref) const
+{ return getIdx(ref) >= 0; }
+
+bool BoardRow::hasCardAny(cardrefs_param refs) const
+{
+    for (auto &&it: refs)
+        if (hasCard(it))
+            return true;
+    return false;
+}
+
+bool BoardRow::hasCardAll(cardrefs_param refs) const
+{
+    for (auto &&it: refs)
+        if (!hasCard(it))
+            return false;
+    return true;
+}
+
+bool BoardRow::tryGetHoveredCard(vec2 const &mp, CardRef &ref) const
+{
+    if (size_t idx; m_layout_row.tryGetIndex(mp, idx))
+    {
+        ref = m_card_refs[idx];
+        return true;
+    }
+    return false;
+}
+
+bool BoardRow::tryGetHoveredIndex(vec2 const &mp, size_t &idx) const
+{
+    return m_layout_row.tryGetIndex(mp, idx);
+}
+
+bool BoardRow::tryGetTargetedCard(vec2 const &mp, TargetedCard &target) const
+{
+    if (size_t idx; tryGetHoveredIndex(mp, idx))
+    {
+        target = {idx, m_card_refs[idx]};
+        return true;
+    }
+    return false;
+}
 
 void BoardRow::addCard(size_t idx, CardRef ref)
 {
@@ -46,8 +96,7 @@ void BoardRow::addCard(size_t idx, CardRef ref)
     check(!ref.isNil(), "nil card");
 
     m_card_refs.insert(m_card_refs.begin()+ssize_t(idx), ref);
-    rebuildLayout();
-    arrangeRow();
+    onContainerChanged();
 }
 
 void BoardRow::removeCard(size_t idx)
@@ -55,8 +104,7 @@ void BoardRow::removeCard(size_t idx)
     check(idx <= m_card_refs.size(), "invalid card index");
 
     m_card_refs.erase(m_card_refs.begin() + ssize_t(idx));
-    rebuildLayout();
-    arrangeRow();
+    onContainerChanged();
 }
 
 void BoardRow::removeCard(CardRef ref)
@@ -91,8 +139,7 @@ void BoardRow::addCardMulti(size_t idx, cardrefs_param refs)
     check(isNilAny(refs), "nil card");
 
     m_card_refs.insert(m_card_refs.begin()+ssize_t(idx), refs.begin(), refs.end());
-    rebuildLayout();
-    arrangeRow();
+    onContainerChanged();
 }
 
 void BoardRow::removeCardMulti(card_indices_param indices)
@@ -112,8 +159,7 @@ void BoardRow::removeCardMulti(card_indices_param indices)
             new_refs.push_back(it);
     }
     m_card_refs.swap(new_refs);
-    rebuildLayout();
-    arrangeRow();
+    onContainerChanged();
 }
 
 cardrefs_t BoardRow::giveCardMulti(card_indices_param indices)
@@ -140,8 +186,7 @@ cardrefs_t BoardRow::giveCardMulti(card_indices_param indices)
     }
 
     m_card_refs.swap(new_refs);
-    rebuildLayout();
-    arrangeRow();
+    onContainerChanged();
 
     return removed_refs;
 }
@@ -166,85 +211,12 @@ card_indices_t BoardRow::getCardIndices(cardrefs_param refs) const
     return indices;
 }
 
-//
-// game object functions
-//
-
-void BoardRow::setRowHighlight()
-{
-    m_row_highlight = true;
-}
-
-void BoardRow::clearRowHighlight()
-{
-    m_row_highlight = false;
-}
-
-void BoardRow::setCardHighlight(size_t idx)
-{
-    m_card_highlight = (ssize_t)idx;
-}
-
-void BoardRow::clearCardHighlight()
-{
-    m_card_highlight = -1;
-}
-
-int BoardRow::getTotalStrength() const
-{
-    int sum=0;
-    for (auto&& it : m_card_refs)
-        sum += (int)it->ng.asUnitCard().strength;
-    return sum;
-}
-
-int BoardRow::getMaxStrength() const
-{
-    int max=0;
-    for (auto&& it : m_card_refs)
-        if (int strength = (int)it->ng.asUnitCard().strength; strength > max)
-            max = strength;
-    return max;
-}
-
-bool BoardRow::isTargeted(vec2 const& mp)
-{
-    return m_bounds.contains(mp);
-}
 
 
 void BoardRow::layout(ut::rect const& b)
 {
     m_bounds = b;
     rebuildLayout();
-}
-
-void BoardRow::update(float dt)
-{
-
-}
-
-void BoardRow::drawAboveCards()
-{
-    if (m_row_highlight)
-    {
-        drawRectOutline(m_bounds, 2.0f, colors::red);
-    }
-
-    if (auto idx = (size_t)m_card_highlight; idx < m_card_refs.size())
-    {
-        drawRectOutline(m_card_refs[idx]->layout.getRect(), 2.0f, colors::red);
-    }
-}
-
-void BoardRow::drawUnderCards()
-{
-
-}
-
-void BoardRow::drawDebug()
-{
-
 }
 
 ssize_t BoardRow::getIdx(CardRef ref) const
@@ -267,14 +239,11 @@ void BoardRow::rebuildLayout()
 //            layout::CardLayout::widthFromHeight(m_bounds.height()),
 //            m_card_refs.size()+1);
 
-    arrangeRow();
-}
-
-void BoardRow::arrangeRow()
-{
     for (size_t i = 0; i < m_card_refs.size(); ++i)
     {
         m_card_refs[i]->move2(m_layout_row.getPos(i));
     }
 }
+
+
 

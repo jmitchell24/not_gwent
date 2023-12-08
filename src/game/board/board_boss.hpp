@@ -19,6 +19,7 @@ namespace game::board
         void rowToStack (BoardRow& row, BoardStack& stack, card_indices_param indices);
         void stackToRow (BoardStack& stack, BoardRow& row, size_t idx);
         void rowToRow   (BoardRow& row_a, BoardRow& row_b, size_t idx_a, size_t idx_b);
+        void rowSwapRow (BoardRow& row_a, BoardRow& row_b, size_t idx_a, size_t idx_b);
 
 
 

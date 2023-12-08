@@ -70,19 +70,20 @@ namespace game::layout
 
         ut::rect bounds;
 
-        //ut::vec2 card_size;
-
         Player usr, cpu;
 
-//        WeatherBoard weather;
-
         void layout(ut::rect const& b);
-        void reset();
         void drawDebug();
 
+    };
 
-#ifndef NDEBUG
-        bool m_is_layout_ready = false;
-#endif
+    struct CardPicker
+    {
+        ut::rect bounds;
+
+        ut::rect title;
+        ut::rect cards;
+        ut::rect confirm;
+        ut::rect cancel;
     };
 }

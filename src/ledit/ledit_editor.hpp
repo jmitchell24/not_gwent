@@ -5,8 +5,7 @@
 #pragma once
 
 #include "ledit/ledit_box.hpp"
-
-#include "rlImGui/ed/TextEditor.h"
+#include "ledit/ledit_options.hpp"
 
 namespace ledit
 {
@@ -17,8 +16,9 @@ namespace ledit
 
         BoxEditor(ut::cstrparam name);
 
-        inline bool wantCaptureMouse() const
-        { return overlay_opts.want_capture_mouse; }
+        inline bool isPropertiesWindowOpen() const { return is_properties_window_open; }
+        inline bool isOverlayVisible() const { return is_overlay_visible; }
+        inline bool wantCaptureMouse() const { return want_capture_mouse; }
 
         void setRoot(ut::rect const& bounds);
         bool tryGetRects (ut::cstrparam name, BoxRects& rects);
@@ -27,22 +27,20 @@ namespace ledit
         bool tryGetInner (ut::cstrparam name, ut::rect& inner);
 
         bool draw();
+        void drawMenu();
 
     private:
         using filelist_type = std::vector<std::string>;
         using filetext_type = std::array<char, 30>;
 
+        bool                m_autosave = false;
         filetext_type       m_new_file;
         std::string         m_current_file;
-        TextEditor          m_source_code;
         filelist_type       m_layout_files;
 
-
-        bool m_is_code_window_open = false;
-
         void drawMainWindow();
-        void drawCodeWindow();
 
+        void drawMainWindowOptions();
         void drawMainWindowBoxEditOptions(BoxEditOptions& opts);
         void drawMainWindowOverlayOptions(OverlayOptions& opts);
         void drawMainWindowFileOptions();
@@ -50,5 +48,7 @@ namespace ledit
 
         void loadFile(ut::cstrparam filename);
         void saveFile(ut::cstrparam filename);
+
+
     };
 }

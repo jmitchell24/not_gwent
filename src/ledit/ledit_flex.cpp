@@ -3,13 +3,14 @@
 //
 
 #include "ledit/ledit_flex.hpp"
+#include "ledit/ledit_options.hpp"
 using namespace ledit;
 
 //
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
-#include "rlImGui/extras/IconsFontAwesome5.h"
+#include "rlImGui/extras/lucide_icons.hpp"
 
 //
 // ut
@@ -56,15 +57,15 @@ bool Flex::drawProperties()
     return changed;
 }
 
-bool Flex::drawRowControls(BoxEditOptions const& edit_opts)
+bool Flex::drawRowControls()
 {
     using namespace ImGui;
 
     bool changed = false;
 
-    if (edit_opts.show_row_type)
+    if (GLOBAL_OPTIONS.box_edit_options.show_row_type)
     {
-        if (SmallButton(ICON_FA_CAR))
+        if (SmallButton(ICON_LC_CAR))
             OpenPopup("show-row-type");
 
         if (BeginPopup("show-row-type"))

@@ -7,7 +7,7 @@
 #include "game/layout/board_layout.hpp"
 
 #include "game/board/board_slot.hpp"
-#include "game/board/board_row.hpp"
+#include "game/board/board_units.hpp"
 
 #include "gfx/gfx_spinner.hpp"
 
@@ -24,7 +24,7 @@ namespace game
         bool has_buff = false;
         bool has_nerf = false;
 
-        board::BoardRow units;
+        board::BoardUnits units;
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
 
@@ -40,7 +40,7 @@ namespace game
             //cmdr_horn.clearHighlight();
             //weather.clearHighlight();
             units.clearCardHighlight();
-            units.clearRowHighlight();
+            units.clearHighlight();
         }
 
     private:

@@ -117,6 +117,9 @@ namespace ImGui
     inline void PushActivatedButtonColor()
     { PushButtonColor(CreateActivatedButtonColor(ut::colors::hsluv::goldenrod())); }
 
+    inline void PushSelectedButtonColor()
+    { PushButtonColor(CreateActivatedButtonColor(ut::colors::hsluv::limegreen())); }
+
     inline void PopButtonColor()
     {
         PopStyleColor(4);
@@ -166,6 +169,32 @@ namespace ImGui
             SmallButton(lbl);
             PopButtonColor();
             return false;
+        }
+
+        return SmallButton(lbl);
+    }
+
+    inline bool ButtonSelected(text_ lbl, bool is_selected)
+    {
+        if (is_selected)
+        {
+            PushSelectedButtonColor();
+            bool b = Button(lbl);
+            PopButtonColor();
+            return b;
+        }
+
+        return Button(lbl);
+    }
+
+    inline bool SmallButtonSelected(text_ lbl, bool is_selected)
+    {
+        if (is_selected)
+        {
+            PushSelectedButtonColor();
+            bool b = SmallButton(lbl);
+            PopButtonColor();
+            return b;
         }
 
         return SmallButton(lbl);

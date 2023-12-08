@@ -61,12 +61,27 @@ void BoardBoss::stackToRow(BoardStack& stack, BoardRow& row, size_t idx)
 
 void BoardBoss::rowToRow(BoardRow& row_a, BoardRow& row_b, size_t idx_a, size_t idx_b)
 {
-    assert(idx_a < row_a.numCards());
-    assert(idx_b <= row_b.numCards());
+    check(idx_a < row_a.numCards(), "invalid index");
+    check(idx_b <= row_b.numCards(), "invalid index");
 
     CardRef ref = row_a.giveCard(idx_a);
     row_b.addCard(idx_b, ref);
     TANK.elevateCard(ref.id);
+}
+
+void BoardBoss::rowSwapRow(BoardRow& row_a, BoardRow& row_b, size_t idx_a, size_t idx_b)
+{
+    check(idx_a < row_a.numCards(), "invalid index");
+    check(idx_b <= row_b.numCards(), "invalid index");
+
+    CardRef ref_a = row_a.giveCard(idx_a);
+    CardRef ref_b = row_b.giveCard(idx_b);
+
+    row_a.addCard(idx_a, ref_b);
+    row_b.addCard(idx_b, ref_a);
+
+    TANK.elevateCard(ref_a.id);
+    TANK.elevateCard(ref_b.id);
 }
 
 void BoardBoss::update(float dt)

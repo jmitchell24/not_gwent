@@ -119,6 +119,26 @@ void CardCaster::operator() (CastScorch const& c)
     gb.boss.rowToStack(player.hand, player.yard, c.hand_idx);
 }
 
+void CardCaster::operator() (CastDecoy const& c)
+{
+
+    switch (c.row)
+    {
+
+        case CastDecoy::MELEE:
+            gb.boss.rowSwapRow(player.hand, player.melee.units, c.hand_idx, c.row_idx);
+            break;
+        case CastDecoy::RANGED:
+            gb.boss.rowSwapRow(player.hand, player.ranged.units, c.hand_idx, c.row_idx);
+            break;
+        case CastDecoy::SIEGE:
+            gb.boss.rowSwapRow(player.hand, player.siege.units, c.hand_idx, c.row_idx);
+            break;
+
+        default:nopath_case(CastDecoy::Row);
+    }
+}
+
 void CardCaster::operator() (CastLeaderAbility const& c)
 {
     nopath_impl;

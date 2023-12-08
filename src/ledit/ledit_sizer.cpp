@@ -10,7 +10,6 @@ using namespace ledit;
 // imgui
 //
 #include "rlImGui/imgui/imgui_mods.hpp"
-#include "rlImGui/extras/IconsFontAwesome5.h"
 
 //
 // ut

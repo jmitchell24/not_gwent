@@ -19,52 +19,27 @@ namespace game::board
     class BoardRow
     {
     public:
-        struct TargetedCard { size_t idx; CardRef ref; };
-
-        inline bool   isEmpty ()            const { return m_card_refs.empty(); }
-        inline size_t numCards()            const { return m_card_refs.size(); }
-        inline bool   hasCard (CardRef ref) const { return getIdx(ref) >= 0; }
-
-        inline bool hasCardAny(cardrefs_param refs) const
+        struct TargetedCard
         {
-            for (auto&& it: refs)
-                if (hasCard(it))
-                    return true;
-            return false;
-        }
+            size_t idx;
+            CardRef ref;
+        };
 
-        inline bool hasCardAll(cardrefs_param refs) const
-        {
-            for (auto&& it: refs)
-                if (!hasCard(it))
-                    return false;
-            return true;
-        }
+        virtual ~BoardRow(){}
 
-        inline bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref) const
-        {
-            if (size_t idx; m_layout_row.tryGetIndex(mp,idx))
-            {
-                ref = m_card_refs[idx];
-                return true;
-            }
-            return false;
-        }
+        inline auto data() const { return m_card_refs.data(); }
+        inline auto begin() const{ return m_card_refs.begin(); }
+        inline auto end() const{ return m_card_refs.end(); }
 
-        inline bool tryGetHoveredIndex(ut::vec2 const& mp, size_t& idx) const
-        {
-            return m_layout_row.tryGetIndex(mp, idx);
-        }
+        bool isEmpty() const;
+        size_t numCards() const;
+        bool hasCard(CardRef ref) const;
+        bool hasCardAny(cardrefs_param refs) const;
+        bool hasCardAll(cardrefs_param refs) const;
 
-        inline bool tryGetTargetedCard(ut::vec2 const& mp, TargetedCard& target) const
-        {
-            if (size_t idx; tryGetHoveredIndex(mp, idx))
-            {
-                target = { idx, m_card_refs[idx] };
-                return true;
-            }
-            return false;
-        }
+        bool tryGetHoveredCard(ut::vec2 const &mp, CardRef &ref) const;
+        bool tryGetHoveredIndex(ut::vec2 const &mp, size_t &idx) const;
+        bool tryGetTargetedCard(ut::vec2 const &mp, TargetedCard &target) const;
 
         //
         // single-ref container functions
@@ -90,8 +65,8 @@ namespace game::board
         // template container functions
         //
 
-        template <typename Predicate>
-        inline card_indices_t getCardIndicesIf(Predicate&& p)
+        template<typename Predicate>
+        inline card_indices_t getCardIndicesIf(Predicate &&p)
         {
             card_indices_t indices;
             for (size_t i = 0; i < m_card_refs.size(); ++i)
@@ -100,31 +75,24 @@ namespace game::board
             return indices;
         }
 
-        //
-        // game object functions
-        //
+        void layout(ut::rect const &b);
+        void update(float dt) { }
+        virtual void drawAboveCards() { }
+        virtual void drawUnderCards() { }
+        virtual void drawDebug() { }
 
-        void setRowHighlight();
-        void clearRowHighlight();
-        void setCardHighlight(size_t idx);
-        void clearCardHighlight();
-
-        int getTotalStrength() const;
-        int getMaxStrength() const;
-        bool isTargeted(ut::vec2 const& mp);
-
-        void layout (ut::rect const& b);
-        void update (float dt);
-        void drawAboveCards();
-        void drawUnderCards();
-        void drawDebug     ();
-
-    private:
+    protected:
         ut::rect            m_bounds;
         layout::RowLayout   m_layout_row;
         cardrefs_t          m_card_refs;
-        bool                m_row_highlight = false;
-        ssize_t             m_card_highlight = -1;
+
+        virtual void onContainerChanged()
+        {
+            rebuildLayout();
+        }
+
+    private:
+
 
         //layout::RowLayout   m_layout_row_next;
 
@@ -134,6 +102,5 @@ namespace game::board
 
         ssize_t getIdx(CardRef ref) const;
         void    rebuildLayout();
-        void    arrangeRow();
     };
 }

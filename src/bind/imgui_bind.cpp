@@ -1,7 +1,7 @@
 #include "imgui_bind.hpp"
 using namespace bind;
 
-#include "rlImGui/extras/IconsFontAwesome5.h"
+#include "rlImGui/extras/lucide_icons.hpp"
 #include "rlImGui/imgui/imgui.h"
 
 #include <cassert>
@@ -211,7 +211,7 @@ void DebugWatchManager::rowRO(color const& c, lbl_param lbl, lbl_param value)
 
         case MODE_FILTERED:
         {
-            if (ImGui::SmallButton(ICON_FA_TRASH))
+            if (ImGui::SmallButton(ICON_LC_TRACTOR))
                 m_node_hash_list.remove(lbl);
             ImGui::SameLine();
             ImGui::TextUnformatted(lbl.begin(), lbl.end());

@@ -25,6 +25,7 @@ namespace game
     struct CastRowBuff;
     struct CastRowNerf;
     struct CastScorch;
+    struct CastDecoy;
     struct CastLeaderAbility;
 
     using Cast = std::variant<
@@ -33,6 +34,7 @@ namespace game
         CastRowBuff,
         CastRowNerf,
         CastScorch,
+        CastDecoy,
         CastLeaderAbility
     >;
 
@@ -71,6 +73,13 @@ namespace game
         size_t hand_idx;
     };
 
+    struct CastDecoy
+    {
+        enum Row { MELEE, RANGED, SIEGE } row;
+        size_t hand_idx;
+        size_t row_idx;
+    };
+
     struct CastLeaderAbility
     {
 
@@ -91,6 +100,7 @@ namespace game::visitors
         void operator() (CastRowBuff const& c);
         void operator() (CastRowNerf const& c);
         void operator() (CastScorch const& c);
+        void operator() (CastDecoy const& c);
         void operator() (CastLeaderAbility const& c);
     };
 }

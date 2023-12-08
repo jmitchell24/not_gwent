@@ -242,6 +242,7 @@ Texture2D abilityBadge(ng::AbilityType x)
     switch (x)
     {
         case ng::ABILITY_NONE     : return {};
+        case ng::ABILITY_DECOY    : return {};
         case ng::ABILITY_SPY      : return TEXTURES.get("data/board/card_ability_spy.png");
         case ng::ABILITY_BOND     : return TEXTURES.get("data/board/card_ability_bond.png");
         case ng::ABILITY_MORALE   : return TEXTURES.get("data/board/card_ability_morale.png");
@@ -260,10 +261,11 @@ Texture2D rowBadge(ng::RowFlag x)
 {
     switch (x)
     {
-        case ng::ROW_MELEE        : return TEXTURES.get("data/board/combat_row_melee.png");
-        case ng::ROW_MELEE_RANGED : return TEXTURES.get("data/board/combat_row_melee_ranged.png");
-        case ng::ROW_RANGED       : return TEXTURES.get("data/board/combat_row_ranged.png");
-        case ng::ROW_SIEGE        : return TEXTURES.get("data/board/combat_row_siege.png");
+        case ng::ROW_MELEE              : return TEXTURES.get("data/board/combat_row_melee.png");
+        case ng::ROW_MELEE_RANGED       : return TEXTURES.get("data/board/combat_row_melee_ranged.png");
+        case ng::ROW_MELEE_RANGED_SIEGE : return {};
+        case ng::ROW_RANGED             : return TEXTURES.get("data/board/combat_row_ranged.png");
+        case ng::ROW_SIEGE              : return TEXTURES.get("data/board/combat_row_siege.png");
         default: nopath_case(ng::RowFlag_);
     }
 
