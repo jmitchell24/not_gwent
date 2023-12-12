@@ -1,6 +1,7 @@
 #include "imgui_mods.hpp"
 #include "rlImGui/imgui/imgui.h"
 #include "rlImGui/imgui/imgui_internal.h"
+using namespace ImGui;
 
 #include <ut/color.hpp>
 using namespace ut;
@@ -10,7 +11,7 @@ using namespace ut;
 #define text_   ut::cstrparam
 #define rect_   ut::rectf const&
 #define color_  ut::color const&
-#define frame_      Frame const&
+#define frame_  Frame const&
 
 //
 // Struct
@@ -100,11 +101,91 @@ void ImGui::RenderDockspace()
 // Misc. Functions
 //
 
+WidgetColors const ImGui::WC_YELLOW  = ImGui::WidgetColors::fromHSLUV(colors::yellow    .toHSLUV());
+WidgetColors const ImGui::WC_ORANGE  = ImGui::WidgetColors::fromHSLUV(colors::orange    .toHSLUV());
+WidgetColors const ImGui::WC_RED     = ImGui::WidgetColors::fromHSLUV(colors::red       .toHSLUV());
+WidgetColors const ImGui::WC_VIOLET  = ImGui::WidgetColors::fromHSLUV(colors::violet    .toHSLUV());
+WidgetColors const ImGui::WC_BLUE    = ImGui::WidgetColors::fromHSLUV(colors::blue      .toHSLUV());
+WidgetColors const ImGui::WC_GREEN   = ImGui::WidgetColors::fromHSLUV(colors::green     .toHSLUV());
 
+WidgetColors WidgetColors::fromHSLUV(color::hsluv const& c)
+{
+    return
+    {
+        {color::hsluv{c.h, c.s, 70.0f, 1.0f}.toColor()},
+        {color::hsluv{c.h, c.s, 85.0f, 1.0f}.toColor()},
+        {color::hsluv{c.h, c.s, 77.5f, 1.0f}.toColor()},
+        {colors::black}
+    };
+#if 0
+    return
+    {
+        {ut::color::hsluv{c.h, 75.0f, 60.0f, 1.0f}.toColor()},
+        {ut::color::hsluv{c.h, 75.0f, 75.0f, 1.0f}.toColor()},
+        {ut::color::hsluv{c.h, 75.0f, 67.5f, 1.0f}.toColor()},
+        {ut::colors::black}
+    };
 
+    return
+    {
+        {ut::color::hsluv{c.h, c.s, 75.0f, 1.0f}.toColor()},
+        {ut::color::hsluv{c.h, c.s, 85.0f, 1.0f}.toColor()},
+        {ut::colors::white},
+        {ut::colors::black}
+    };
+#endif
+}
 
+WidgetColors WidgetColors::fromHSLUVAlt(color::hsluv const& c)
+{
+    return
+    {
+        {ut::color::hsluv{c.h, c.s, 66.0f, 0.4f}.toColor()},
+        {ut::color::hsluv{c.h, c.s, 66.0f, 1.0f}.toColor()},
+        {ut::color::hsluv{c.h, c.s, 50.0f, 1.0f}.toColor()},
+        {ut::colors::white}
+    };
+}
 
+WidgetColors WidgetColors::fromStyle(ImGuiCol c, ImGuiCol ch, ImGuiCol ca, ImGuiCol ct)
+{
+    return
+    {
+        GetStyleColorVec4(c),
+        GetStyleColorVec4(ch),
+        GetStyleColorVec4(ca),
+        GetStyleColorVec4(ct),
+    };
+}
 
+void WidgetColors::pushButtonColor() const
+{
+    PushStyleColor(ImGuiCol_Button          , color);
+    PushStyleColor(ImGuiCol_ButtonHovered   , color_hovered);
+    PushStyleColor(ImGuiCol_ButtonActive    , color_active);
+    PushStyleColor(ImGuiCol_Text            , color_text);
+}
+
+void WidgetColors::pushTabColor() const
+{
+    PushStyleColor(ImGuiCol_Tab          , color);
+    PushStyleColor(ImGuiCol_TabHovered   , color_hovered);
+    PushStyleColor(ImGuiCol_TabActive    , color_active);
+    PushStyleColor(ImGuiCol_Text         , color_text);
+}
+
+void WidgetColors::pushHeaderColor() const
+{
+    PushStyleColor(ImGuiCol_Header          , color);
+    PushStyleColor(ImGuiCol_HeaderHovered   , color_hovered);
+    PushStyleColor(ImGuiCol_HeaderActive    , color_active);
+    PushStyleColor(ImGuiCol_Text            , color_text);
+}
+
+void WidgetColors::popColor() const
+{
+    PopStyleColor(4);
+}
 
 void ImGui::DrawDRECT(ImDrawList* dl, text_ lbl, rect_ r, color_ col, ImGuiDRECTStyle style )
 {

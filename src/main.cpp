@@ -155,7 +155,7 @@ int main()
 
             if (BeginMainMenuBar())
             {
-                ledit::GLOBAL_OPTIONS.drawDebugMenu();
+                ledit::LEDIT_OPTIONS.drawDebugMenu();
                 stage.drawDebugMenu();
                 EndMainMenuBar();
             }
@@ -163,7 +163,7 @@ int main()
             RenderDockspace();
 
             stage.drawDebug();
-            ledit::GLOBAL_OPTIONS.drawDebug();
+            ledit::LEDIT_OPTIONS.drawDebug();
         }
         rlImGuiEnd();
 

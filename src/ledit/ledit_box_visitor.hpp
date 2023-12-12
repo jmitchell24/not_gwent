@@ -21,6 +21,7 @@ namespace ledit
         bool is_properties_window_open  = false;
         bool is_overlay_visible         = false;
         bool want_capture_mouse         = false;
+        bool want_persist               = false;
         bool show_row_select            = true;
 
         box_ptr root_box;
@@ -33,6 +34,12 @@ namespace ledit
         ut::rect getRealRect(ut::rect const& r) const;
         ut::vec2 getViewPoint(ut::vec2 const& p) const;
         std::string toCPPString();
+        void setActive();
+        void clearActive();
+        bool isActive() const;
+
+
+        static BoxVisitor& currentInstance();
 
         //
         // Box Slots
@@ -43,7 +50,7 @@ namespace ledit
         size_t getFilledSlotCount() const;
         size_t getEmptySlotCount() const;
         box_ptr getBoxSlot(ut::cstrparam s);
-        void setBoxSlot(box_ptr const& ptr);
+        bool trySetBoxSlot(box_ptr const& ptr);
         void resetBoxSlot(box_ptr const& ptr);
         void resetAllSlots();
 
@@ -71,16 +78,20 @@ namespace ledit
         box_ptr boxSelectionSingle() const;
         boxlist_t boxSelectionMulti() const;
 
-        ut::cstrview getBoxSelectionLabel(box_ptr const& ptr) const;
+        bool drawSelectionButton(box_ptr const& ptr) const;
 
     protected:
         std::string m_name;
         boxmap_t    m_box_map;
 
         void setBoxSlotAll(box_ptr const& ptr);
+        void setGlobalInstance();
+        void clearGlobalInstance();
 
     private:
         box_ptr     m_selected_box_single;
         boxlist_t   m_selected_box_multi;
+
+        static BoxVisitor* m_current_instance;
     };
 }

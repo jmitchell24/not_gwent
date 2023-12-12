@@ -31,7 +31,7 @@ using namespace std;
 // Helper Functions
 //
 
-color Box::nextColor()
+static color nextColor()
 {
     static auto c = color::hsluv{120, 80, 80};
     c.rotate(100);
@@ -120,24 +120,36 @@ Box::Box(box_ptr p) :
     name            { },
     parent          { std::move(p) },
     m_color         { nextColor() },
-    m_changed       { true }
+    m_want_bind     { true }
 {}
 
-void Box::setChangedAll()
+void Box::notifyChanged()
 {
-    m_changed = true;
+    auto& v = BoxVisitor::currentInstance();
+    v.want_persist = true;
+    setWantBindAll();
+}
+
+void Box::setWantBindAll()
+{
+    m_want_bind = true;
     for (auto&& it : child_boxes)
-        it->setChangedAll();
+        it->setWantBindAll();
 }
 
-void Box::clearChanged()
+void Box::clearWantBind()
 {
-    m_changed = false;
+    m_want_bind = false;
 }
 
-bool Box::getChanged() const
+bool Box::wantBind() const
 {
-    return m_changed;
+    return m_want_bind;
+}
+
+bool Box::isRoot(box_ptr const& box)
+{
+    return box && box->parent == nullptr;
 }
 
 box_ptr Box::create(box_ptr const& parent)
@@ -151,20 +163,19 @@ box_ptr Box::ptr()
     return shared_from_this();
 }
 
-box_cptr Box::ptr() const
-{
-    return shared_from_this();
-}
-
 box_ptr Box::deepCopy(box_ptr const& p)
 {
     box_ptr box = box_ptr{new Box(p)};
 
-    //box->name   = name;
+    box->name           = name;
     box->flex           = flex;
     box->sizer          = sizer;
     box->weight         = weight;
+    box->rects          = rects;
+
     box->m_child_action = m_child_action;
+    box->m_want_bind = m_want_bind;
+    box->m_color = m_color;
 
     for (auto&& it : child_boxes)
     {
@@ -177,11 +188,9 @@ box_ptr Box::deepCopy(box_ptr const& p)
 
 void Box::mutate(box_ptr const& original)
 {
-    flex      = original->flex;
-    sizer     = original->sizer;
-    weight    = original->weight;
-    m_changed = true;
-
+    flex        = original->flex;
+    sizer       = original->sizer;
+    weight      = original->weight;
 
     child_boxes.resize(original->child_boxes.size());
     for (size_t i = 0; i < child_boxes.size(); ++i)
@@ -226,9 +235,10 @@ string Box::getLbl() const
     return name;
 }
 
-void Box::drawProperties(BoxVisitor& v)
+void Box::drawProperties()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
     assert(v.isBoxSelectedSingle(ptr()));
 
@@ -252,7 +262,7 @@ void Box::drawProperties(BoxVisitor& v)
         SameLine();
 
         if (ButtonConfirm("Delete"))
-            parentActionDelete(v);
+            parentActionDelete();
 
         SameLine();
 
@@ -260,6 +270,7 @@ void Box::drawProperties(BoxVisitor& v)
         {
             for (auto&& it: v.boxSelectionMulti())
                 it->mutate(ptr());
+            notifyChanged();
         }
 
         SameLine();
@@ -267,12 +278,12 @@ void Box::drawProperties(BoxVisitor& v)
         PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0,0});
 
         if (Button("--"))
-            parentActionMoveDec(v);
+            parentActionMoveDec();
 
         SameLine();
 
         if (Button("++"))
-            parentActionMoveInc(v);
+            parentActionMoveInc();
 
         PopStyleVar();
     }
@@ -300,7 +311,7 @@ void Box::drawProperties(BoxVisitor& v)
 
     ButtonEnabled(" ", false);
     SameLine();
-    drawBreadcrumbs(v);
+    drawBreadcrumbs();
 
 
     if (ButtonDefault("Name", !name.empty()))
@@ -323,9 +334,9 @@ void Box::drawProperties(BoxVisitor& v)
             {
                 v.resetBoxSlot(ptr());
                 name = key;
-                v.setBoxSlot(ptr());
+                v.trySetBoxSlot(ptr());
 
-                setChangedAll();
+                notifyChanged();
             }
             PopStyleColor();
         }
@@ -340,14 +351,14 @@ void Box::drawProperties(BoxVisitor& v)
     Text("Size and Position");
 
     if (sizer.drawProperties())
-        setChangedAll();
+        notifyChanged();
 
     Separator();
 
     Text("Flex");
 
     if (flex.drawProperties())
-        setChangedAll();
+        notifyChanged();
 
     Separator();
 
@@ -378,7 +389,7 @@ void Box::drawProperties(BoxVisitor& v)
             if (w > 0 && w < 1)
             {
                 weight = w;
-                setChangedAll();
+                notifyChanged();
                 parent->calcWeightsPropAnchor(ptr());
             }
         }
@@ -406,12 +417,10 @@ void Box::drawProperties(BoxVisitor& v)
         TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
         TableHeadersRow();
 
-        auto& edit_opts = GLOBAL_OPTIONS.box_edit_options;
-
-        bool& show_row_select = v.show_row_select;
+        bool show_row_select = v.show_row_select;
         v.show_row_select = false;
         for (auto&& it: child_boxes)
-            it->drawTreeTableRow(v, true);
+            it->drawTreeTableRow(true);
         v.show_row_select = show_row_select;
 
         EndTable();
@@ -421,26 +430,31 @@ void Box::drawProperties(BoxVisitor& v)
 
 
 
-void Box::drawTreeTableRow(BoxVisitor& v)
-{
-    if (child_boxes.empty())
-    {
-        drawTreeTableRow(v, true);
-    }
-    else if (drawTreeTableRow(v, false))
-    {
-        for (auto&& it: child_boxes)
-            it->drawTreeTableRow(v);
-        ImGui::TreePop();
-    }
-}
-
-bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
+void Box::drawTreeTableRow()
 {
     using namespace ImGui;
 
-    bool is_open = false;
+    if (child_boxes.empty())
+    {
+        drawTreeTableRow(true);
+    }
+    else if (drawTreeTableRow(false))
+    {
+        for (auto&& it: child_boxes)
+            it->drawTreeTableRow();
+        TreePop();
+    }
+}
 
+bool Box::drawTreeTableRow(bool is_leaf)
+{
+    using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
+
+    bool is_open = false;
+    bool is_visitor_active = v.isActive();
+    if (!is_visitor_active)
+        PushItemDisabled();
     PushID(this);
 
     TableNextRow();
@@ -483,13 +497,16 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
     // Controls
     //
 
+    PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+    PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{3.0f,0.0f});
+
     if (TableNextColumn())
     {
-        auto const& edit_opts = GLOBAL_OPTIONS.box_edit_options;
+        auto const& edit_opts = LEDIT_OPTIONS.box_edit_options;
 
         if (v.show_row_select)
         {
-            if (SmallButtonActivated(v.getBoxSelectionLabel(ptr()), v.isBoxSelectedSingle(ptr())))
+            if (v.drawSelectionButton(ptr()))
             {
                 if (IsKeyDown(ImGuiKey_LeftCtrl))
                     v.toggleSelectedBoxMulti(ptr());
@@ -509,7 +526,7 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
         if (parent && edit_opts.show_row_delete)
         {
             if (SmallButtonConfirm("x"))
-                parentActionDelete(v);
+                parentActionDelete();
             SameLine();
         }
 
@@ -518,11 +535,11 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
         if (parent && edit_opts.show_row_move)
         {
             if (SmallButton("--"))
-                parentActionMoveDec(v);
+                parentActionMoveDec();
             SameLine();
 
             if (SmallButton("++"))
-                parentActionMoveInc(v);
+                parentActionMoveInc();
             SameLine();
         }
 
@@ -549,14 +566,19 @@ bool Box::drawTreeTableRow(BoxVisitor& v, bool is_leaf)
 
     }
 
+    PopStyleVar(2);
+
     PopID();
+    if (!is_visitor_active)
+        PopItemDisabled();
 
     return is_open;
 }
 
-void Box::drawOverlaySingleSelectedBelow(BoxVisitor& v)
+void Box::drawOverlaySingleSelectedBelow()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
     auto o = v.getRealRect(rects.outer);
     auto b = v.getRealRect(rects.border);
@@ -566,9 +588,10 @@ void Box::drawOverlaySingleSelectedBelow(BoxVisitor& v)
     drawOverlayFrame(b, i, m_color.withNormalA(.50f));
 }
 
-void Box::drawOverlaySingleSelectedAbove(BoxVisitor& v)
+void Box::drawOverlaySingleSelectedAbove()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
     auto o = v.getRealRect(rects.border);
     auto c = m_color;
@@ -578,11 +601,12 @@ void Box::drawOverlaySingleSelectedAbove(BoxVisitor& v)
         drawOverlayTextSelected(o, c, name);
 }
 
-void Box::drawOverlayOutlines(BoxVisitor& v)
+void Box::drawOverlayOutlines()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
-    auto& overlay_opts = GLOBAL_OPTIONS.overlay_options;
+    auto& overlay_opts = LEDIT_OPTIONS.overlay_options;
 
     if (!v.isBoxSelectedSingle(ptr()))
     {
@@ -598,9 +622,9 @@ void Box::drawOverlayOutlines(BoxVisitor& v)
             drawOverlayTextUnselected(o, c, name);
     }
 
-    for (auto &&it: child_boxes)
+    for (auto&& it: child_boxes)
     {
-        it->drawOverlayOutlines(v);
+        it->drawOverlayOutlines();
     }
 }
 
@@ -782,7 +806,7 @@ void Box::calcWeightsPropAnchor(box_ptr const& anchor)
                 if (it != anchor)
                 {
                     it->weight *= target / sum;
-                    it->setChangedAll();
+                    it->notifyChanged();
                 }
             }
         }
@@ -790,7 +814,7 @@ void Box::calcWeightsPropAnchor(box_ptr const& anchor)
     else if (!child_boxes.empty())
     {
         anchor->weight = 1.0f;
-        anchor->setChangedAll();
+        anchor->notifyChanged();
     }
 }
 
@@ -805,14 +829,14 @@ void Box::calcWeightsUniformAnchor(box_ptr const& anchor)
             if (it != anchor)
             {
                 it->weight = w;
-                it->setChangedAll();
+                it->notifyChanged();
             }
         }
     }
     else if (!child_boxes.empty())
     {
         anchor->weight = 1.0f;
-        anchor->setChangedAll();
+        anchor->notifyChanged();
     }
 }
 
@@ -824,7 +848,7 @@ void Box::calcWeightsUniform()
         for (auto&& it: child_boxes)
         {
             it->weight = w;
-            it->setChangedAll();
+            it->notifyChanged();
         }
     }
 }
@@ -842,7 +866,7 @@ void Box::calcWeightsNormal()
             for (auto&& it : child_boxes)
             {
                 it->weight /= sum;
-                it->setChangedAll();
+                it->notifyChanged();
             }
         }
         else
@@ -851,7 +875,7 @@ void Box::calcWeightsNormal()
             for (auto&& it : child_boxes)
             {
                 it->weight = w;
-                it->setChangedAll();
+                it->notifyChanged();
             }
         }
     }
@@ -877,28 +901,36 @@ void Box::insertChild(boxlist_t::iterator const& pos, box_ptr const& box)
     calcWeightsUniform();
 }
 
-void Box::parentActionDelete(BoxVisitor& v)
+void Box::parentActionDelete()
 {
+    auto& v = BoxVisitor::currentInstance();
+
     check_null(parent);
     v.setSelectedBoxSingle(parent);
     v.resetBoxSlot(ptr());
     parent->m_child_action = {ChildAction::DELETE, ptr()};
 }
 
-void Box::parentActionClone(BoxVisitor& v)
+void Box::parentActionClone()
 {
+    auto& v = BoxVisitor::currentInstance();
+
     check_null(parent);
     parent->m_child_action = {ChildAction::CLONE, ptr()};
 }
 
-void Box::parentActionMoveInc(BoxVisitor& v)
+void Box::parentActionMoveInc()
 {
+    auto& v = BoxVisitor::currentInstance();
+
     check_null(parent);
     parent->m_child_action = {ChildAction::MOVE_INC, ptr()};
 }
 
-void Box::parentActionMoveDec(BoxVisitor& v)
+void Box::parentActionMoveDec()
 {
+    auto& v = BoxVisitor::currentInstance();
+
     check_null(parent);
     parent->m_child_action = {ChildAction::MOVE_DEC, ptr()};
 }
@@ -942,7 +974,7 @@ void Box::applyChildActions()
             }
 
             for (auto&& box : child_boxes)
-                box->setChangedAll();
+                box->notifyChanged();
         }
         else
         {
@@ -970,9 +1002,10 @@ box_ptr Box::createRoot(Sizer const& sizer)
     return box;
 }
 
-void Box::drawBreadcrumbs(BoxVisitor& v)
+void Box::drawBreadcrumbs()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
     box_ptr b = ptr();
     vector<box_ptr> ps;
@@ -989,10 +1022,8 @@ void Box::drawBreadcrumbs(BoxVisitor& v)
     auto it = ps.rbegin();
 
     PushID(it->get());
-    PushButtonColor((*it)->m_color);
-    if (SmallButton((*it)->getLbl().c_str()))
+    if (SmallButton((*it)->getLbl(), WidgetColors::fromHSLUVAlt((*it)->m_color.toHSLUV())))
         v.setSelectedBoxSingle(*it);
-    PopButtonColor();
     PopID();
 
     for (++it; it != ps.rend(); ++it)
@@ -1000,10 +1031,12 @@ void Box::drawBreadcrumbs(BoxVisitor& v)
         SameLine();
 
         PushID(it->get());
-        PushButtonColor((*it)->m_color);
-        if (SmallButton(PRINTER(ICON_LC_ARROW_RIGHT " %s", (*it)->getLbl().c_str())))
+
+        auto lbl = PRINTER(ICON_LC_ARROW_RIGHT " %s", (*it)->getLbl().c_str());
+        auto wc  = WidgetColors::fromHSLUVAlt((*it)->m_color.toHSLUV());
+        if (SmallButton(lbl, wc))
             v.setSelectedBoxSingle(*it);
-        PopButtonColor();
+
         PopID();
     }
 
@@ -1011,8 +1044,10 @@ void Box::drawBreadcrumbs(BoxVisitor& v)
     EndGroup();
 }
 
-void Box::drawOverlay(BoxVisitor& v)
+void Box::drawOverlay()
 {
+    auto& v = BoxVisitor::currentInstance();
+
     check(isRoot(v.root_box), "invalid root");
 
     using namespace ImGui;
@@ -1020,7 +1055,7 @@ void Box::drawOverlay(BoxVisitor& v)
     if (!v.is_overlay_visible)
         return;
 
-    auto& overlay_opts = GLOBAL_OPTIONS.overlay_options;
+    auto& overlay_opts = LEDIT_OPTIONS.overlay_options;
 
     v.root_box->applyChildActions();
     v.root_box->calcLayout(rect{});
@@ -1035,13 +1070,13 @@ void Box::drawOverlay(BoxVisitor& v)
 
     if (auto selected_box = v.boxSelectionSingle())
     {
-        selected_box->drawOverlaySingleSelectedBelow(v);
-        v.root_box->drawOverlayOutlines(v);
-        selected_box->drawOverlaySingleSelectedAbove(v);
+        selected_box->drawOverlaySingleSelectedBelow();
+        v.root_box->drawOverlayOutlines();
+        selected_box->drawOverlaySingleSelectedAbove();
     }
     else
     {
-        v.root_box->drawOverlayOutlines(v);
+        v.root_box->drawOverlayOutlines();
     }
 
     auto& io = GetIO();
@@ -1111,9 +1146,10 @@ void Box::drawOverlay(BoxVisitor& v)
     }
 }
 
-void Box::drawBoxHierarchy(BoxVisitor& v)
+void Box::drawBoxHierarchy()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
     check(isRoot(v.root_box), "invalid root");
 
@@ -1130,15 +1166,16 @@ void Box::drawBoxHierarchy(BoxVisitor& v)
         TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthFixed);
         TableHeadersRow();
 
-        v.root_box->drawTreeTableRow(v);
+        v.root_box->drawTreeTableRow();
 
         EndTable();
     }
 }
 
-void Box::drawPropertiesWindow(BoxVisitor& v)
+void Box::drawPropertiesWindow()
 {
     using namespace ImGui;
+    auto& v = BoxVisitor::currentInstance();
 
     if (!v.is_overlay_visible)
         return;
@@ -1154,7 +1191,7 @@ void Box::drawPropertiesWindow(BoxVisitor& v)
 
         if (Begin(lbl, &v.is_properties_window_open, window_flags))
         {
-            selected_box->drawProperties(v);
+            selected_box->drawProperties();
         }
         End();
     }

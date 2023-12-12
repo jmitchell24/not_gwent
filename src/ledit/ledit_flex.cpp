@@ -63,7 +63,7 @@ bool Flex::drawRowControls()
 
     bool changed = false;
 
-    if (GLOBAL_OPTIONS.box_edit_options.show_row_type)
+    if (LEDIT_OPTIONS.box_edit_options.show_row_type)
     {
         if (SmallButton(ICON_LC_CAR))
             OpenPopup("show-row-type");

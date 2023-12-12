@@ -24,6 +24,7 @@ using ImGuiDRECTStyle = int;
 #define text_       ut::cstrparam
 #define rect_       ut::rectf const&
 #define color_      ut::color const&
+#define wcolors_    WidgetColors const&
 #define frame_      Frame const&
 
 namespace ImGui
@@ -79,54 +80,50 @@ namespace ImGui
     // Extra Buttons
     //
 
-    struct ButtonColor { ut::color b,h,a,t; };
-
-    inline ButtonColor CreateButtonColor(ut::color::hsluv const& c)
+    struct WidgetColors
     {
-        return
-        {
-            {ut::color::hsluv{c.h, c.s, 66.0f, 0.4f}.toColor()},
-            {ut::color::hsluv{c.h, c.s, 66.0f, 1.0f}.toColor()},
-            {ut::color::hsluv{c.h, c.s, 50.0f, 1.0f}.toColor()},
-            {ut::colors::white}
-        };
-    }
+        ut::color color;
+        ut::color color_hovered;
+        ut::color color_active;
+        ut::color color_text;
 
-    inline ButtonColor CreateActivatedButtonColor(ut::color::hsluv const& c)
-    {
-        return
-        {
-            {ut::color::hsluv{c.h, c.s, 75.0f, 1.0f}.toColor()},
-            {ut::color::hsluv{c.h, c.s, 85.0f, 1.0f}.toColor()},
-            {ut::colors::white},
-            {ut::colors::black}
-        };
-    }
+        static WidgetColors fromHSLUV(ut::color::hsluv const& c);
+        static WidgetColors fromHSLUVAlt(ut::color::hsluv const& c);
+        static WidgetColors fromStyle(ImGuiCol c, ImGuiCol ch, ImGuiCol ca, ImGuiCol ct);
 
-    inline void PushButtonColor(ButtonColor const& c)
-    {
-        PushStyleColor(ImGuiCol_Button          , c.b);
-        PushStyleColor(ImGuiCol_ButtonHovered   , c.h);
-        PushStyleColor(ImGuiCol_ButtonActive    , c.a);
-        PushStyleColor(ImGuiCol_Text            , c.t);
-    }
+        void pushButtonColor() const;
+        void pushTabColor() const;
+        void pushHeaderColor() const;
+        void popColor() const;
+    };
 
-    inline void PushButtonColor(color_ c)
-    { PushButtonColor(CreateButtonColor(c.toHSLUV())); }
+    extern WidgetColors const WC_YELLOW;
+    extern WidgetColors const WC_ORANGE;
+    extern WidgetColors const WC_RED;
+    extern WidgetColors const WC_VIOLET;
+    extern WidgetColors const WC_BLUE;
+    extern WidgetColors const WC_GREEN;
 
-    inline void PushActivatedButtonColor()
-    { PushButtonColor(CreateActivatedButtonColor(ut::colors::hsluv::goldenrod())); }
-
-    inline void PushSelectedButtonColor()
-    { PushButtonColor(CreateActivatedButtonColor(ut::colors::hsluv::limegreen())); }
-
-    inline void PopButtonColor()
-    {
-        PopStyleColor(4);
-    }
+    static WidgetColors const& WC_HIGHLIGHT = WC_ORANGE;
 
     void PushItemDisabled();
     void PopItemDisabled();
+
+    inline bool Button(text_ lbl, wcolors_ wc)
+    {
+        wc.pushButtonColor();
+        bool b = Button(lbl);
+        wc.popColor();
+        return b;
+    }
+
+    inline bool SmallButton(text_ lbl, wcolors_ wc)
+    {
+        wc.pushButtonColor();
+        bool b = SmallButton(lbl);
+        wc.popColor();
+        return b;
+    }
 
     inline bool ButtonEnabled(text_ lbl, bool is_enabled)
     {
@@ -138,65 +135,49 @@ namespace ImGui
         return false;
     }
 
-    inline bool SmallButtonEnabled(text_ lbl, bool is_enabled)
+    inline bool SmallButtonEnabled(text_ lbl, bool is_enabled, wcolors_ wc)
     {
         if (is_enabled)
-            return SmallButton(lbl);
+            return SmallButton(lbl, wc);
         PushItemDisabled();
-        SmallButton(lbl);
+        SmallButton(lbl, wc);
         PopItemDisabled();
         return false;
     }
 
-    inline bool ButtonActivated(text_ lbl, bool is_activated)
+    inline bool ButtonActivated(text_ lbl, bool is_activated, wcolors_ wc_activated = WC_HIGHLIGHT)
     {
         if (is_activated)
         {
-            PushActivatedButtonColor();
-            Button(lbl);
-            PopButtonColor();
+            Button(lbl, wc_activated);
             return false;
         }
 
         return Button(lbl);
     }
 
-    inline bool SmallButtonActivated(text_ lbl, bool is_activated)
+    inline bool SmallButtonActivated(text_ lbl, bool is_activated, wcolors_ wc_activated = WC_HIGHLIGHT)
     {
         if (is_activated)
         {
-            PushActivatedButtonColor();
-            SmallButton(lbl);
-            PopButtonColor();
+            SmallButton(lbl, wc_activated);
             return false;
         }
 
         return SmallButton(lbl);
     }
 
-    inline bool ButtonSelected(text_ lbl, bool is_selected)
+    inline bool ButtonSelected(text_ lbl, bool is_selected, wcolors_ wc_selected = WC_HIGHLIGHT)
     {
         if (is_selected)
-        {
-            PushSelectedButtonColor();
-            bool b = Button(lbl);
-            PopButtonColor();
-            return b;
-        }
-
+            return Button(lbl, wc_selected);
         return Button(lbl);
     }
 
-    inline bool SmallButtonSelected(text_ lbl, bool is_selected)
+    inline bool SmallButtonSelected(text_ lbl, bool is_selected, wcolors_ wc_selected = WC_HIGHLIGHT)
     {
         if (is_selected)
-        {
-            PushSelectedButtonColor();
-            bool b = SmallButton(lbl);
-            PopButtonColor();
-            return b;
-        }
-
+            return SmallButton(lbl, wc_selected);
         return SmallButton(lbl);
     }
 
@@ -269,6 +250,18 @@ namespace ImGui
             SetTooltip("Set to Default");
         SameLine();
         return clicked;
+    }
+
+    inline bool CollapsingHeaderSelected(char const* lbl, bool is_selected, ImGuiTreeNodeFlags flags=0, wcolors_ wc_selected = WC_HIGHLIGHT)
+    {
+        if (is_selected)
+        {
+            wc_selected.pushHeaderColor();
+            bool b = CollapsingHeader(lbl, flags);
+            wc_selected.popColor();
+            return b;
+        }
+        return CollapsingHeader(lbl, flags);
     }
 
     //

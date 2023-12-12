@@ -22,24 +22,24 @@ using namespace ut;
 // Helper Functions
 //
 
-GlobalOptions& GlobalOptions::instance()
+Options& Options::instance()
 {
-    static GlobalOptions x;
+    static Options x;
     return x;
 }
 
-GlobalOptions::GlobalOptions()
+Options::Options()
 {
     loadConfig();
     saveConfig();
 }
 
-void GlobalOptions::showDebugWindow()
+void Options::showDebugWindow()
 {
     m_show_options_window = true;
 }
 
-void GlobalOptions::drawDebug()
+void Options::drawDebug()
 {
     using namespace ImGui;
 
@@ -70,7 +70,7 @@ void GlobalOptions::drawDebug()
     }
 }
 
-void GlobalOptions::drawDebugMenu()
+void Options::drawDebugMenu()
 {
     using namespace ImGui;
 
@@ -84,7 +84,7 @@ void GlobalOptions::drawDebugMenu()
     }
 }
 
-bool GlobalOptions::drawBoxEditOptions(BoxEditOptions &opts)
+bool Options::drawBoxEditOptions(BoxEditOptions &opts)
 {
     using namespace ImGui;
 
@@ -107,7 +107,7 @@ bool GlobalOptions::drawBoxEditOptions(BoxEditOptions &opts)
     return changed;
 }
 
-bool GlobalOptions::drawOverlayOptions(OverlayOptions& opts)
+bool Options::drawOverlayOptions(OverlayOptions& opts)
 {
     using namespace ImGui;
 
@@ -156,7 +156,7 @@ bool GlobalOptions::drawOverlayOptions(OverlayOptions& opts)
 
 auto FILENAME = "data/config/ledit.yaml"_sv;
 
-void GlobalOptions::loadConfig()
+void Options::loadConfig()
 {
     if (auto file = fopen(FILENAME, "r"))
     {
@@ -178,7 +178,7 @@ void GlobalOptions::loadConfig()
     }
 }
 
-void GlobalOptions::saveConfig() const
+void Options::saveConfig() const
 {
     if (auto file = fopen(FILENAME, "w"))
     {

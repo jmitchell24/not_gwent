@@ -234,8 +234,10 @@ void GameBoard2::layout(rect const& bounds)
     }
 
     BOX_EDITOR_GAMEBOARD.setRoot(bounds);
-    BOX_EDITOR_CARDPICKER.setRoot(bounds);
+    BOX_EDITOR_GAMEBOARD.setFile("data/layout/gb.yaml");
 
+    BOX_EDITOR_CARDPICKER.setRoot(bounds);
+    BOX_EDITOR_CARDPICKER.setFile("data/layout/cp.yaml");
 }
 
 bool GameBoard2::tryGetHoveredCard(const ut::vec2 &mp, CardRef &ref)

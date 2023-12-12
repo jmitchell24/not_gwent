@@ -4,8 +4,14 @@
 
 #include "ledit/ledit_box.hpp"
 #include "ledit/ledit_box_visitor.hpp"
+#include "ledit/ledit_options.hpp"
 using namespace ledit;
 
+//
+// imgui
+//
+#include "rlImGui/imgui/imgui_mods.hpp"
+#include "rlImGui/extras/lucide_icons.hpp"
 
 //
 // ut
@@ -20,6 +26,8 @@ using namespace std;
 //
 // BoxVisitor -> Implementation
 //
+
+BoxVisitor* BoxVisitor::m_current_instance = nullptr;
 
 BoxVisitor::BoxVisitor(cstrparam name)
     : m_name{name.str()}
@@ -80,6 +88,41 @@ string BoxVisitor::toCPPString()
     return ss.str();
 }
 
+void BoxVisitor::setActive()
+{
+    LEDIT_OPTIONS.active_editor_name = m_name;
+    is_overlay_visible = true;
+    want_capture_mouse = true;
+}
+
+void BoxVisitor::clearActive()
+{
+    LEDIT_OPTIONS.active_editor_name.clear();
+    is_overlay_visible = false;
+    want_capture_mouse = false;
+}
+
+bool BoxVisitor::isActive() const
+{
+    return LEDIT_OPTIONS.active_editor_name == m_name;
+}
+
+void BoxVisitor::setGlobalInstance()
+{
+    m_current_instance = this;
+}
+
+void BoxVisitor::clearGlobalInstance()
+{
+    m_current_instance = nullptr;
+}
+
+BoxVisitor& BoxVisitor::currentInstance()
+{
+    check_null(m_current_instance);
+    return *m_current_instance;
+}
+
 //
 // Box Slot
 //
@@ -97,19 +140,17 @@ box_ptr BoxVisitor::getBoxSlot(cstrparam s)
     return m_box_map[k] = nullptr;
 }
 
-void BoxVisitor::setBoxSlot(box_ptr const& ptr)
+bool BoxVisitor::trySetBoxSlot(box_ptr const& ptr)
 {
     if (auto it = m_box_map.find(ptr->name); it != m_box_map.end())
     {
-        auto&& k = it->first;
         auto&& v = it->second;
-
         if (v && v != ptr)
             v->name.clear();
-
         v = ptr;
+        return true;
     }
-
+    return false;
 }
 
 void BoxVisitor::resetBoxSlot(box_ptr const& ptr)
@@ -149,7 +190,9 @@ size_t BoxVisitor::getEmptySlotCount() const
 
 void BoxVisitor::setBoxSlotAll(box_ptr const& ptr)
 {
-    setBoxSlot(ptr);
+    if (!ptr->name.empty())
+        m_box_map[ptr->name] = ptr;
+
     for (auto&& it : ptr->child_boxes)
         setBoxSlotAll(it);
 }
@@ -292,11 +335,13 @@ boxlist_t BoxVisitor::boxSelectionMulti() const
     return m_selected_box_multi;
 }
 
-cstrview BoxVisitor::getBoxSelectionLabel(box_ptr const& ptr) const
+bool BoxVisitor::drawSelectionButton(box_ptr const& ptr) const
 {
+    using namespace ImGui;
+
     if (isBoxSelectedSingle(ptr))
-        return "o";
+        return SmallButton("o", WC_HIGHLIGHT);
     if (isBoxSelectedMulti(ptr))
-        return "*";
-    return " ";
+        return SmallButton("*", WC_VIOLET);
+    return SmallButton(" ");
 }

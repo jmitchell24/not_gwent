@@ -21,6 +21,7 @@ namespace ledit
         inline bool wantCaptureMouse() const { return want_capture_mouse; }
 
         void setRoot(ut::rect const& bounds);
+        void setFile(ut::cstrparam file);
         bool tryGetRects (ut::cstrparam name, BoxRects& rects);
         bool tryGetOuter (ut::cstrparam name, ut::rect& outer);
         bool tryGetBorder(ut::cstrparam name, ut::rect& border);
@@ -33,10 +34,11 @@ namespace ledit
         using filelist_type = std::vector<std::string>;
         using filetext_type = std::array<char, 30>;
 
-        bool                m_autosave = false;
         filetext_type       m_new_file;
         std::string         m_current_file;
         filelist_type       m_layout_files;
+        bool                m_want_active = false;
+        box_ptr             m_root_box_revert;
 
         void drawMainWindow();
 

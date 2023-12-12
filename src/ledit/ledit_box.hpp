@@ -33,46 +33,40 @@ namespace ledit
         box_ptr         parent;
         boxlist_t       child_boxes;
 
-        void setChangedAll();
-        void clearChanged();
-        bool getChanged() const;
 
-        box_ptr  ptr();
-        box_cptr ptr() const;
 
-        box_ptr  deepCopy(box_ptr const& parent);
+        void clearWantBind();
+        bool wantBind() const;
+
+        box_ptr ptr();
+        box_ptr deepCopy(box_ptr const& parent);
         void mutate(box_ptr const& original);
-
         box_ptr tryGetBox(ut::vec2 const& mp);
 
-        std::string getLbl() const;
-
         void reset();
-        void normalizeWeights();
+
 
         std::string toYamlString();
-
         bool loadYaml(ut::cstrparam filename);
         bool saveYaml(ut::cstrparam filename);
 
-        static bool isRoot(box_ptr const& box)
-        { return box && box->parent == nullptr; }
+        void drawBreadcrumbs();
 
-        void drawBreadcrumbs(BoxVisitor& v);
+        static bool isRoot(box_ptr const& box);
 
         static box_ptr create       (box_ptr const& parent);
         static box_ptr createRoot   (ut::rect const& bounds);
         static box_ptr createRoot   (Sizer const& sizer);
 
-        static void drawBoxHierarchy    (BoxVisitor& v);
-        static void drawOverlay         (BoxVisitor& v);
-        static void drawPropertiesWindow(BoxVisitor& v);
+        static void drawBoxHierarchy();
+        static void drawOverlay();
+        static void drawPropertiesWindow();
 
     private:
         using ca_type = std::optional<ChildAction>;
 
         ut::color   m_color;
-        bool        m_changed;
+        bool        m_want_bind;
         ca_type     m_child_action;
 
         explicit Box(box_ptr p);
@@ -80,10 +74,6 @@ namespace ledit
         //
         // layout
         //
-
-//        void setBounds(ut::rect const& bounds,
-//                       ut::rect const& bounds_margin,
-//                       ut::rect const& bounds_padding);
 
         void calcLayout    (ut::rect const& b);
         void calcLayoutVbox(ut::rect const& b);
@@ -107,10 +97,10 @@ namespace ledit
         void insertChildStart();
         void insertChild(boxlist_t::iterator const& pos, box_ptr const& box);
 
-        void parentActionDelete     (BoxVisitor& v);
-        void parentActionClone      (BoxVisitor& v);
-        void parentActionMoveInc    (BoxVisitor& v);
-        void parentActionMoveDec    (BoxVisitor& v);
+        void parentActionDelete     ();
+        void parentActionClone      ();
+        void parentActionMoveInc    ();
+        void parentActionMoveDec    ();
 
         void applyChildActions();
 
@@ -118,14 +108,21 @@ namespace ledit
         // draw
         //
 
-        void drawProperties  (BoxVisitor& v);
-        void drawTreeTableRow(BoxVisitor& v);
-        bool drawTreeTableRow(BoxVisitor& v, bool is_leaf);
+        void drawProperties  ();
+        void drawTreeTableRow();
+        bool drawTreeTableRow(bool is_leaf);
 
-        void drawOverlayOutlines     (BoxVisitor& v);
-        void drawOverlaySingleSelectedAbove(BoxVisitor& v);
-        void drawOverlaySingleSelectedBelow(BoxVisitor& v);
+        void drawOverlayOutlines            ();
+        void drawOverlaySingleSelectedAbove ();
+        void drawOverlaySingleSelectedBelow ();
 
-        static ut::color nextColor();
+        //
+        // other
+        //
+
+        std::string getLbl() const;
+        void normalizeWeights();
+        void notifyChanged();
+        void setWantBindAll();
     };
 }

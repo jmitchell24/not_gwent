@@ -45,7 +45,7 @@ namespace ledit
         }
     };
 
-    class GlobalOptions
+    class Options
     {
     public:
         std::string active_editor_name;
@@ -53,7 +53,13 @@ namespace ledit
         BoxEditOptions box_edit_options;
         OverlayOptions overlay_options;
 
-        static GlobalOptions& instance();
+        static Options& instance();
+
+        inline bool hasActive()
+        { return !active_editor_name.empty(); }
+
+        inline void clearActive()
+        { active_editor_name.clear(); }
 
         void showDebugWindow();
 
@@ -63,7 +69,7 @@ namespace ledit
     private:
         bool m_show_options_window=false;
 
-        explicit GlobalOptions();
+        explicit Options();
 
         static bool drawBoxEditOptions(BoxEditOptions &opts);
         static bool drawOverlayOptions(OverlayOptions &opts);
@@ -72,5 +78,5 @@ namespace ledit
         void saveConfig() const;
     };
 
-    static GlobalOptions& GLOBAL_OPTIONS = GlobalOptions::instance();
+    static Options& LEDIT_OPTIONS = Options::instance();
 }

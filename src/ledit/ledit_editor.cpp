@@ -39,17 +39,23 @@ BoxEditor::BoxEditor(cstrparam name)
 void BoxEditor::setRoot(rect const& bounds)
 {
     root_box = Box::createRoot(bounds);
+    m_root_box_revert = Box::createRoot(bounds);
 
     clearSelectedBoxSingle();
+}
+
+void BoxEditor::setFile(ut::cstrparam file)
+{
+    loadFile(file);
 }
 
 bool BoxEditor::tryGetRects(ut::cstrparam name, BoxRects& rects)
 {
     if (auto box = getBoxSlot(name))
     {
-        if (box->getChanged())
+        if (box->wantBind())
         {
-            box->clearChanged();
+            box->clearWantBind();
             rects = box->rects;
             return true;
         }
@@ -61,9 +67,9 @@ bool BoxEditor::tryGetOuter(cstrparam name, rect& outer)
 {
     if (auto box = getBoxSlot(name))
     {
-        if (box->getChanged())
+        if (box->wantBind())
         {
-            box->clearChanged();
+            box->clearWantBind();
             outer = box->rects.outer;
             return true;
         }
@@ -75,9 +81,9 @@ bool BoxEditor::tryGetBorder(cstrparam name, rect& border)
 {
     if (auto box = getBoxSlot(name))
     {
-        if (box->getChanged())
+        if (box->wantBind())
         {
-            box->clearChanged();
+            box->clearWantBind();
             border = box->rects.border;
             return true;
         }
@@ -89,9 +95,9 @@ bool BoxEditor::tryGetInner(cstrparam name, rect& inner)
 {
     if (auto box = getBoxSlot(name))
     {
-        if (box->getChanged())
+        if (box->wantBind())
         {
-            box->clearChanged();
+            box->clearWantBind();
             inner = box->rects.inner;
             return true;
         }
@@ -106,17 +112,21 @@ bool BoxEditor::draw()
     if (!Box::isRoot(root_box))
         return false;
 
+    setGlobalInstance();
+
     PushID(m_name.c_str());
     drawMainWindow();
-    Box::drawPropertiesWindow(*this);
-    Box::drawOverlay(*this);
+    Box::drawPropertiesWindow();
+    Box::drawOverlay();
     PopID();
 
-    if (m_name != GLOBAL_OPTIONS.active_editor_name)
+    if (!isActive())
     {
         is_overlay_visible = false;
         want_capture_mouse = false;
     }
+
+    clearGlobalInstance();
 
     return true;
 }
@@ -134,16 +144,28 @@ void BoxEditor::drawMainWindow()
 
     if (Begin(lbl))
     {
+        if (!LEDIT_OPTIONS.hasActive() && m_want_active)
+            setActive();
+
         drawMainWindowOptions();
 
-        if (CollapsingHeader("File"))
+        auto file_lbl = want_persist ? "File (modified)###file" : "File###file";
+        auto file_selected = want_persist;
+        if (CollapsingHeaderSelected(file_lbl, file_selected, 0, WC_YELLOW))
             drawMainWindowFileOptions();
 
-        if (CollapsingHeader(PRINTER("Binds [%d/%d]###binds", getFilledSlotCount(), getSlotCount())))
+        auto binds_lbl = PRINTER("Binds [%d/%d]###binds", getFilledSlotCount(), getSlotCount());
+        auto binds_selected = getEmptySlotCount() > 0;
+        if (CollapsingHeaderSelected(binds_lbl, binds_selected, 0, WC_RED))
             drawMainWindowBindOptions();
 
         if (CollapsingHeader("Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
-            Box::drawBoxHierarchy(*this);
+            Box::drawBoxHierarchy();
+    }
+    else
+    {
+        if (isActive())
+            clearActive();
     }
     End();
 }
@@ -152,38 +174,45 @@ void BoxEditor::drawMainWindowOptions()
 {
     using namespace ImGui;
 
-    if (ButtonActivated(ICON_LC_MOUSE_POINTER_SQUARE, m_name == GLOBAL_OPTIONS.active_editor_name))
+    PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+    PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{3.0f,0.0f});
+    BeginGroup();
+
+    if (ButtonActivated(ICON_LC_MOUSE_POINTER_SQUARE, m_name == LEDIT_OPTIONS.active_editor_name))
     {
-        GLOBAL_OPTIONS.active_editor_name = m_name;
-        is_overlay_visible = true;
-        want_capture_mouse = true;
+        setActive();
+        m_want_active = true;
     }
 
     if (IsItemHovered())
         SetTooltip("Select Editor [%s]", m_name.c_str());
 
-    if (m_name == GLOBAL_OPTIONS.active_editor_name)
+    if (m_name == LEDIT_OPTIONS.active_editor_name)
     {
         SameLine();
-        if (Button(ICON_LC_X))
+        if (Button(ICON_LC_X, WC_RED))
         {
-            GLOBAL_OPTIONS.active_editor_name.clear();
+            LEDIT_OPTIONS.clearActive();
+            m_want_active = false;
         }
 
-        if (IsItemHovered())
-            SetTooltip("Unselect Editor");
+        if (IsItemHovered()) SetTooltip("Unselect Editor");
 
         SameLine();
-        if (ButtonSelected(is_overlay_visible ? ICON_LC_EYE "###vis" : ICON_LC_EYE_OFF "###vis", is_overlay_visible))
+        if (ButtonSelected(is_overlay_visible ? ICON_LC_EYE "###vis" : ICON_LC_EYE_OFF "###vis", is_overlay_visible, WC_GREEN))
         {
             is_overlay_visible = !is_overlay_visible;
         }
 
+        if (IsItemHovered()) SetTooltip("Is Overlay Visible?");
+
         SameLine();
-        if (ButtonSelected(ICON_LC_MOUSE "###input", want_capture_mouse))
+        if (ButtonSelected(ICON_LC_MOUSE "###input", want_capture_mouse, WC_GREEN))
         {
             want_capture_mouse = !want_capture_mouse;
         }
+
+        if (IsItemHovered()) SetTooltip("Is Overlay Interaction Enabled?");
 
         if (!is_overlay_visible)
         {
@@ -191,10 +220,13 @@ void BoxEditor::drawMainWindowOptions()
         }
     }
 
+    EndGroup();
+    PopStyleVar(2);
+
     SameLine();
     if (Button(ICON_LC_SETTINGS))
     {
-        GLOBAL_OPTIONS.showDebugWindow();
+        LEDIT_OPTIONS.showDebugWindow();
     }
 
     if (IsItemHovered())
@@ -279,15 +311,6 @@ void BoxEditor::drawMainWindowFileOptions()
         TextUnformatted(m_current_file);
     }
 
-    if (ButtonSelected(ICON_LC_SAVE, m_autosave))
-    {
-        m_autosave = !m_autosave;
-    }
-
-    if (IsItemHovered())
-        SetTooltip("Autosave");
-
-    SameLine();
     if (Button("Load..."))
     {
         using namespace filesystem;
@@ -332,6 +355,23 @@ void BoxEditor::drawMainWindowFileOptions()
         memset(m_new_file.data(), '\0', m_new_file.size());
         OpenPopup("popup_save_layout");
     }
+
+
+    SameLine();
+
+    if (want_persist)
+    {
+        if (ButtonConfirm("Revert"))
+        {
+            root_box = m_root_box_revert->deepCopy(nullptr);
+            want_persist = false;
+        }
+    }
+    else
+    {
+        ButtonEnabled("Revert", false);
+    }
+
 
     if (BeginPopup("popup_save_layout"))
     {
@@ -391,7 +431,7 @@ void BoxEditor::drawMainWindowBindOptions()
                 if (TableNextColumn())
                 {
                     PushID(it.first.c_str());
-                    box->drawBreadcrumbs(*this);
+                    box->drawBreadcrumbs();
                     PopID();
                 }
             }
@@ -443,7 +483,7 @@ void BoxEditor::loadFile(ut::cstrparam filename)
     {
         m_current_file          = filename;
         root_box                = new_root;
-
+        m_root_box_revert       = root_box->deepCopy(nullptr);
         setSelectedBoxSingle(root_box);
 
         resetAllSlots();
