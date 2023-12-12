@@ -71,6 +71,11 @@ void ChangeTarget::operator()(TargetNerf const& t)
     if (t.target_siege) player.siege.units.setHighlight();
 }
 
+void ChangeTarget::operator()(TargetMedic const& t)
+{
+    nopath_impl;
+}
+
 //
 // CastTarget
 //
@@ -140,11 +145,20 @@ bool CastTarget::operator()(TargetDefault const& t)
                 auto is_spy = unit.ability == ng::ABILITY_SPY;
                 auto is_decoy = unit.ability == ng::ABILITY_DECOY;
 
-                if (is_decoy)
+                switch (unit.ability)
                 {
-                    player.changeTarget(TargetDecoy{ tc.idx }, opponent);
-                    player.hand.setCardHighlight(tc.idx);
-                    return false;
+                    case ng::ABILITY_SPY:
+                        nopath_impl;
+                        return false;
+
+                    case ng::ABILITY_DECOY:
+                        player.changeTarget(TargetDecoy{ tc.idx }, opponent);
+                        player.hand.setCardHighlight(tc.idx);
+                        return false;
+
+                    case ng::ABILITY_MEDIC:
+                        nopath_impl;
+                        return false;
                 }
 
                 switch (unit.row)
@@ -274,5 +288,11 @@ bool CastTarget::operator()(TargetNerf const& t)
         player.changeTarget(TargetDefault{}, opponent);
         return true;
     }
+    return false;
+}
+
+bool CastTarget::operator()(TargetMedic const& t)
+{
+    nopath_impl;
     return false;
 }

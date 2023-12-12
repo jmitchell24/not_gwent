@@ -356,11 +356,15 @@ void BoxEditor::drawMainWindowFileOptions()
         OpenPopup("popup_save_layout");
     }
 
-
     SameLine();
-
     if (want_persist)
     {
+        if (ButtonConfirm("Overwrite"))
+        {
+            saveFile(m_current_file);
+        }
+
+        SameLine();
         if (ButtonConfirm("Revert"))
         {
             root_box = m_root_box_revert->deepCopy(nullptr);
@@ -369,6 +373,8 @@ void BoxEditor::drawMainWindowFileOptions()
     }
     else
     {
+        ButtonEnabled("Overwrite", false);
+        SameLine();
         ButtonEnabled("Revert", false);
     }
 
@@ -445,6 +451,12 @@ void BoxEditor::drawMainWindowBindOptions()
         EndTable();
     }
 
+    if (ButtonConfirm("Reset"))
+    {
+        m_box_map.clear();
+    }
+
+    SameLine();
     if (auto num_empty_slots = getEmptySlotCount(); num_empty_slots == 0)
     {
         if (Button("to Console"))
@@ -496,6 +508,8 @@ void BoxEditor::saveFile(ut::cstrparam filename)
     if (root_box->saveYaml(filename))
     {
         m_current_file = filename;
+        m_root_box_revert = root_box->deepCopy(nullptr);
+        want_persist = false;
     }
 }
 

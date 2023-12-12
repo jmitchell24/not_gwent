@@ -84,27 +84,55 @@ children:
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.25
+            weight: 0.122000009
             name: gb.cpu.player.deck
           - type: BOX_HBOX
-            weight: 0.5
+            weight: 0.755999982
             name: gb.cpu.player.hand
           - type: BOX_HBOX
-            weight: 0.25
+            weight: 0.122000009
             name: gb.cpu.player.yard
-      - type: BOX_HBOX
-        weight: 0.125
-      - type: BOX_HBOX
-        weight: 0.125
       - type: BOX_HBOX
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.134499997
+            weight: 0.0970000029
           - type: BOX_HBOX
-            weight: 0.731000006
+            weight: 0.805999994
+            name: gb.cpu.siege.units
           - type: BOX_VBOX
-            weight: 0.134499997
+            weight: 0.0970000029
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+              - type: BOX_HBOX
+                weight: 0.5
+      - type: BOX_HBOX
+        weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.0970000029
+          - type: BOX_HBOX
+            weight: 0.805999994
+            name: gb.cpu.ranged.units
+          - type: BOX_VBOX
+            weight: 0.0970000029
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+              - type: BOX_HBOX
+                weight: 0.5
+      - type: BOX_HBOX
+        weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.0970000029
+            name: gb.cpu.melee.score
+          - type: BOX_HBOX
+            weight: 0.805999994
+            name: gb.cpu.melee.units
+          - type: BOX_VBOX
+            weight: 0.0970000029
             children:
               - type: BOX_HBOX
                 weight: 0.5
@@ -116,12 +144,13 @@ children:
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.136500001
+            weight: 0.0970000029
+            name: gb.usr.melee.score
           - type: BOX_HBOX
-            weight: 0.726999998
+            weight: 0.805999994
             name: gb.usr.melee.units
           - type: BOX_VBOX
-            weight: 0.136500001
+            weight: 0.0970000029
             children:
               - type: BOX_HBOX
                 weight: 0.5
@@ -129,19 +158,47 @@ children:
                 weight: 0.5
       - type: BOX_HBOX
         weight: 0.125
-      - type: BOX_HBOX
-        weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.0970000029
+            name: gb.usr.ranged.score
+          - type: BOX_HBOX
+            weight: 0.805999994
+            name: gb.usr.ranged.units
+          - type: BOX_VBOX
+            weight: 0.0970000029
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+              - type: BOX_HBOX
+                weight: 0.5
       - type: BOX_HBOX
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.125999987
+            weight: 0.0970000029
+            name: gb.usr.siege.score
+          - type: BOX_HBOX
+            weight: 0.805999994
+            name: gb.usr.siege.units
+          - type: BOX_VBOX
+            weight: 0.0970000029
+            children:
+              - type: BOX_HBOX
+                weight: 0.5
+              - type: BOX_HBOX
+                weight: 0.5
+      - type: BOX_HBOX
+        weight: 0.125
+        children:
+          - type: BOX_HBOX
+            weight: 0.122000009
             name: gb.usr.player.deck
           - type: BOX_HBOX
-            weight: 0.748000026
+            weight: 0.755999982
             name: gb.usr.player.hand
           - type: BOX_HBOX
-            weight: 0.125999987
+            weight: 0.122000009
             name: gb.usr.player.yard
   - type: BOX_HBOX
     weight: 0.262499988

@@ -13,6 +13,8 @@
 
 namespace game
 {
+
+
     struct GameBoard2
     {
         Player usr, cpu;
@@ -20,7 +22,7 @@ namespace game
         CardRef card_hover;
 
         layout::GameBoard gb;
-        layout::CardPicker card_picker;
+
         board::BoardBoss boss;
 
         GameBoard2();
@@ -38,8 +40,5 @@ namespace game
     };
 
 
-    struct CardPicker
-    {
 
-    };
 }

@@ -183,12 +183,13 @@ namespace ImGui
 
     inline bool ButtonConfirm(text_ lbl, text_ prompt = "Are you sure?", text_ lbl_confirm = "yes")
     {
+        auto lbl_popup = ut::PRINTER("%s_popup", lbl.c_str());
         if (Button(lbl))
         {
-            OpenPopup("ButtonConfirm");
+            OpenPopup(lbl_popup);
         }
 
-        if (BeginPopup("ButtonConfirm"))
+        if (BeginPopup(lbl_popup))
         {
             bool b = SmallButton(lbl_confirm);
             if (b) CloseCurrentPopup();

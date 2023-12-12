@@ -270,7 +270,7 @@ void Box::drawProperties()
         {
             for (auto&& it: v.boxSelectionMulti())
                 it->mutate(ptr());
-            notifyChanged();
+            parent->notifyChanged();
         }
 
         SameLine();

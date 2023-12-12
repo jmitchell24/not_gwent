@@ -1,0 +1,31 @@
+type: BOX_HBOX
+weight: -6.17004364e-12
+dim: {units: [1280, 720]}
+pos: {units: [0, 0]}
+children:
+  - type: BOX_HBOX
+    weight: 0.213000014
+  - type: BOX_VBOX
+    inner_pad: 40
+    weight: 0.574000001
+    children:
+      - type: BOX_HBOX
+        weight: 0.370000005
+        name: card_picker.cp.title
+        mrg: {pad1: 60}
+      - type: BOX_HBOX
+        weight: 0.25999999
+        name: card_picker.cp.cards
+      - type: BOX_HBOX
+        weight: 0.370000005
+        mrg: {pad1: 60}
+        pad: {pad1: 20}
+        children:
+          - type: BOX_HBOX
+            weight: 0.5
+            name: card_picker.cp.confirm
+          - type: BOX_HBOX
+            weight: 0.5
+            name: card_picker.cp.cancel
+  - type: BOX_HBOX
+    weight: 0.213000014

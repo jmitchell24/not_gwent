@@ -32,6 +32,7 @@ namespace game
     struct TargetCastUnit;
     struct TargetScorch;
     struct TargetDecoy;
+    struct TargetMedic;
 
     using Target = std::variant<
         TargetDefault,
@@ -39,7 +40,8 @@ namespace game
         TargetNerf,
         TargetCastUnit,
         TargetScorch,
-        TargetDecoy
+        TargetDecoy,
+        TargetMedic
     >;
 
     //
@@ -83,6 +85,11 @@ namespace game
     {
         size_t hand_idx;
     };
+
+    struct TargetMedic
+    {
+        size_t hand_idx;
+    };
 }
 
 namespace game::visitors
@@ -98,7 +105,7 @@ namespace game::visitors
         void operator()(TargetDecoy const& t);
         void operator()(TargetBuff const& t);
         void operator()(TargetNerf const& t);
-
+        void operator()(TargetMedic const& t);
 
     };
 
@@ -116,5 +123,6 @@ namespace game::visitors
         bool operator()(TargetDecoy const& t);
         bool operator()(TargetBuff const& t);
         bool operator()(TargetNerf const& t);
+        bool operator()(TargetMedic const& t);
     };
 }

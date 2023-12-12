@@ -1,0 +1,57 @@
+type: BOX_HBOX
+weight: 491
+name: gl.outer
+dim: {units: [1280, 720]}
+pos: {units: [0, 0]}
+children:
+  - type: BOX_HBOX
+    name: gl.inner
+    pad: {pad1: 22}
+    children:
+      - type: BOX_HBOX
+        name: gl.board_outer
+        pad: {pad2: [247, 19]}
+        children:
+          - type: BOX_HBOX
+            name: gl.board_inner1
+            pad: {pad1: 13}
+            children:
+              - type: BOX_HBOX
+                name: gl.board_inner2
+                pad: {pad1: 12}
+                children:
+                  - type: BOX_HBOX
+                    name: gl.cards_outer
+                    pad: {pad1: 9}
+                    children:
+                      - type: BOX_VBOX
+                        name: gl.cards_inner
+                        pad: {pad1: 17}
+                        children:
+                          - type: BOX_VBOX
+                            pad: {pad1: 10}
+                            children:
+                              - type: BOX_HBOX
+                                weight: 0.166666672
+                              - type: BOX_HBOX
+                                weight: 0.166666672
+                              - type: BOX_HBOX
+                                weight: 0.166666672
+                              - type: BOX_HBOX
+                                weight: 0.166666672
+                              - type: BOX_HBOX
+                                weight: 0.166666672
+                              - type: BOX_SBOX
+                                weight: 0.166666672
+                                children:
+                                  - type: BOX_VBOX
+                                    weight: 0.5
+                                    name: gl.usr_siege_buttons.score_outer
+                                    dim: {aspect: 1}
+                                    pos: {anchor: ANCHOR_LC}
+                                    children:
+                                      - type: BOX_HBOX
+                                  - type: BOX_HBOX
+                                    weight: 0.5
+                                    dim: {aspect: 1}
+                                    pos: {anchor: ANCHOR_RC}
