@@ -5,7 +5,7 @@ dim: {units: [1280, 720]}
 pos: {units: [0, 0]}
 children:
   - type: BOX_VBOX
-    weight: 0.262499988
+    weight: 0.264500022
     children:
       - type: BOX_HBOX
         weight: 0.394500017
@@ -78,7 +78,7 @@ children:
                 weight: 0.5
                 name: gb.usr.stats.gems
   - type: BOX_VBOX
-    weight: 0.474999994
+    weight: 0.470999986
     children:
       - type: BOX_HBOX
         weight: 0.125
@@ -97,31 +97,39 @@ children:
         children:
           - type: BOX_HBOX
             weight: 0.0970000029
+            name: gb.cpu.siege.score
           - type: BOX_HBOX
             weight: 0.805999994
             name: gb.cpu.siege.units
           - type: BOX_VBOX
             weight: 0.0970000029
+            mrg: {pad2: [0, 10]}
             children:
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.cpu.siege.buff
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.cpu.siege.nerf
       - type: BOX_HBOX
         weight: 0.125
         children:
           - type: BOX_HBOX
             weight: 0.0970000029
+            name: gb.cpu.ranged.score
           - type: BOX_HBOX
             weight: 0.805999994
             name: gb.cpu.ranged.units
           - type: BOX_VBOX
             weight: 0.0970000029
+            mrg: {pad2: [0, 10]}
             children:
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.cpu.ranged.buff
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.cpu.ranged.nerf
       - type: BOX_HBOX
         weight: 0.125
         children:
@@ -133,6 +141,7 @@ children:
             name: gb.cpu.melee.units
           - type: BOX_VBOX
             weight: 0.0970000029
+            mrg: {pad2: [0, 10]}
             children:
               - type: BOX_HBOX
                 weight: 0.5
@@ -151,11 +160,14 @@ children:
             name: gb.usr.melee.units
           - type: BOX_VBOX
             weight: 0.0970000029
+            mrg: {pad2: [0, 10]}
             children:
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.usr.melee.buff
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.usr.melee.nerf
       - type: BOX_HBOX
         weight: 0.125
         children:
@@ -167,11 +179,14 @@ children:
             name: gb.usr.ranged.units
           - type: BOX_VBOX
             weight: 0.0970000029
+            mrg: {pad2: [0, 10]}
             children:
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.usr.ranged.buff
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.usr.ranged.nerf
       - type: BOX_HBOX
         weight: 0.125
         children:
@@ -183,11 +198,14 @@ children:
             name: gb.usr.siege.units
           - type: BOX_VBOX
             weight: 0.0970000029
+            mrg: {pad2: [0, 10]}
             children:
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.usr.siege.buff
               - type: BOX_HBOX
                 weight: 0.5
+                name: gb.usr.siege.nerf
       - type: BOX_HBOX
         weight: 0.125
         children:
@@ -201,4 +219,4 @@ children:
             weight: 0.122000009
             name: gb.usr.player.yard
   - type: BOX_HBOX
-    weight: 0.262499988
+    weight: 0.264500022

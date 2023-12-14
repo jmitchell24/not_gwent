@@ -7,6 +7,7 @@
 #include "context.hpp"
 
 #include "game/board/board_boss.hpp"
+#include "game/game_card_picker.hpp"
 #include "game/game_player.hpp"
 #include "game/game_io.hpp"
 
@@ -18,6 +19,8 @@ namespace game
     struct GameBoard2
     {
         Player usr, cpu;
+
+        CardPicker card_picker;
 
         CardRef card_hover;
 

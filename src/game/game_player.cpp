@@ -44,15 +44,15 @@ bool Player::tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref)
         lead  .tryGetHoveredCard(mp, ref);
 }
 
-void Player::changeTarget(Target t, Player& opponent)
+void Player::changeTarget(CastTargetParams& p, Target t)
 {
     target = t;
-    std::visit(visitors::ChangeTarget{*this, opponent}, target);
+    std::visit(visitors::ChangeTarget{p}, target);
 }
 
-bool Player::tryCast(ut::vec2 const& mp, Player& opponent, Cast& cast)
+bool Player::tryCast(CastTargetParams p, Cast& cast, vec2 const& mp)
 {
-    return std::visit(visitors::CastTarget{*this, opponent, cast, mp}, target);
+    return std::visit(visitors::CastTarget{p, cast, mp}, target);
 }
 
 void Player::update(float dt)

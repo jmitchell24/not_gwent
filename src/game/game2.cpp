@@ -246,6 +246,7 @@ void GameBoard2::update(update_param u)
 {
     usr.update(u.frame_time);
     cpu.update(u.frame_time);
+    card_picker.update(u);
 
     auto mp = u.view_mouse_pos;
 
@@ -255,6 +256,8 @@ void GameBoard2::update(update_param u)
     if (BOX_EDITOR_GAMEBOARD.wantCaptureMouse())
         return;
     if (BOX_EDITOR_CARDPICKER.wantCaptureMouse())
+        return;
+    if (card_picker.wantCaptureMouse())
         return;
 
     if (CardRef ref; tryGetHoveredCard(mp, ref))
@@ -270,16 +273,19 @@ void GameBoard2::update(update_param u)
         card_hover.reset();
     }
 
+    auto usr_params = CastTargetParams{ usr, cpu, card_picker };
+    auto cpu_params = CastTargetParams{ cpu, usr, card_picker };
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
-        if (Cast cast; usr.tryCast(mp, cpu, cast))
+        if (Cast cast; usr.tryCast(usr_params, cast, mp))
         {
             std::visit(visitors::CardCaster{*this, usr, cpu}, cast);
             updateScores(usr);
             updateScores(cpu);
         }
 
-        if (Cast cast; cpu.tryCast(mp, usr, cast))
+        if (Cast cast; cpu.tryCast(cpu_params, cast, mp))
         {
             std::visit(visitors::CardCaster{*this, cpu, usr}, cast);
             updateScores(usr);
@@ -289,8 +295,8 @@ void GameBoard2::update(update_param u)
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
     {
-        usr.cancelCast(cpu);
-        cpu.cancelCast(usr);
+        usr.cancelCast( usr_params );
+        cpu.cancelCast( cpu_params );
     }
 
 

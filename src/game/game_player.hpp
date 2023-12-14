@@ -12,35 +12,7 @@
 namespace game
 {
 
-    struct CardPicker
-    {
-        layout::CardPicker cp;
-        board::BoardRow row;
 
-        ut::rect r_button_confirm;
-        ut::rect r_button_cancel;
-        ut::rect r_title;
-        ut::rect r_cards;
-        std::string title;
-
-        bool is_active;
-
-
-
-        void layout(layout::CardPicker const& cp)
-        {
-            r_button_cancel = cp.cancel;
-            r_button_confirm = cp.confirm;
-            r_title = cp.title;
-
-
-        }
-
-        void draw()
-        {
-
-        }
-    };
 
     class Player
     {
@@ -77,11 +49,11 @@ namespace game
             hand.clearCardHighlight();
         }
 
-        void changeTarget(Target t, Player& opponent);
-        bool tryCast(ut::vec2 const& mp, Player& opponent, Cast& cast);
+        void changeTarget(CastTargetParams& p, Target t);
+        bool tryCast(CastTargetParams p, Cast& cast, ut::vec2 const& mp);
 
-        inline void cancelCast(Player& opponent)
-        { changeTarget(TargetDefault{}, opponent); }
+        inline void cancelCast(CastTargetParams p)
+        { changeTarget(p, TargetDefault{}); }
 
         void update(float dt);
         void drawAboveCards();

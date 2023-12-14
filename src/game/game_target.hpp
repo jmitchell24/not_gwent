@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "game_cast.hpp"
+#include "game/game_cast.hpp"
+#include "game/game_card_picker.hpp"
 
 //
 // ut
@@ -73,6 +74,7 @@ namespace game
         bool target_ranged;
         bool target_siege;
         bool target_opponent;
+        bool is_medic;
         size_t hand_idx;
     };
 
@@ -90,14 +92,20 @@ namespace game
     {
         size_t hand_idx;
     };
+
+    struct CastTargetParams
+    {
+        Player&         player;
+        Player&         opponent;
+        CardPicker&     card_picker;
+    };
 }
 
 namespace game::visitors
 {
     struct ChangeTarget
     {
-        Player& player;
-        Player& opponent;
+        CastTargetParams params;
 
         void operator()(TargetDefault const& t);
         void operator()(TargetCastUnit const& t);
@@ -106,23 +114,25 @@ namespace game::visitors
         void operator()(TargetBuff const& t);
         void operator()(TargetNerf const& t);
         void operator()(TargetMedic const& t);
-
     };
 
     struct CastTarget
     {
-        Player& player;
-        Player& opponent;
-        Cast&   cast;
+        CastTargetParams    params;
+        Cast&               cast;
+        ut::vec2 const&     mp;
 
-        ut::vec2 const& mp;
 
         bool operator()(TargetDefault const& t);
-        bool operator()(TargetCastUnit const& t) ;
-        bool operator()(TargetScorch const& t) ;
+        bool operator()(TargetCastUnit const& t);
+        bool operator()(TargetScorch const& t);
         bool operator()(TargetDecoy const& t);
         bool operator()(TargetBuff const& t);
         bool operator()(TargetNerf const& t);
         bool operator()(TargetMedic const& t);
+
+    private:
+        void setCast(Cast const& c);
+        void setTarget(Target const& c);
     };
 }
