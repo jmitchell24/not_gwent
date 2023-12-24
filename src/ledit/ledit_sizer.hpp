@@ -6,10 +6,17 @@
 
 #include "ledit/ledit_enums.hpp"
 #include "ledit/ledit_types.hpp"
+#include "layout/layout_box.hpp"
 
+//
+// ut
+//
 #include <ut/math.hpp>
 #include <ut/string.hpp>
 
+//
+// std
+//
 #include <optional>
 #include <variant>
 
@@ -81,6 +88,6 @@ namespace ledit
         ut::vec2 getDim(ut::rect parent) const;
         ut::rect getPos(ut::rect parent, ut::vec2 sz) const;
 
-        void getBoxRects(ut::rect const& parent, BoxRects& child) const;
+        void getBoxRects(ut::rect const& parent, ::layout::LayoutBox& child) const;
     };
 }

@@ -14,25 +14,26 @@ namespace game
     class CardPicker
     {
     public:
-        layout::CardPicker cp;
-        board::BoardRow row;
-
-        bool wantCaptureMouse() const;
+        std::string title = "Card Picker";
+        game_layout::CardPicker         m_layout;
+        bool isOpen() const;
         void open(cardrefs_param refs);
-        void close();
+        bool tryClose(ut::vec2 const& mp, CardRef& ref);
 
-        void layout(layout::CardPicker const& cp);
+        bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
+
+        void layout();
         void update(update_param u);
-        void drawAboveCards();
         void drawUnderCards();
+        void drawAboveCards();
         void drawDebug();
 
     private:
-        bool m_open=false;
-        ut::rect r_button_confirm;
-        ut::rect r_button_cancel;
-        ut::rect r_title;
-        ut::rect r_cards;
-        std::string title;
+        bool             m_open=false;
+        cardrefs_t       m_refs;
+        board::BoardRow  m_row_options;
+        board::BoardSlot m_slot_choice;
+
+        void close();
     };
 }

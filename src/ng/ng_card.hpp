@@ -21,6 +21,7 @@ namespace ng
 {
     struct Card;
     using cardlist_t = std::vector<Card>;
+    using cardlist_param = std::vector<Card> const&;
 
     struct NilCard { };
 

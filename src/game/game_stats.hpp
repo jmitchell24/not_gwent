@@ -25,15 +25,15 @@ namespace game
 
         void updateScore(int score);
 
-        void layout (layout::StatsBoard const& layout);
+        void layout (game_layout::StatsBoard const& layout);
         void update (float dt);
-        void drawAboveCards();
-        void drawBg(ut::rect const& r, ut::color const& c);
         void drawUnderCards();
+        void drawAboveCards();
+        //void drawBg(ut::rect const& r, ut::color const& c);
         void drawDebug();
 
     private:
-        layout::StatsBoard  m_layout;
+        game_layout::StatsBoard  m_layout;
         gfx::Spinner        m_spin_gems { gfx::Spinner::VERT, ut::color(134, 106, 68) };
         gfx::Spinner        m_spin_score{ gfx::Spinner::VERT, ut::color(134, 106, 68) };
     };

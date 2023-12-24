@@ -15,25 +15,35 @@
 namespace game
 {
 
+    /*
+     Layers:
+        - under board cards
+        - above board cards
+        - under overlay cards
+        - above overlay cards
+
+     */
 
     struct GameBoard2
     {
-        Player usr, cpu;
+        Player              usr, cpu;
+        CardPicker          card_picker;
+        CardRef             card_hover;
+        board::BoardBoss    boss;
 
-        CardPicker card_picker;
+        game_layout::GameBoard gb;
 
-        CardRef card_hover;
-
-        layout::GameBoard gb;
-
-        board::BoardBoss boss;
 
         GameBoard2();
 
         void layout(ut::rect const& bounds);
         void update(update_param u);
-        void drawAboveCards();
-        void drawUnderCards();
+
+        void drawUnderBoardCards();
+        void drawAboveBoardCards();
+        void drawUnderOverlayCards();
+        void drawAboveOverlayCards();
+
         void drawDebug     ();
         void drawDebugMenu ();
 

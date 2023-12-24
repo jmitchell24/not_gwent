@@ -73,7 +73,12 @@ void ChangeTarget::operator()(TargetNerf const& t)
 
 void ChangeTarget::operator()(TargetMedic const& t)
 {
-    nopath_impl;
+    cardrefs_t refs = params.player.yard.getUnitCards(CARD_LAYER_OVERLAY);
+
+    if (refs.empty())
+        nopath_impl;
+
+    params.card_picker.open(refs);
 }
 
 //
@@ -297,7 +302,13 @@ bool CastTarget::operator()(TargetNerf const& t)
 
 bool CastTarget::operator()(TargetMedic const& t)
 {
-    nopath_impl;
+    check(params.card_picker.isOpen(), "card picker should be open");
+
+    if (CardRef ref; params.card_picker.tryClose(mp, ref))
+    {
+        setTarget(TargetDefault{});
+    }
+
     return false;
 }
 

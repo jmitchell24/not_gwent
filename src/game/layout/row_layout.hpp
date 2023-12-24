@@ -8,7 +8,7 @@
 
 #include <ut/math.hpp>
 
-namespace game::layout
+namespace game
 {
     struct RowLayout
     {

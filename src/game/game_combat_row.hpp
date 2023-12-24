@@ -30,10 +30,10 @@ namespace game
 
         int updateScore();
 
-        void layout(layout::CombatRow const& l);
+        void layout(game_layout::CombatRow const& l);
         void update(float dt);
-        void drawAboveCards();
         void drawUnderCards();
+        void drawAboveCards();
 
         void clearHighlight()
         {

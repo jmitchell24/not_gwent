@@ -23,7 +23,7 @@ void Stats::updateScore(int score)
     m_spin_score.anim(score);
 }
 
-void Stats::layout (layout::StatsBoard const& layout)
+void Stats::layout (game_layout::StatsBoard const& layout)
 {
     m_layout = layout;
     m_spin_gems.layout(layout.gems.anchorCCtoCC(layout.gems.size()/2));
@@ -40,11 +40,11 @@ void Stats::drawAboveCards()
 
 }
 
-void Stats::drawBg(ut::rect const& r, ut::color const& c)
-{
-    gfx::drawShadow(r, {2,2}, 5);
-    gfx::drawRect(r, c);
-}
+//void Stats::drawBg(ut::rect const& r, ut::color const& c)
+//{
+//    gfx::drawShadow(r, {2,2}, 5);
+//    gfx::drawRect(r, c);
+//}
 
 void Stats::drawUnderCards()
 {

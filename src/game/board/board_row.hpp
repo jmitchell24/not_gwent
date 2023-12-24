@@ -9,6 +9,7 @@
 
 #include "game/card_tank.hpp"
 #include "game/layout/row_layout.hpp"
+#include "context.hpp"
 
 namespace game::board
 {
@@ -19,17 +20,13 @@ namespace game::board
     class BoardRow
     {
     public:
-        struct TargetedCard
-        {
-            size_t idx;
-            CardRef ref;
-        };
+        struct TargetedCard { size_t idx; CardRef ref; };
 
         virtual ~BoardRow(){}
 
         inline auto data() const { return m_card_refs.data(); }
-        inline auto begin() const{ return m_card_refs.begin(); }
-        inline auto end() const{ return m_card_refs.end(); }
+        inline auto begin() const { return m_card_refs.begin(); }
+        inline auto end() const { return m_card_refs.end(); }
 
         bool isEmpty() const;
         size_t numCards() const;
@@ -37,9 +34,12 @@ namespace game::board
         bool hasCardAny(cardrefs_param refs) const;
         bool hasCardAll(cardrefs_param refs) const;
 
+
+        size_t tryGetNearestIndex(ut::vec2 const& mp) const;
         bool tryGetHoveredCard(ut::vec2 const &mp, CardRef &ref) const;
         bool tryGetHoveredIndex(ut::vec2 const &mp, size_t &idx) const;
         bool tryGetTargetedCard(ut::vec2 const &mp, TargetedCard &target) const;
+
 
         //
         // single-ref container functions
@@ -60,6 +60,7 @@ namespace game::board
         cardrefs_t giveCardMulti(card_indices_param indices);
         cardrefs_t getCardMulti(card_indices_param indices) const;
         card_indices_t getCardIndices(cardrefs_param refs) const;
+        void clear();
 
         //
         // template container functions
@@ -75,15 +76,15 @@ namespace game::board
             return indices;
         }
 
-        void layout(ut::rect const &b);
-        void update(float dt) { }
+        void layout(ut::rect const& b);
+        void update(update_param) { }
         virtual void drawAboveCards() { }
         virtual void drawUnderCards() { }
         virtual void drawDebug() { }
 
     protected:
         ut::rect            m_bounds;
-        layout::RowLayout   m_layout_row;
+        RowLayout           m_layout_row;
         cardrefs_t          m_card_refs;
 
         virtual void onContainerChanged()
@@ -92,10 +93,6 @@ namespace game::board
         }
 
     private:
-
-
-        //layout::RowLayout   m_layout_row_next;
-
         //
         // helper functions
         //

@@ -84,14 +84,18 @@ children:
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.122000009
-            name: gb.cpu.player.deck
-          - type: BOX_HBOX
-            weight: 0.755999982
+            weight: 0.138500005
+            name: gb.cpu.player.yard
+          - type: BOX_VBOX
+            weight: 0.72299999
             name: gb.cpu.player.hand
           - type: BOX_HBOX
-            weight: 0.122000009
-            name: gb.cpu.player.yard
+            weight: 0.138500005
+            name: gb.cpu.player.deck
+            children:
+              - type: BOX_HBOX
+                children:
+                  - type: BOX_HBOX
       - type: BOX_HBOX
         weight: 0.125
         children:
@@ -210,13 +214,17 @@ children:
         weight: 0.125
         children:
           - type: BOX_HBOX
-            weight: 0.122000009
+            weight: 0.138500005
             name: gb.usr.player.deck
-          - type: BOX_HBOX
-            weight: 0.755999982
+          - type: BOX_VBOX
+            weight: 0.72299999
             name: gb.usr.player.hand
           - type: BOX_HBOX
-            weight: 0.122000009
-            name: gb.usr.player.yard
+            weight: 0.138500005
+            children:
+              - type: BOX_HBOX
+                children:
+                  - type: BOX_HBOX
+                    name: gb.usr.player.yard
   - type: BOX_HBOX
     weight: 0.264500022

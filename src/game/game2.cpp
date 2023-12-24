@@ -214,6 +214,8 @@ void GameBoard2::layout(rect const& bounds)
                gb.cpu.siege,
                gb.cpu.stats);
 
+    card_picker.layout();
+
 
 
     usr.deck.setCards(getNGTestDeck());
@@ -235,8 +237,11 @@ void GameBoard2::layout(rect const& bounds)
     BOX_EDITOR_CARDPICKER.setFile("data/layout/cp.yaml");
 }
 
-bool GameBoard2::tryGetHoveredCard(const ut::vec2 &mp, CardRef &ref)
+bool GameBoard2::tryGetHoveredCard(vec2 const& mp, CardRef& ref)
 {
+    if (card_picker.isOpen())
+        return card_picker.tryGetHoveredCard(mp, ref);
+
     return
         usr.tryGetHoveredCard(mp, ref) ||
         cpu.tryGetHoveredCard(mp, ref);
@@ -244,8 +249,9 @@ bool GameBoard2::tryGetHoveredCard(const ut::vec2 &mp, CardRef &ref)
 
 void GameBoard2::update(update_param u)
 {
-    usr.update(u.frame_time);
-    cpu.update(u.frame_time);
+    usr.update(u);
+    cpu.update(u);
+    boss.update(u);
     card_picker.update(u);
 
     auto mp = u.view_mouse_pos;
@@ -256,8 +262,6 @@ void GameBoard2::update(update_param u)
     if (BOX_EDITOR_GAMEBOARD.wantCaptureMouse())
         return;
     if (BOX_EDITOR_CARDPICKER.wantCaptureMouse())
-        return;
-    if (card_picker.wantCaptureMouse())
         return;
 
     if (CardRef ref; tryGetHoveredCard(mp, ref))
@@ -273,8 +277,8 @@ void GameBoard2::update(update_param u)
         card_hover.reset();
     }
 
-    auto usr_params = CastTargetParams{ usr, cpu, card_picker };
-    auto cpu_params = CastTargetParams{ cpu, usr, card_picker };
+    auto usr_params = CastTargetParams{ usr, cpu, card_picker, boss };
+    auto cpu_params = CastTargetParams{ cpu, usr, card_picker, boss };
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
@@ -317,7 +321,13 @@ void GameBoard2::updateScores(Player& player)
     updatePlayerScore(player);
 }
 
-void GameBoard2::drawAboveCards()
+void GameBoard2::drawUnderBoardCards()
+{
+    usr.drawUnderCards();
+    cpu.drawUnderCards();
+}
+
+void GameBoard2::drawAboveBoardCards()
 {
     usr.drawAboveCards();
     cpu.drawAboveCards();
@@ -329,13 +339,16 @@ void GameBoard2::drawAboveCards()
 
         drawCircle(p, radius, colors::greenyellow.withNormalA(.5));
     }
-
 }
 
-void GameBoard2::drawUnderCards()
+void GameBoard2::drawUnderOverlayCards()
 {
-    usr.drawUnderCards();
-    cpu.drawUnderCards();
+    card_picker.drawUnderCards();
+}
+
+void GameBoard2::drawAboveOverlayCards()
+{
+    card_picker.drawAboveCards();
 }
 
 void GameBoard2::drawDebug()
@@ -450,17 +463,20 @@ void GameBoard2::drawDebug()
 #undef TRY_GET_RECT
     }
 
-#if 0
     if (BOX_EDITOR_CARDPICKER.draw())
     {
-#define TRY_GET_RECT(x_) BOX_EDITOR_CARDPICKER.tryGetBorder(#x_, x_)
-        if (TRY_GET_RECT(card_picker.cp.cards)) {}
-        if (TRY_GET_RECT(card_picker.cp.title)) {}
-        if (TRY_GET_RECT(card_picker.cp.confirm)) {}
-        if (TRY_GET_RECT(card_picker.cp.cancel)) {}
+        bool b = false;
+#define TRY_GET_RECT(x_) BOX_EDITOR_CARDPICKER.tryGetBox(#x_, x_)
+        b |= TRY_GET_RECT(card_picker.m_layout.card_choice);
+        b |= TRY_GET_RECT(card_picker.m_layout.card_options);
+        b |= TRY_GET_RECT(card_picker.m_layout.title);
+        b |= TRY_GET_RECT(card_picker.m_layout.background);
+        b |= TRY_GET_RECT(card_picker.m_layout.confirm);
+        b |= TRY_GET_RECT(card_picker.m_layout.cancel);
 #undef TRY_GET_RECT
+
+        if (b) card_picker.layout();
     }
-#endif
 
     if (Button("Draw"))
         OpenPopup("draw_popup");

@@ -6,7 +6,7 @@
 
 #include "game/layout/board_layout.hpp"
 
-namespace game::layout
+namespace game_layout
 {
 
 

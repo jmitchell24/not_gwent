@@ -7,6 +7,7 @@
 #include "record.hpp"
 
 #include "game/card.hpp"
+#include "context.hpp"
 
 #include <functional>
 
@@ -20,83 +21,111 @@ namespace game
     public:
         static CardTank& instance();
 
-        bool    hasCard     (CardID id) const;
-        Card&   getCard     (CardID id);
+        bool hasCard(CardID id) const;
+        Card& getCard(CardID id);
 
-        Card&   addCard     (Card card);
-        void    removeCard  (CardID id);
-        void    elevateCard (CardID id);
+        //
+        // single-card container functions
+        //
+        Card& addCard(Card card, CardLayer layer = CARD_LAYER_BOARD);
+        void removeCard(CardID id);
+        void elevateCard(CardID id);
 
-        Card&       addTestCard();
-        cardrefs_t  addTestCards(size_t n);
+        //
+        // multi-card container functions
+        //
+        cardrefs_t addCardMulti(cardlist_param cards, CardLayer layer = CARD_LAYER_BOARD);
+        void removeCardMulti(cardrefs_param refs);
 
-        void update(float dt);
-        void draw();
+        Card&       addTestCard(CardLayer layer = CARD_LAYER_BOARD);
+        cardrefs_t  addTestCards(size_t n, CardLayer layer = CARD_LAYER_BOARD);
+
+        void update(update_param u);
+        void draw(CardLayer layer = CARD_LAYER_BOARD);
         void drawDebug();
-
-        template <typename T> void forEachCard(T&& callback)
+#if 0
+        template <typename T> void forEachCard(T&& callback, CardLayer layer = CARD_LAYER_BOARD)
         {
-            for (auto&& it: m_cards)
+            check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
+            for (auto&& it: m_layers[layer].cards)
                 std::invoke(callback, it.ref());
         }
 
-        template <typename T> bool ifAllCards(T&& callback)
+        template <typename T> bool ifAllCards(T&& callback, CardLayer layer = CARD_LAYER_BOARD)
         {
-            for (auto&& it : m_cards)
+            check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
+            for (auto&& it : m_layers[layer].cards)
                 if (!static_cast<bool>(std::invoke(callback, it.ref())))
                     return false;
             return true;
         }
 
-        template <typename T> bool ifAnyCard(T&& callback)
+        template <typename T> bool ifAnyCard(T&& callback, CardLayer layer = CARD_LAYER_BOARD)
         {
-            for (auto&& it : m_cards)
+            check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
+            for (auto&& it : m_layers[layer].cards)
                 if (static_cast<bool>(std::invoke(callback, it.ref())))
                     return true;
             return false;
         }
 
-        template <typename T> bool ifNoCard(T&& callback)
+        template <typename T> bool ifNoCard(T&& callback, CardLayer layer = CARD_LAYER_BOARD)
         {
-            for (auto&& it : m_cards)
+            check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
+            for (auto&& it : m_layers[layer].cards)
                 if (static_cast<bool>(std::invoke(callback, it.ref())))
                     return false;
             return true;
         }
 
-        template <typename T> size_t countIfCard(T&& callback)
+        template <typename T> size_t countIfCard(T&& callback, CardLayer layer = CARD_LAYER_BOARD)
         {
+            check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
             size_t cnt=0;
-            for (auto&& it: m_cards)
+            for (auto&& it: m_layers[layer].cards)
             {
                 if (static_cast<bool>(std::invoke(callback, it.ref())))
                     ++cnt;
             }
             return cnt;
         }
-
+#endif
     private:
-        using cardlist_type = std::vector<Card>;
-        using id_type       = CardID::value_type;
-        using idlist_type   = std::vector<id_type>;
-        using idmap_type    = std::unordered_map<id_type, size_t>;
+        struct Index { size_t layer_idx, card_idx; };
 
-        size_t          m_next_order_value  = 0;
+        struct Layer
+        {
+            using cardlist_type = std::vector<Card>;
+
+            cardlist_type cards;
+            size_t        next_order_value  = 0;
+
+            size_t  nextOrderValue();
+            void    reorderCards();
+            void    normalizeOrderValues();
+        };
+
+        static constexpr size_t NUM_CARD_LAYERS = 2;
+
+        using id_type           = CardID::value_type;
+        using idlist_type       = std::vector<id_type>;
+        using idmap_type        = std::unordered_map<id_type, Index>;
+        using layerlist_type    = std::array<Layer, NUM_CARD_LAYERS>;
+
+
         id_type         m_next_id_value = 1;
 
-        cardlist_type   m_cards;
-        idmap_type      m_map;
+        layerlist_type  m_layers;
+        idmap_type      m_id_map;
         idlist_type     m_old_ids;
 
         CardTank();
 
-        size_t          getIndex(CardID id);
-        bool            tryGetIndex(CardID id, size_t& idx);
-
-        size_t          nextOrderValue();
+        Index           getIndex(CardID id);
+        Card&           getCard(Index idx);
         id_type         nextIdValue();
-        void            rebuildMap();
-        void            reorderCards();
+
+        void            assignIdValues(size_t layer_idx);
     };
 
     static CardTank& TANK = CardTank::instance();

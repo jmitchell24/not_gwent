@@ -8,6 +8,8 @@
 #include "ledit/ledit_flex.hpp"
 #include "ledit/ledit_box_visitor.hpp"
 
+#include "layout/layout_box.hpp"
+
 namespace ledit
 {
     class Box : public std::enable_shared_from_this<Box>
@@ -28,10 +30,10 @@ namespace ledit
         Flex            flex;
         Sizer           sizer;
 
-        BoxRects        rects;
+        layout::LayoutBox lb;
 
-        box_ptr         parent;
-        boxlist_t       child_boxes;
+        box_ptr   parent;
+        boxlist_t child_boxes;
 
 
 

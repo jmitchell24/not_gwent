@@ -13,15 +13,17 @@ namespace game::board
     public:
         inline bool isEmpty() { return !m_card; }
         inline CardRef card() const { return m_card; }
+        inline ut::rect getBounds() const { return m_bounds_card; }
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
 
         void setHighlight();
         void clearHighlight();
 
-        void    takeCard(CardRef ref);
+        void takeCard(CardRef ref);
         CardRef giveCard();
-        void    setCard(ng::Card const& card);
+        void setCard(ng::Card const& card);
+        void clear();
 
         void layout(ut::rect const& b);
 

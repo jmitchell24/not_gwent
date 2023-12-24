@@ -46,7 +46,7 @@ void BoardStack::pushCard(CardRef ref)
 {
     assert(!ref.isNil());
 
-    ref->move2(m_bounds.pos());
+    ref->animBounds(m_bounds);
     TANK.elevateCard(ref.id);
     pushNgCard(ref->ng);
 }
@@ -56,7 +56,7 @@ CardRef BoardStack::popCard()
     Card c;
     c.ng         = popNgCard();
     c.assets     = Card::Assets::fromNgCard(c.ng);
-    c.layout     = layout::CardLayout::fromRect(m_bounds);
+    c.layout     = CardLayout::fromRect(m_bounds);
     return TANK.addCard(c).ref();
 }
 
@@ -74,6 +74,24 @@ ng::Card BoardStack::popNgCard()
     m_card_ngs.pop_back();
     m_spinner.anim(m_card_ngs.size());
     return card;
+}
+
+cardrefs_t BoardStack::getUnitCards(CardLayer layer)
+{
+    cardrefs_t refs;
+    for (auto&& it : m_card_ngs)
+    {
+        if (it.isUnitCard())
+        {
+            Card c;
+            c.ng         = it;
+            c.assets     = Card::Assets::fromNgCard(c.ng);
+            c.layout     = CardLayout::fromRect(m_bounds);
+
+            refs.push_back(TANK.addCard(c, layer).ref());
+        }
+    }
+    return refs;
 }
 
 void BoardStack::setTestCards(size_t n)
@@ -96,7 +114,7 @@ void BoardStack::setCards(ng::cardlist_t cards)
 
 void BoardStack::layout(ut::rect const& b)
 {
-    m_bounds = layout::CardLayout::fromRect(b).getRect();
+    m_bounds = CardLayout::fromRect(b).getRect();
     m_spinner.layout(b.anchorBCtoBC(b.size()/3));
 }
 
@@ -121,10 +139,6 @@ void BoardStack::drawAboveCards()
                                  ut::colors::transparent);
 
     m_spinner.draw();
-
-    DRECT_PUSH2(BoardStack, m_bounds);
-
-    DRECT_POP();
 }
 
 void BoardStack::drawUnderCards()

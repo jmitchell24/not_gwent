@@ -144,16 +144,30 @@ using namespace gfx;
 
 bool Card::update(float dt)
 {
-    if (spring.isAtDst())
+    m_is_animated = false;
+
+    if (!spring_pos.isAtDst())
     {
-        m_is_animated = false;
-        return false;
+        spring_pos.update(dt);
+        layout.setPosition2(spring_pos.now());
+        m_is_animated = true;
     }
 
-    spring.update(dt);
-    layout.setPosition3(spring.now());
-    m_is_animated = true;
-    return true;
+    if (!spring_size.isAtDst())
+    {
+        spring_size.update(dt);
+        layout.setSize(spring_size.now());
+        m_is_animated = true;
+    }
+
+    if (!spring_elevation.isAtDst())
+    {
+        spring_elevation.update(dt);
+        layout.setElevation(spring_elevation.now());
+        m_is_animated = true;
+    }
+
+    return m_is_animated;
 }
 
 void Card::draw()
@@ -208,10 +222,30 @@ void Card::drawDebug()
 
 }
 
-void Card::move2(ut::vec2 const& p)
+void Card::animMove(ut::vec2 const& p)
 {
-    spring.setNow(layout.getPosition3());
-    spring.setDst({p.x, p.y, layout.getElevation()});
+    spring_pos.setNow(layout.getPosition2());
+    spring_pos.setDst(p);
+    m_is_animated = true;
+}
+
+void Card::animResize(vec2 const& p)
+{
+    spring_size.setNow(layout.getSize());
+    spring_size.setDst(p);
+    m_is_animated = true;
+}
+
+void Card::animBounds(rect const& r)
+{
+    animMove(r.pos());
+    animResize(r.size());
+}
+
+void Card::animElevate(float f)
+{
+    spring_elevation.setNow(layout.getElevation());
+    spring_elevation.setDst(f);
     m_is_animated = true;
 }
 

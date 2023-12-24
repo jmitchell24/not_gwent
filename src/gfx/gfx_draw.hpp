@@ -21,6 +21,8 @@
 
 namespace gfx
 {
+
+
 #define CASE(x_) \
         void drawText##x_(rect_ r, text_ s, color_ c); \
         void drawText##x_(rect_ r, flt_ h, text_ s, color_ c); \

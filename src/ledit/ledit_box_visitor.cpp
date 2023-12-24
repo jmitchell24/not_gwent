@@ -16,6 +16,7 @@ using namespace ledit;
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 //
@@ -74,12 +75,26 @@ string BoxVisitor::toCPPString()
     {
         if (auto const& box = it.second)
         {
-            ss << PRINTER("%-30s = rect(%8.3ff, %8.3ff, %8.3ff, %8.3ff);\n",
-                    box->name.c_str(),
-                    box->rects.inner.pack[0],
-                    box->rects.inner.pack[1],
-                    box->rects.inner.pack[2],
-                    box->rects.inner.pack[3]);
+            ss << PRINTER("%-45s = ut::rect(%8.3ff, %8.3ff, %8.3ff, %8.3ff);\n",
+                PRINTER("%s.outer", box->name.c_str()).c_str(),
+                box->lb.outer.pack[0],
+                box->lb.outer.pack[1],
+                box->lb.outer.pack[2],
+                box->lb.outer.pack[3]);
+
+            ss << PRINTER("%-45s = ut::rect(%8.3ff, %8.3ff, %8.3ff, %8.3ff);\n",
+                PRINTER("%s.border", box->name.c_str()).c_str(),
+                box->lb.border.pack[0],
+                box->lb.border.pack[1],
+                box->lb.border.pack[2],
+                box->lb.border.pack[3]);
+
+            ss << PRINTER("%-45s = ut::rect(%8.3ff, %8.3ff, %8.3ff, %8.3ff);\n",
+                PRINTER("%s.inner", box->name.c_str()).c_str(),
+                box->lb.inner.pack[0],
+                box->lb.inner.pack[1],
+                box->lb.inner.pack[2],
+                box->lb.inner.pack[3]);
         }
     }
 

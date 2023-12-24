@@ -14,18 +14,13 @@ using namespace ledit;
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 //
 // std
 //
 using namespace std;
-
-//
-// Helpers
-//
-
-
 
 //
 // Sizer -> Implementation
@@ -286,7 +281,7 @@ rect Sizer::getPos(rect b, vec2 sz) const
     return b.withSize(sz);
 }
 
-void Sizer::getBoxRects(rect const& parent, BoxRects& child) const
+void Sizer::getBoxRects(rect const& parent, layout::LayoutBox& child) const
 {
     auto sz = getDim(parent);
     child.outer  = getPos(parent, sz);

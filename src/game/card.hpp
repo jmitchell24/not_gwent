@@ -35,6 +35,7 @@ namespace game
     class CardTank;
 
     using cardlist_t = std::vector<Card>;
+    using cardlist_param = cardlist_t const&;
 
     struct CardID
     {
@@ -50,6 +51,14 @@ namespace game
         inline constexpr bool operator>  (CardID const& x) const { return *this < x; }
         inline constexpr bool operator<= (CardID const& x) const { return !(*this < x); }
         inline constexpr bool operator>= (CardID const& x) const { return !(x < *this); }
+    };
+
+
+
+    enum CardLayer
+    {
+        CARD_LAYER_BOARD,
+        CARD_LAYER_OVERLAY
     };
 
     struct CardRef
@@ -101,9 +110,12 @@ namespace game
             static Assets fromNgCard(ng::Card const& ng);
         };
 
-        layout::CardLayout  layout;
+        CardLayout          layout;
         Assets              assets;
-        gfx::SpringVec3     spring{0.25f, 6.0f * PI};
+
+        gfx::SpringVec2     spring_pos          {0.25f, 6.0f * PI};
+        gfx::SpringVec2     spring_size         {0.25f, 6.0f * PI};
+        gfx::SpringReal     spring_elevation    {0.25f, 6.0f * PI};
 
         ng::Card            ng;
 
@@ -111,23 +123,26 @@ namespace game
         inline bool isMoving() const { return m_is_animated; }
         inline bool isNotMoving() const { return !m_is_animated; }
 
-        inline CardID   id      () const { return m_id; }
-        inline CardRef  ref     () const { return CardRef{m_id}; }
-        inline size_t   order   () const { return m_order; }
+        inline CardID       id   () const { return m_id; }
+        inline CardRef      ref  () const { return CardRef{m_id}; }
+        inline size_t       order() const { return m_order; }
 
         inline ut::rect  getDrawRect () const { return layout.getRect().anchorCCtoCC_W(layout.m_w * layout.m_z); }
         inline ut::color getDrawColor() const { return assets.color; }
 
-        void move2(ut::vec2 const& p);
+        void animMove       (ut::vec2 const& p);
+        void animResize     (ut::vec2 const& p);
+        void animBounds     (ut::rect const& r);
+        void animElevate    (float f);
 
         bool update(float dt);
         void draw();
         void drawDebug();
 
     private:
-        CardID  m_id{};
-        size_t  m_order=0;
-        bool    m_is_animated=false;
+        CardID      m_id{};
+        size_t      m_order=0;
+        bool        m_is_animated=false;
     };
 
 

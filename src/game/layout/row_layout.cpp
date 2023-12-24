@@ -3,7 +3,7 @@
 //
 
 #include "game/layout/row_layout.hpp"
-using namespace game::layout;
+using namespace game;
 
 #include "assert.hpp"
 

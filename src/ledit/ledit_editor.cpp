@@ -6,10 +6,9 @@
 using namespace ledit;
 
 //
-// Gfx
+// layout
 //
-//#include "gfx/gfx_virt2d.hpp"
-//using namespace gfx;
+using namespace layout;
 
 //
 // ImGui
@@ -49,14 +48,14 @@ void BoxEditor::setFile(ut::cstrparam file)
     loadFile(file);
 }
 
-bool BoxEditor::tryGetRects(ut::cstrparam name, BoxRects& rects)
+bool BoxEditor::tryGetBox(cstrparam name, layout::LayoutBox& lb)
 {
     if (auto box = getBoxSlot(name))
     {
         if (box->wantBind())
         {
             box->clearWantBind();
-            rects = box->rects;
+            lb = box->lb;
             return true;
         }
     }
@@ -70,7 +69,7 @@ bool BoxEditor::tryGetOuter(cstrparam name, rect& outer)
         if (box->wantBind())
         {
             box->clearWantBind();
-            outer = box->rects.outer;
+            outer = box->lb.outer;
             return true;
         }
     }
@@ -84,7 +83,7 @@ bool BoxEditor::tryGetBorder(cstrparam name, rect& border)
         if (box->wantBind())
         {
             box->clearWantBind();
-            border = box->rects.border;
+            border = box->lb.border;
             return true;
         }
     }
@@ -98,7 +97,7 @@ bool BoxEditor::tryGetInner(cstrparam name, rect& inner)
         if (box->wantBind())
         {
             box->clearWantBind();
-            inner = box->rects.inner;
+            inner = box->lb.inner;
             return true;
         }
     }
@@ -368,6 +367,10 @@ void BoxEditor::drawMainWindowFileOptions()
         if (ButtonConfirm("Revert"))
         {
             root_box = m_root_box_revert->deepCopy(nullptr);
+            setSelectedBoxSingle(root_box);
+            resetAllSlots();
+            setBoxSlotAll(root_box);
+
             want_persist = false;
         }
     }
@@ -457,8 +460,16 @@ void BoxEditor::drawMainWindowBindOptions()
     }
 
     SameLine();
+
     if (auto num_empty_slots = getEmptySlotCount(); num_empty_slots == 0)
     {
+        if (Button("Preview"))
+        {
+            OpenPopup("cpp_code_preview");
+        }
+
+        SameLine();
+
         if (Button("to Console"))
         {
             auto s = BoxVisitor::toCPPString();
@@ -485,6 +496,11 @@ void BoxEditor::drawMainWindowBindOptions()
         PushStyleColor(ImGuiCol_Text, colors::red);
         Text("%zu unassigned binds", num_empty_slots);
         PopStyleColor();
+    }
+
+    if (BeginPopup("cpp_code_preview"))
+    {
+        EndPopup();
     }
 }
 

@@ -19,6 +19,7 @@ namespace game
     public:
         board::BoardStack  deck{board::BoardStack::DECK};
         board::BoardStack  yard{board::BoardStack::YARD};
+        board::BoardSlot   cast;
         board::BoardSlot   lead;
         board::BoardHand   hand;
 
@@ -31,11 +32,11 @@ namespace game
         Target target = TargetDefault{};
 
         void layout(
-                layout::PlayerRow const& row_player,
-                layout::CombatRow const& row_melee,
-                layout::CombatRow const& row_ranged,
-                layout::CombatRow const& row_siege,
-                layout::StatsBoard const& player_stats);
+                game_layout::PlayerRow const& row_player,
+                game_layout::CombatRow const& row_melee,
+                game_layout::CombatRow const& row_ranged,
+                game_layout::CombatRow const& row_siege,
+                game_layout::StatsBoard const& player_stats);
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
 
@@ -55,9 +56,9 @@ namespace game
         inline void cancelCast(CastTargetParams p)
         { changeTarget(p, TargetDefault{}); }
 
-        void update(float dt);
-        void drawAboveCards();
+        void update(update_param u);
         void drawUnderCards();
+        void drawAboveCards();
         void drawDebug();
     };
 

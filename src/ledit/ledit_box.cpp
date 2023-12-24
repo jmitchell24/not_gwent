@@ -17,6 +17,7 @@ using namespace ledit;
 // ut
 //
 #include <ut/algo.hpp>
+#include <ut/check.hpp>
 using namespace ut;
 
 //
@@ -171,7 +172,7 @@ box_ptr Box::deepCopy(box_ptr const& p)
     box->flex           = flex;
     box->sizer          = sizer;
     box->weight         = weight;
-    box->rects          = rects;
+    box->lb             = lb;
 
     box->m_child_action = m_child_action;
     box->m_want_bind = m_want_bind;
@@ -210,7 +211,7 @@ box_ptr Box::tryGetBox(vec2 const& mp)
             return box;
     }
 
-    if (auto r = rects.border; r.contains(mp))
+    if (auto r = lb.border; r.contains(mp))
         return ptr();
     return nullptr;
 }
@@ -301,13 +302,13 @@ void Box::drawProperties()
 
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("Outer", "%s", to_string(rects.outer.cast<int>().psize()).c_str());
+    LabelText("Outer", "%s", to_string(lb.outer.cast<int>().psize()).c_str());
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("Border", "%s", to_string(rects.border.cast<int>().psize()).c_str());
+    LabelText("Border", "%s", to_string(lb.border.cast<int>().psize()).c_str());
     ButtonEnabled(" ", false);
     SameLine();
-    LabelText("Inner", "%s", to_string(rects.inner.cast<int>().psize()).c_str());
+    LabelText("Inner", "%s", to_string(lb.inner.cast<int>().psize()).c_str());
 
     ButtonEnabled(" ", false);
     SameLine();
@@ -580,9 +581,9 @@ void Box::drawOverlaySingleSelectedBelow()
     using namespace ImGui;
     auto& v = BoxVisitor::currentInstance();
 
-    auto o = v.getRealRect(rects.outer);
-    auto b = v.getRealRect(rects.border);
-    auto i = v.getRealRect(rects.inner);
+    auto o = v.getRealRect(lb.outer);
+    auto b = v.getRealRect(lb.border);
+    auto i = v.getRealRect(lb.inner);
 
     drawOverlayFrame(o, b, m_color.withNormalA(.25f));
     drawOverlayFrame(b, i, m_color.withNormalA(.50f));
@@ -593,7 +594,7 @@ void Box::drawOverlaySingleSelectedAbove()
     using namespace ImGui;
     auto& v = BoxVisitor::currentInstance();
 
-    auto o = v.getRealRect(rects.border);
+    auto o = v.getRealRect(lb.border);
     auto c = m_color;
     drawOverlayOutline(o, c, 3.0f);
 
@@ -612,7 +613,7 @@ void Box::drawOverlayOutlines()
     {
         bool is_multi = v.isBoxSelectedMulti(ptr());
 
-        auto o = v.getRealRect(rects.border);
+        auto o = v.getRealRect(lb.border);
         auto c = is_multi ? overlay_opts.style().border.opaque() : overlay_opts.style().border;
         auto t = is_multi ? 3.0f : 1.0f;
 
@@ -663,7 +664,7 @@ bool Box::loadYaml(cstrparam filename)
             fromYaml(YAML::Load(text), ptr());
             //normalizeWeights();
             if (parent)
-                calcLayout(parent->rects.inner);
+                calcLayout(parent->lb.inner);
             else
                 calcLayout(rect{});
             return true;
@@ -708,7 +709,7 @@ bool Box::saveYaml(cstrparam filename)
 
 void Box::calcLayout(rect const& p)
 {
-    sizer.getBoxRects(p, rects);
+    sizer.getBoxRects(p, lb);
 
     if (child_boxes.empty())
         return;
@@ -716,13 +717,13 @@ void Box::calcLayout(rect const& p)
     switch (flex.type)
     {
         case BOX_VBOX:
-            calcLayoutVbox(rects.inner);
+            calcLayoutVbox(lb.inner);
             break;
         case BOX_HBOX:
-            calcLayoutHbox(rects.inner);
+            calcLayoutHbox(lb.inner);
             break;
         case BOX_SBOX:
-            calcLayoutSbox(rects.inner);
+            calcLayoutSbox(lb.inner);
             break;
         default:
             nopath_case(BoxType);
@@ -1061,7 +1062,7 @@ void Box::drawOverlay()
     v.root_box->calcLayout(rect{});
 
     {
-        auto rr = v.getRealRect(v.root_box->rects.outer).round();
+        auto rr = v.getRealRect(v.root_box->lb.outer).round();
         auto dl = GetBackgroundDrawList();
         auto bg = ToU32(overlay_opts.style().background);
 

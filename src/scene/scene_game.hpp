@@ -12,6 +12,11 @@
 //
 #include "game/game2.hpp"
 
+//
+// ImGui
+//
+#include "rlImGui/imgui/imgui_mods.hpp"
+
 class SceneGameBoard2Test : public Scene
 {
 public:
@@ -28,18 +33,35 @@ public:
     void update(update_param u) override
     {
         m_gb.update(u);
-        game::TANK.update(u.frame_time);
+        game::TANK.update(u);
     }
+
+    bool draw_board=true;
+    bool draw_overlay=true;
 
     void draw() override
     {
-        m_gb.drawUnderCards();
-        game::TANK.draw();
-        m_gb.drawAboveCards();
+        m_gb.drawUnderBoardCards();
+
+        if (draw_board)
+            game::TANK.draw(game::CARD_LAYER_BOARD);
+
+        m_gb.drawAboveBoardCards();
+        m_gb.drawUnderOverlayCards();
+
+        if (draw_overlay)
+            game::TANK.draw(game::CARD_LAYER_OVERLAY);
+
+        m_gb.drawAboveOverlayCards();
     }
 
     void drawDebug() override
     {
+        using namespace ImGui;
+
+        if (ButtonSelected("Layer Board", draw_board)) { draw_board = !draw_board; }
+        if (ButtonSelected("Layer Overlay", draw_overlay)) { draw_overlay = !draw_overlay; }
+
         m_gb.drawDebug();
         game::TANK.drawDebug();
     }

@@ -1,31 +1,43 @@
 type: BOX_HBOX
 weight: -6.17004364e-12
+name: card_picker.m_layout.background
+pad: {pad2: [90, 30]}
 dim: {units: [1280, 720]}
 pos: {units: [0, 0]}
 children:
-  - type: BOX_HBOX
-    weight: 0.213000014
   - type: BOX_VBOX
-    inner_pad: 40
-    weight: 0.574000001
+    inner_pad: 0
     children:
       - type: BOX_HBOX
-        weight: 0.370000005
-        name: card_picker.cp.title
-        mrg: {pad1: 60}
+        weight: 0.25
+        name: card_picker.m_layout.title
+        mrg: {pad2: [100, 20]}
+        pad: {pad1: 15}
       - type: BOX_HBOX
-        weight: 0.25999999
-        name: card_picker.cp.cards
+        weight: 0.25
+        name: card_picker.m_layout.card_choice
+        mrg: {pad2: [0, 0]}
+        pad: {pad1: 10}
+        dim: {aspect: 1}
+        pos: {anchor: ANCHOR_CC}
       - type: BOX_HBOX
-        weight: 0.370000005
-        mrg: {pad1: 60}
+        weight: 0.25
+        name: card_picker.m_layout.cards
+        children:
+          - type: BOX_HBOX
+            name: card_picker.m_layout.card_options
+      - type: BOX_HBOX
+        inner_pad: 70
+        weight: 0.25
+        mrg: {pad2: [100, 0]}
         pad: {pad1: 20}
+        pos: {anchor: ANCHOR_TC}
         children:
           - type: BOX_HBOX
             weight: 0.5
-            name: card_picker.cp.confirm
+            name: card_picker.m_layout.confirm
+            pad: {pad1: 15}
           - type: BOX_HBOX
             weight: 0.5
-            name: card_picker.cp.cancel
-  - type: BOX_HBOX
-    weight: 0.213000014
+            name: card_picker.m_layout.cancel
+            pad: {pad1: 15}

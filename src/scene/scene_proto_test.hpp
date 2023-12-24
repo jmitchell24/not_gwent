@@ -17,8 +17,8 @@ public:
     ledit::BoxEditor editor{"graphics"};
 
     ut::rect bounds;
-    game::layout::GameBoard gb;
-    game::layout::GraphicsLayout gl;
+    game_layout::GameBoard gb;
+    game_layout::GraphicsLayout gl;
 
     [[nodiscard]] ut::cstrview name() const override
     {
@@ -66,7 +66,7 @@ public:
         draw(gl.usr_siege_buttons);
     }
 
-    void draw(game::layout::GraphicsLayout::Buttons const& b)
+    void draw(game_layout::GraphicsLayout::Buttons const& b)
     {
         using namespace gfx;
 

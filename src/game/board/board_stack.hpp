@@ -20,18 +20,19 @@ namespace game::board
 
         BoardStack(Type type);
 
-        inline Type type    () const { return m_type; }
-        inline bool isDeck  () const { return m_type == DECK; }
-        inline bool isYard  () const { return m_type == YARD; }
+        inline Type type() const { return m_type; }
+        inline bool isDeck() const { return m_type == DECK; }
+        inline bool isYard() const { return m_type == YARD; }
 
-        inline bool   empty () const { return m_card_ngs.empty(); }
-        inline size_t count () const { return m_card_ngs.size(); }
+        inline bool empty() const { return m_card_ngs.empty(); }
+        inline size_t count() const { return m_card_ngs.size(); }
 
         void pushCard(CardRef ref);
         CardRef popCard();
 
         ng::Card popNgCard();
         void pushNgCard(ng::Card const& card);
+        cardrefs_t getUnitCards(CardLayer layer);
 
         void setTestCards(size_t n);
         void clearTestCards() { setTestCards(0); }
@@ -41,9 +42,11 @@ namespace game::board
         void layout(ut::rect const& b);
         void update(float dt);
 
-        void drawAboveCards();
         void drawUnderCards();
-        void drawDebug     ();
+        void drawAboveCards();
+        void drawDebug();
+
+
 
     private:
         Type            m_type;

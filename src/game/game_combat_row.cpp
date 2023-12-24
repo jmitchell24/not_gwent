@@ -50,7 +50,7 @@ int CombatRow::updateScore()
     return total_strength;
 }
 
-void CombatRow::layout(layout::CombatRow const& l)
+void CombatRow::layout(game_layout::CombatRow const& l)
 {
     //cmdr_horn.layout(l.buff);
     //weather.layout(l.nerf);

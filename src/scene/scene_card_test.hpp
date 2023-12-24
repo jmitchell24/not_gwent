@@ -34,7 +34,7 @@ public:
     void layout() override
     {
         auto b = Context::VIEW_RECT;
-        card.layout = game::layout::CardLayout::fromRect(b.anchorCCtoCC(b.size() * .8));
+        card.layout = game::CardLayout::fromRect(b.anchorCCtoCC(b.size() * .8));
         card.ng     = ng::cards::neutral_avallach;
         card.assets = game::Card::Assets::fromNgCard(card.ng);
 

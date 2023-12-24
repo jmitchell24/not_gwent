@@ -12,6 +12,7 @@ using namespace gfx;
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 bool BoardSlot::tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref)
@@ -30,7 +31,7 @@ void BoardSlot::takeCard(CardRef ref)
     assert(ref.inTank());
 
     m_card = ref;
-    m_card->move2(m_bounds_card.pos());
+    m_card->animBounds(m_bounds_card);
 }
 
 void BoardSlot::setCard(ng::Card const& ng)
@@ -38,9 +39,14 @@ void BoardSlot::setCard(ng::Card const& ng)
     Card c;
     c.ng         = ng;
     c.assets     = Card::Assets::fromNgCard(c.ng);
-    c.layout     = layout::CardLayout::fromRect(m_bounds_card);
+    c.layout     = CardLayout::fromRect(m_bounds_card);
 
     m_card = TANK.addCard(c).ref();
+}
+
+void BoardSlot::clear()
+{
+    m_card.reset();
 }
 
 void BoardSlot::setHighlight()
@@ -64,7 +70,12 @@ CardRef BoardSlot::giveCard()
 void BoardSlot::layout(rect const& b)
 {
     m_bounds = b;
-    m_bounds_card = layout::CardLayout::rectFromRect(m_bounds);
+    m_bounds_card = CardLayout::rectFromRect(m_bounds);
+
+    if (!m_card.isNil())
+    {
+        m_card->animBounds(m_bounds_card);
+    }
 }
 
 void BoardSlot::drawAboveCards()

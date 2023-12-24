@@ -5,9 +5,12 @@
 #include "gfx/gfx_draw.hpp"
 using namespace gfx;
 
+
+
 //
 // ut
 //
+#include <ut/check.hpp>
 using namespace ut;
 
 #define flt_        float
@@ -16,11 +19,9 @@ using namespace ut;
 #define color_      ut::color const&
 #define text_       ut::cstrparam
 
-
 #define CASE(x_) \
 void ::gfx::drawText##x_(rect_ r, flt_ h, text_ s, color_ c)  \
 { \
-    assert(h > 0); \
     auto r_text = r.anchor##x_(float(MeasureText(s.c_str(), int(h))),h); \
     DrawText(s.c_str(), r_text.min.x, r_text.min.y, h, torl(c)); \
 } \
@@ -28,7 +29,6 @@ void ::gfx::drawText##x_(rect_ r, text_ s, color_ c)  \
 { ::gfx::drawText##x_(r, r.height(), s, c); } \
 void ::gfx::drawText##x_(Font font, rect_ r, flt_ h, text_ s, color_ c)  \
 { \
-    assert(h > 0); \
     auto r_text = r.anchor##x_(tout(MeasureTextEx(font, s.c_str(), h, 2))); \
     DrawTextEx(font, s.c_str(), Vector2{r_text.min.x, r_text.min.y}, h, 2, torl(c)); \
 } \
@@ -37,9 +37,6 @@ void ::gfx::drawText##x_(Font font, rect_ r, text_ s, color_ c)  \
 
 UT_ENUM_RECT_ALIGNMENTS
 #undef CASE
-
-
-
 
 void ::gfx::drawCircle(vec2_ center, flt_ radius, color_ color)
 {

@@ -50,7 +50,7 @@ bool BoardRow::hasCard(CardRef ref) const
 
 bool BoardRow::hasCardAny(cardrefs_param refs) const
 {
-    for (auto &&it: refs)
+    for (auto&& it: refs)
         if (hasCard(it))
             return true;
     return false;
@@ -63,6 +63,8 @@ bool BoardRow::hasCardAll(cardrefs_param refs) const
             return false;
     return true;
 }
+
+
 
 bool BoardRow::tryGetHoveredCard(vec2 const &mp, CardRef &ref) const
 {
@@ -135,8 +137,8 @@ CardRef BoardRow::getCard(size_t idx) const
 void BoardRow::addCardMulti(size_t idx, cardrefs_param refs)
 {
     check(idx <= m_card_refs.size(), "invalid card index");
-    check(hasCardAny(refs), "card already in row");
-    check(isNilAny(refs), "nil card");
+    check(!hasCardAny(refs), "card already in row");
+    check(!isNilAny(refs), "nil card");
 
     m_card_refs.insert(m_card_refs.begin()+ssize_t(idx), refs.begin(), refs.end());
     onContainerChanged();
@@ -211,7 +213,10 @@ card_indices_t BoardRow::getCardIndices(cardrefs_param refs) const
     return indices;
 }
 
-
+void BoardRow::clear()
+{
+    m_card_refs.clear();
+}
 
 void BoardRow::layout(ut::rect const& b)
 {
@@ -227,11 +232,28 @@ ssize_t BoardRow::getIdx(CardRef ref) const
     return -1;
 }
 
+size_t BoardRow::tryGetNearestIndex(vec2 const& mp) const
+{
+    size_t index=0;
+    float distance = FLT_MAX;
+
+    for (size_t i = 0; i < m_layout_row.card_count; ++i)
+    {
+        if (float d = m_layout_row.getRect(i).center().distance(mp); d < distance)
+        {
+            distance = d;
+            index = i;
+        }
+    }
+
+    return index;
+}
+
 void BoardRow::rebuildLayout()
 {
-    m_layout_row = layout::RowLayout::create(
+    m_layout_row = RowLayout::create(
             m_bounds,
-            layout::CardLayout::widthFromHeight(m_bounds.height()),
+            CardLayout::widthFromHeight(m_bounds.height()),
             m_card_refs.size());
 
 //    m_layout_row_next = layout::RowLayout::create(
@@ -241,7 +263,7 @@ void BoardRow::rebuildLayout()
 
     for (size_t i = 0; i < m_card_refs.size(); ++i)
     {
-        m_card_refs[i]->move2(m_layout_row.getPos(i));
+        m_card_refs[i]->animBounds(m_layout_row.getRect(i));
     }
 }
 

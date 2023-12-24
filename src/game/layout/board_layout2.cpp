@@ -4,7 +4,7 @@
 
 #include "game/layout/board_layout2.hpp"
 #include "game/layout/card_layout.hpp"
-using namespace game::layout;
+using namespace game_layout;
 
 
 

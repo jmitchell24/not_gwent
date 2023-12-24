@@ -84,7 +84,7 @@ void BoardBoss::rowSwapRow(BoardRow& row_a, BoardRow& row_b, size_t idx_a, size_
     TANK.elevateCard(ref_b.id);
 }
 
-void BoardBoss::update(float dt)
+void BoardBoss::update(update_param)
 {
     cardrefs_t tmp;
     tmp.reserve(m_terminal_cards.size());

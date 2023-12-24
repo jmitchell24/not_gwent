@@ -23,7 +23,7 @@ namespace game::board
 
 
 
-        void update(float dt);
+        void update(update_param u);
 
     private:
         cardrefs_t m_terminal_cards;

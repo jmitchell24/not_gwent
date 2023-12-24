@@ -95,9 +95,10 @@ namespace game
 
     struct CastTargetParams
     {
-        Player&         player;
-        Player&         opponent;
-        CardPicker&     card_picker;
+        Player&             player;
+        Player&             opponent;
+        CardPicker&         card_picker;
+        board::BoardBoss&   boss;
     };
 }
 

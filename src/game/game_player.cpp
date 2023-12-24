@@ -17,11 +17,11 @@ using namespace ut;
 //
 
 void Player::layout(
-        layout::PlayerRow const& row_player,
-        layout::CombatRow const& row_melee,
-        layout::CombatRow const& row_ranged,
-        layout::CombatRow const& row_siege,
-        layout::StatsBoard const& player_stats)
+        game_layout::PlayerRow const& row_player,
+        game_layout::CombatRow const& row_melee,
+        game_layout::CombatRow const& row_ranged,
+        game_layout::CombatRow const& row_siege,
+        game_layout::StatsBoard const& player_stats)
 {
     deck.layout(row_player.deck);
     yard.layout(row_player.yard);
@@ -34,7 +34,7 @@ void Player::layout(
     siege .layout(row_siege);
 }
 
-bool Player::tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref)
+bool Player::tryGetHoveredCard(vec2 const& mp, CardRef& ref)
 {
     return
         hand  .tryGetHoveredCard(mp, ref) ||
@@ -55,11 +55,12 @@ bool Player::tryCast(CastTargetParams p, Cast& cast, vec2 const& mp)
     return std::visit(visitors::CastTarget{p, cast, mp}, target);
 }
 
-void Player::update(float dt)
+void Player::update(update_param u)
 {
+    float dt = u.frame_time;
     deck.update(dt);
     yard.update(dt);
-    hand.update(dt);
+    hand.update(u);
     stats.update(dt);
 
     melee.update(dt);
@@ -69,26 +70,26 @@ void Player::update(float dt)
 
 void Player::drawAboveCards()
 {
-    deck.drawAboveCards();
-    yard.drawAboveCards();
-    hand.drawAboveCards();
+    deck .drawAboveCards();
+    yard .drawAboveCards();
+    hand .drawAboveCards();
     stats.drawAboveCards();
 
-    melee.drawAboveCards();
+    melee .drawAboveCards();
     ranged.drawAboveCards();
-    siege.drawAboveCards();
+    siege .drawAboveCards();
 }
 
 void Player::drawUnderCards()
 {
-    deck.drawUnderCards();
-    yard.drawUnderCards();
-    hand.drawUnderCards();
+    deck .drawUnderCards();
+    yard .drawUnderCards();
+    hand .drawUnderCards();
     stats.drawUnderCards();
 
-    melee.drawUnderCards();
+    melee .drawUnderCards();
     ranged.drawUnderCards();
-    siege.drawUnderCards();
+    siege .drawUnderCards();
 }
 
 void Player::drawDebug()
