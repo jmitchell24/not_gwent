@@ -71,16 +71,6 @@ void ChangeTarget::operator()(TargetNerf const& t)
     if (t.target_siege) params.player.siege.units.setHighlight();
 }
 
-void ChangeTarget::operator()(TargetMedic const& t)
-{
-    cardrefs_t refs = params.player.yard.getUnitCards(CARD_LAYER_OVERLAY);
-
-    if (refs.empty())
-        nopath_impl;
-
-    params.card_picker.open(refs);
-}
-
 //
 // CastTarget
 //
@@ -146,10 +136,10 @@ bool CastTarget::operator()(TargetDefault const& t)
 
             case ng::CARD_UNIT:
             {
-                auto unit = tc.ref->ng.asUnitCard();
-                auto is_spy = unit.ability == ng::ABILITY_SPY;
-                auto is_decoy = unit.ability == ng::ABILITY_DECOY;
-                auto is_medic = unit.ability == ng::ABILITY_MEDIC;
+                auto unit       = tc.ref->ng.asUnitCard();
+                auto is_spy     = unit.ability == ng::ABILITY_SPY;
+                auto is_decoy   = unit.ability == ng::ABILITY_DECOY;
+                auto is_medic   = unit.ability == ng::ABILITY_MEDIC;
 
                 switch (unit.ability)
                 {
@@ -189,36 +179,18 @@ bool CastTarget::operator()(TargetCastUnit const& t)
 
     if (t.target_melee && params.player.melee.units.isTargeted(mp))
     {
-        if (t.is_medic)
-        {
-            setTarget(TargetMedic{t.hand_idx});
-            return false;
-        }
-
         setCast(CastUnit { CastUnit::MELEE, t.hand_idx });
         return true;
     }
 
     if (t.target_ranged && params.player.ranged.units.isTargeted(mp))
     {
-        if (t.is_medic)
-        {
-            setTarget(TargetMedic{t.hand_idx});
-            return false;
-        }
-
         setCast(CastUnit { CastUnit::RANGED, t.hand_idx });
         return true;
     }
 
     if (t.target_siege && params.player.siege.units.isTargeted(mp))
     {
-        if (t.is_medic)
-        {
-            setTarget(TargetMedic{t.hand_idx});
-            return false;
-        }
-
         setCast(CastUnit { CastUnit::SIEGE, t.hand_idx });
         return true;
     }
@@ -297,18 +269,6 @@ bool CastTarget::operator()(TargetNerf const& t)
         setCast(CastRowNerf{t.target_melee, t.target_ranged, t.target_siege, t.has_nerf_value, t.hand_idx});
         return true;
     }
-    return false;
-}
-
-bool CastTarget::operator()(TargetMedic const& t)
-{
-    check(params.card_picker.isOpen(), "card picker should be open");
-
-    if (CardRef ref; params.card_picker.tryClose(mp, ref))
-    {
-        setTarget(TargetDefault{});
-    }
-
     return false;
 }
 

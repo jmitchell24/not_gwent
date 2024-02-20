@@ -24,9 +24,9 @@ namespace game::board
 
         virtual ~BoardRow(){}
 
-        inline auto data() const { return m_card_refs.data(); }
+        inline auto data () const { return m_card_refs.data(); }
         inline auto begin() const { return m_card_refs.begin(); }
-        inline auto end() const { return m_card_refs.end(); }
+        inline auto end  () const { return m_card_refs.end(); }
 
         bool isEmpty() const;
         size_t numCards() const;

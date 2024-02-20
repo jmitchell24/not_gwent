@@ -9,6 +9,7 @@
 #include "game/board/board_boss.hpp"
 #include "game/game_card_picker.hpp"
 #include "game/game_player.hpp"
+#include "game/game_move.hpp"
 #include "game/game_io.hpp"
 
 

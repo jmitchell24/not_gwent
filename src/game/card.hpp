@@ -26,6 +26,14 @@
 //
 #include <ut/color.hpp>
 
+#define EXPAND_CARD_LAYER(CASE) \
+    CASE(CARD_LAYER_BOARD) \
+    CASE(CARD_LAYER_OVERLAY)
+
+#define CASE_ENUM(x_) x_,
+#define CASE_ENUM_TO_STRING(x_) case x_: return #x_##_sv;
+#define CASE_STRING_TO_ENUM(x_) if (s == #x_##_sv) { x = x_; return true; }
+
 namespace game
 {
     struct CardID;
@@ -55,11 +63,20 @@ namespace game
 
 
 
-    enum CardLayer
+    enum CardLayer { EXPAND_CARD_LAYER(CASE_ENUM) };
+
+    inline static ut::cstrview card_layer_to_string(CardLayer x)
     {
-        CARD_LAYER_BOARD,
-        CARD_LAYER_OVERLAY
-    };
+        using namespace ut;
+        switch (x) { EXPAND_CARD_LAYER(CASE_ENUM_TO_STRING) };
+        return ""_sv;
+    }
+
+    inline static bool string_to_card_layer(ut::cstrparam s, CardLayer& x)
+    {
+        using namespace ut;
+        EXPAND_CARD_LAYER(CASE_STRING_TO_ENUM)
+    }
 
     struct CardRef
     {

@@ -33,8 +33,8 @@ namespace game
         void drawDebug();
 
     private:
-        game_layout::StatsBoard  m_layout;
-        gfx::Spinner        m_spin_gems { gfx::Spinner::VERT, ut::color(134, 106, 68) };
-        gfx::Spinner        m_spin_score{ gfx::Spinner::VERT, ut::color(134, 106, 68) };
+        game_layout::StatsBoard     m_layout;
+        gfx::Spinner                m_spin_gems     { gfx::Spinner::VERT, ut::color(134, 106, 68) };
+        gfx::Spinner                m_spin_score    { gfx::Spinner::VERT, ut::color(134, 106, 68) };
     };
 }

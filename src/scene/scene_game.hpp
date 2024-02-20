@@ -44,7 +44,9 @@ public:
         m_gb.drawUnderBoardCards();
 
         if (draw_board)
+        {
             game::TANK.draw(game::CARD_LAYER_BOARD);
+        }
 
         m_gb.drawAboveBoardCards();
         m_gb.drawUnderOverlayCards();

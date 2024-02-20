@@ -44,6 +44,39 @@ bool Player::tryGetHoveredCard(vec2 const& mp, CardRef& ref)
         lead  .tryGetHoveredCard(mp, ref);
 }
 
+//board::BoardStack& Player::getStack(StackType x)
+//{
+//    switch (x)
+//    {
+//        case STACK_DECK: return deck;
+//        case STACK_YARD: return yard;
+//        default:nopath_case(StackType);
+//    }
+//
+//    nopath_impl;
+//}
+//
+//board::BoardRow& Player::getRow(RowType x)
+//{
+//    switch (x)
+//    {
+//        case ROW_MELEE: return melee.units;
+//        case ROW_RANGED: return ranged.units;
+//        case ROW_SIEGE: return siege.units;
+//        default: nopath_case(RowType);
+//    }
+//    nopath_impl;
+//}
+//
+//board::BoardSlot& Player::getSlot(SlotType x)
+//{
+//    switch (x)
+//    {
+//
+//    }
+//    nopath_impl;
+//}
+
 void Player::changeTarget(CastTargetParams& p, Target t)
 {
     target = t;
@@ -53,6 +86,23 @@ void Player::changeTarget(CastTargetParams& p, Target t)
 bool Player::tryCast(CastTargetParams p, Cast& cast, vec2 const& mp)
 {
     return std::visit(visitors::CastTarget{p, cast, mp}, target);
+}
+
+void Player::cancelCast(CastTargetParams p)
+{
+    changeTarget(p, TargetDefault{});
+
+//    if (moveto_uncast.index() != 0)
+//    {
+//        auto& uc = std::get<MoveToBoardRow>(moveto_uncast);
+//
+//        hand_cast.removeCard(uc.idx);
+//        hand.addCard(0, uc.ref);
+//        hand_cast.clearCardHighlight();
+//        moveto_uncast = MoveToBoardRow { ROW_HAND, uc.idx, uc.ref };
+//        TANK.moveCard(uc.ref.id, CARD_LAYER_BOARD);
+//    }
+
 }
 
 void Player::update(update_param u)

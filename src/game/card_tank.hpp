@@ -30,6 +30,7 @@ namespace game
         Card& addCard(Card card, CardLayer layer = CARD_LAYER_BOARD);
         void removeCard(CardID id);
         void elevateCard(CardID id);
+        void moveCard(CardID id, CardLayer layer);
 
         //
         // multi-card container functions
@@ -105,7 +106,7 @@ namespace game
             void    normalizeOrderValues();
         };
 
-        static constexpr size_t NUM_CARD_LAYERS = 2;
+        static constexpr size_t NUM_CARD_LAYERS = 3;
 
         using id_type           = CardID::value_type;
         using idlist_type       = std::vector<id_type>;

@@ -2,6 +2,8 @@
 // Created by james on 12/5/23.
 //
 
+#pragma once
+
 #include "game/board/board_row.hpp"
 
 namespace game::board

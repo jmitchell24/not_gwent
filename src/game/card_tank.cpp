@@ -89,8 +89,8 @@ cardrefs_t CardTank::addCardMulti(cardlist_param cards, CardLayer layer)
 void CardTank::removeCard(CardID id)
 {
     auto idx = getIndex(id);
-
     auto& l = m_layers[idx.layer_idx];
+
     l.cards.erase(l.cards.begin() + (ptrdiff_t) idx.card_idx);
     l.reorderCards();
 
@@ -114,6 +114,29 @@ void CardTank::elevateCard(CardID id)
     c.m_order = l.nextOrderValue();
     l.reorderCards();
     assignIdValues(idx.layer_idx);
+}
+
+void CardTank::moveCard(CardID id, CardLayer layer)
+{
+    check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
+
+    auto idx = getIndex(id);
+
+    // early out
+    if (size_t(layer) == idx.layer_idx)
+        return;
+
+    auto& l_old = m_layers[idx.layer_idx];
+    auto& l_new = m_layers[(size_t)layer];
+
+    auto c = l_old.cards[idx.card_idx];
+    c.m_order = l_new.nextOrderValue();
+
+    l_old.cards.erase(l_old.cards.begin() + (ptrdiff_t) idx.card_idx);
+    l_old.reorderCards();
+
+    m_id_map[c.m_id.value] = { (size_t)layer, l_new.cards.size() };
+    l_new.cards.push_back(c);
 }
 
 void CardTank::update(update_param u)

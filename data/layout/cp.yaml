@@ -6,12 +6,12 @@ dim: {units: [1280, 720]}
 pos: {units: [0, 0]}
 children:
   - type: BOX_VBOX
-    inner_pad: 0
+    inner_pad: 7
     children:
       - type: BOX_HBOX
         weight: 0.25
         name: card_picker.m_layout.title
-        mrg: {pad2: [100, 20]}
+        mrg: {pad2: [100, 10]}
         pad: {pad1: 15}
       - type: BOX_HBOX
         weight: 0.25

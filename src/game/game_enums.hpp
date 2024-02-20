@@ -16,6 +16,15 @@ namespace game
     {
         ROW_MELEE,
         ROW_RANGED,
-        ROW_SIEGE
+        ROW_SIEGE,
+        ROW_HAND
     };
+
+    enum StackType
+    {
+        STACK_DECK,
+        STACK_YARD
+    };
+
+
 }

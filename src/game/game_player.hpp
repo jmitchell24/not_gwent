@@ -6,20 +6,20 @@
 
 #include "game/game_stats.hpp"
 #include "game/game_target.hpp"
+#include "game/game_move.hpp"
+#include "game/game_enums.hpp"
 #include "game/game_combat_row.hpp"
+#include "game/game_cast_list.hpp"
 #include "game/board/board_hand.hpp"
 
 namespace game
 {
-
-
 
     class Player
     {
     public:
         board::BoardStack  deck{board::BoardStack::DECK};
         board::BoardStack  yard{board::BoardStack::YARD};
-        board::BoardSlot   cast;
         board::BoardSlot   lead;
         board::BoardHand   hand;
 
@@ -40,7 +40,9 @@ namespace game
 
         bool tryGetHoveredCard(ut::vec2 const& mp, CardRef& ref);
 
-
+//        board::BoardStack& getStack(StackType x);
+//        board::BoardRow& getRow(RowType x);
+//        board::BoardSlot& getSlot(SlotType x);
 
         void clearAllHighlights()
         {
@@ -53,13 +55,15 @@ namespace game
         void changeTarget(CastTargetParams& p, Target t);
         bool tryCast(CastTargetParams p, Cast& cast, ut::vec2 const& mp);
 
-        inline void cancelCast(CastTargetParams p)
-        { changeTarget(p, TargetDefault{}); }
+        void cancelCast(CastTargetParams p);
 
         void update(update_param u);
         void drawUnderCards();
         void drawAboveCards();
         void drawDebug();
+
+    private:
+
     };
 
 
