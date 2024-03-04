@@ -7,7 +7,7 @@
 #include "game/layout/board_layout.hpp"
 #include "gfx/gfx_spinner.hpp"
 #include "gfx/gfx_draw.hpp"
-#include "game/asset/assets.hpp"
+#include "res/res.hpp"
 
 namespace game
 {
@@ -18,8 +18,8 @@ namespace game
         std::string deck_name       = "Northern Realms";
         std::string lead_name       = "Foltest";
 
-        Font        font            = fonts::smallburgRegular128();
-        Texture2D   avatar_texture  = textures::avatar_triss();
+        Font        font            = res::fonts::smallburgRegular128();
+        Texture2D   avatar_texture  = res::textures::avatar_triss();
 
         Stats();
 

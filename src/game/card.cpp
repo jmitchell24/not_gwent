@@ -4,7 +4,7 @@
 
 #include "game/card.hpp"
 #include "game/card_tank.hpp"
-#include "game/asset/assets.hpp"
+#include "res/res.hpp"
 using namespace game;
 
 //
@@ -277,14 +277,14 @@ Texture2D abilityBadge(ng::AbilityType x)
     {
         case ng::ABILITY_NONE     : return {};
         case ng::ABILITY_DECOY    : return {};
-        case ng::ABILITY_SPY      : return TEXTURES.get("data/board/card_ability_spy.png");
-        case ng::ABILITY_BOND     : return TEXTURES.get("data/board/card_ability_bond.png");
-        case ng::ABILITY_MORALE   : return TEXTURES.get("data/board/card_ability_morale.png");
-        case ng::ABILITY_MEDIC    : return TEXTURES.get("data/board/card_ability_medic.png");
-        case ng::ABILITY_AGILE    : return TEXTURES.get("data/board/card_ability_agile.png");
-        case ng::ABILITY_MUSTER   : return TEXTURES.get("data/board/card_ability_muster.png");
-        case ng::ABILITY_SCORCH   : return TEXTURES.get("data/board/card_ability_scorch.png");
-        case ng::ABILITY_BERSERKER: return TEXTURES.get("data/board/card_ability_berserker.png");
+        case ng::ABILITY_SPY      : return res::TEXTURES.get("data/board/card_ability_spy.png");
+        case ng::ABILITY_BOND     : return res::TEXTURES.get("data/board/card_ability_bond.png");
+        case ng::ABILITY_MORALE   : return res::TEXTURES.get("data/board/card_ability_morale.png");
+        case ng::ABILITY_MEDIC    : return res::TEXTURES.get("data/board/card_ability_medic.png");
+        case ng::ABILITY_AGILE    : return res::TEXTURES.get("data/board/card_ability_agile.png");
+        case ng::ABILITY_MUSTER   : return res::TEXTURES.get("data/board/card_ability_muster.png");
+        case ng::ABILITY_SCORCH   : return res::TEXTURES.get("data/board/card_ability_scorch.png");
+        case ng::ABILITY_BERSERKER: return res::TEXTURES.get("data/board/card_ability_berserker.png");
         default: nopath_case(ng::AbilityType);
     }
 
@@ -295,11 +295,11 @@ Texture2D rowBadge(ng::RowFlag x)
 {
     switch (x)
     {
-        case ng::ROW_MELEE              : return TEXTURES.get("data/board/combat_row_melee.png");
-        case ng::ROW_MELEE_RANGED       : return TEXTURES.get("data/board/combat_row_melee_ranged.png");
+        case ng::ROW_MELEE              : return res::TEXTURES.get("data/board/combat_row_melee.png");
+        case ng::ROW_MELEE_RANGED       : return res::TEXTURES.get("data/board/combat_row_melee_ranged.png");
         case ng::ROW_MELEE_RANGED_SIEGE : return {};
-        case ng::ROW_RANGED             : return TEXTURES.get("data/board/combat_row_ranged.png");
-        case ng::ROW_SIEGE              : return TEXTURES.get("data/board/combat_row_siege.png");
+        case ng::ROW_RANGED             : return res::TEXTURES.get("data/board/combat_row_ranged.png");
+        case ng::ROW_SIEGE              : return res::TEXTURES.get("data/board/combat_row_siege.png");
         default: nopath_case(ng::RowFlag_);
     }
 
@@ -319,7 +319,7 @@ static color nextColor()
 Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
 {
     auto k = PRINTER("data/cards/%s", card.filename.c_str());
-    Texture2D artwork = CARD_TEXTURES.get(k.c_str());
+    Texture2D artwork = res::CARD_TEXTURES.get(k.c_str());
 
     if (card.isUnitCard())
     {
@@ -328,10 +328,10 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
         return
         {
             artwork,
-            game::textures::card_back_neutral(),
+            res::textures::card_back_neutral(),
             rowBadge(unit.row),
             abilityBadge(unit.ability),
-            fonts::smallburgRegular64(),
+            res::fonts::smallburgRegular64(),
             nextColor()
         };
     }
@@ -339,10 +339,10 @@ Card::Assets Card::Assets::fromNgCard(ng::Card const& card)
     return
     {
         artwork,
-        game::textures::card_back_neutral(),
+        res::textures::card_back_neutral(),
         {},
         {},
-        fonts::smallburgRegular64(),
+        res::fonts::smallburgRegular64(),
         nextColor()
     };
 }

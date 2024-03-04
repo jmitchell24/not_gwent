@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "game/asset/asset_loader.hpp"
+#include "res/res_loader.hpp"
 
 //
 // std
@@ -13,7 +13,7 @@
 #include <optional>
 #include <unordered_map>
 
-namespace game
+namespace res
 {
     template <typename Loader>
     class AssetStoreX
@@ -68,22 +68,22 @@ namespace game
     private:
         map_type m_assets;
 
-        static bool isReady(value_type const& v) { return static_cast<bool>(Loader::isReady(v)); }
-        static value_type load(key_type const& k) { return static_cast<value_type>(Loader::load(k)); }
-        static value_type errorValue() { return static_cast<value_type>(Loader::errorValue()); }
+        static bool isReady(value_type const& v) { return static_cast<bool>(loader_type::isReady(v)); }
+        static value_type load(key_type const& k) { return static_cast<value_type>(loader_type::load(k)); }
+        static value_type errorValue() { return static_cast<value_type>(loader_type::errorValue()); }
     };
 
 
 
-    [[maybe_unused]] static AssetStoreX<asset_loaders::Texture2DLoader>& TEXTURES =
-            AssetStoreX<asset_loaders::Texture2DLoader>::instance();
+    [[maybe_unused]] static AssetStoreX<loaders::Texture2DLoader>& TEXTURES =
+            AssetStoreX<loaders::Texture2DLoader>::instance();
 
-    [[maybe_unused]] static AssetStoreX<asset_loaders::CardTextureLoader>& CARD_TEXTURES =
-            AssetStoreX<asset_loaders::CardTextureLoader>::instance();
+    [[maybe_unused]] static AssetStoreX<loaders::CardTextureLoader>& CARD_TEXTURES =
+            AssetStoreX<loaders::CardTextureLoader>::instance();
 
-    [[maybe_unused]] static AssetStoreX<asset_loaders::FontLoader>& FONTS =
-            AssetStoreX<asset_loaders::FontLoader>::instance();
+    [[maybe_unused]] static AssetStoreX<loaders::FontLoader>& FONTS =
+            AssetStoreX<loaders::FontLoader>::instance();
 
-    [[maybe_unused]] static AssetStoreX<asset_loaders::SvgLoader>& SVG =
-            AssetStoreX<asset_loaders::SvgLoader>::instance();
+    [[maybe_unused]] static AssetStoreX<loaders::SvgLoader>& SVG =
+            AssetStoreX<loaders::SvgLoader>::instance();
 }

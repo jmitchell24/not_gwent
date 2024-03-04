@@ -4,7 +4,7 @@
 
 #include "gfx/gfx_draw.hpp"
 #include "gfx/gfx_spinner.hpp"
-#include "game/asset/assets.hpp"
+#include "res/res.hpp"
 
 using namespace gfx;
 
@@ -35,7 +35,7 @@ void Spinner::layout(rect const& bounds)
 {
     m_bounds = bounds;
     updateValues(float(m_value));
-    font = game::fonts::steelfish128();
+    font = res::fonts::steelfish128();
 }
 
 void Spinner::update(float dt)

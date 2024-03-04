@@ -4,7 +4,7 @@
 
 
 #include "game/game2.hpp"
-#include "game/asset/assets.hpp"
+#include "res/res.hpp"
 using namespace game;
 
 //
@@ -44,7 +44,7 @@ using namespace std;
 //
 //
 
-static BoxEditor BOX_EDITOR_GAMEBOARD {"GameBoard"};
+static BoxEditor BOX_EDITOR_GAMEBOARD  { "GameBoard" };
 static BoxEditor BOX_EDITOR_CARDPICKER { "CardPicker" };
 
 ng::Card getNGTestLeader()
@@ -163,14 +163,14 @@ GameBoard2::GameBoard2()
     usr.stats.name = "Triss";
     usr.stats.deck_name = "Northern Realms";
     usr.stats.lead_name = "Foltest";
-    usr.stats.avatar_texture = textures::avatar_triss();
+    usr.stats.avatar_texture = res::textures::avatar_triss();
 
 
 
     cpu.stats.name = "Leshen";
     cpu.stats.deck_name = "Monsters";
     cpu.stats.lead_name = "Eredin";
-    cpu.stats.avatar_texture = textures::avatar_leshen();
+    cpu.stats.avatar_texture = res::textures::avatar_leshen();
 
 }
 

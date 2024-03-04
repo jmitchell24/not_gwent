@@ -34,7 +34,7 @@ public:
         editor.setRoot(Context::VIEW_RECT);
     }
 
-    Texture2D avatar = game::textures::avatar_leshen();
+    Texture2D avatar = res::textures::avatar_leshen();
 
     void update(update_param u) override
     {

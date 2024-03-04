@@ -10,8 +10,6 @@ using namespace game;
 //
 
 #include "gfx/gfx_draw.hpp"
-#include "gfx/gfx_spinner.hpp"
-#include "game/asset/assets.hpp"
 using namespace gfx;
 
 //

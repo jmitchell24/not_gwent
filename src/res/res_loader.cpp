@@ -2,9 +2,9 @@
 // Created by james on 8/29/23.
 //
 
-#include "game/asset/asset_loader.hpp"
-using namespace game;
-using namespace game::asset_loaders;
+#include "res/res_loader.hpp"
+using namespace res;
+using namespace res::loaders;
 
 //
 // ut

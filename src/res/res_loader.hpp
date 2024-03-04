@@ -18,7 +18,7 @@
 //
 #include <string>
 
-namespace game::asset_loaders
+namespace res::loaders
 {
     struct Texture2DLoader
     {
@@ -77,9 +77,9 @@ namespace game::asset_loaders
 
 namespace std
 {
-    template<> struct hash<game::asset_loaders::FontKey>
+    template<> struct hash<res::loaders::FontKey>
     {
-        size_t operator()(game::asset_loaders::FontKey const& key) const
+        size_t operator()(res::loaders::FontKey const& key) const
         {
             ut::digest d;
             d.putRange(key.filename);
@@ -88,9 +88,9 @@ namespace std
         }
     };
 
-    template<> struct hash<game::asset_loaders::SvgKey>
+    template<> struct hash<res::loaders::SvgKey>
     {
-        size_t operator()(game::asset_loaders::SvgKey const& key) const
+        size_t operator()(res::loaders::SvgKey const& key) const
         {
             ut::digest d;
             d.putRange(key.filename);

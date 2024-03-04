@@ -1,5 +1,5 @@
 #include "game/board/board_stack.hpp"
-#include "game/asset/assets.hpp"
+#include "res/res.hpp"
 using namespace game::board;
 using namespace game;
 
@@ -28,8 +28,8 @@ Texture2D getTypeTexture(BoardStack::Type type)
 {
     switch (type)
     {
-        case BoardStack::YARD: return textures::card_back_neutral();
-        case BoardStack::DECK: return textures::card_back_graveyard();
+        case BoardStack::YARD: return res::textures::card_back_neutral();
+        case BoardStack::DECK: return res::textures::card_back_graveyard();
         default:assert_case(BoardStack::Type);
     }
     return {};
