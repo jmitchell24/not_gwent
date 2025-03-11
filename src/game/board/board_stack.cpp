@@ -76,9 +76,9 @@ ng::Card BoardStack::popNgCard()
     return card;
 }
 
-cardrefs_t BoardStack::getUnitCards(CardLayer layer)
+card_ref_list_t BoardStack::getUnitCards(CardLayer layer)
 {
-    cardrefs_t refs;
+    card_ref_list_t refs;
     for (auto&& it : m_card_ngs)
     {
         if (it.isUnitCard())
@@ -147,6 +147,42 @@ void BoardStack::drawUnderCards()
 }
 
 void BoardStack::drawDebug()
+{
+
+}
+
+//
+// Implementation -> CardRefListPile
+//
+
+void CardRefListPile::layout(rect const& bounds)
+{
+    m_bounds = CardLayout::fromRect(bounds).getRect();
+    m_spinner.layout(bounds.anchorBCtoBC(bounds.size()/3));
+}
+
+void CardRefListPile::update(float dt)
+{
+    m_spinner.update(dt);
+}
+
+void CardRefListPile::drawAboveCards()
+{
+    gfx::drawRectOutline(m_bounds, 2.0f, colors::purple);
+    m_spinner.draw();
+}
+
+void CardRefListPile::drawUnderCards()
+{
+
+}
+
+void CardRefListPile::drawDebug()
+{
+
+}
+
+void CardRefListPile::onContainerChanged()
 {
 
 }

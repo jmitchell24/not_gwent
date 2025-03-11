@@ -31,8 +31,8 @@ namespace game::board
         bool isEmpty() const;
         size_t numCards() const;
         bool hasCard(CardRef ref) const;
-        bool hasCardAny(cardrefs_param refs) const;
-        bool hasCardAll(cardrefs_param refs) const;
+        bool hasCardAny(card_ref_list_param refs) const;
+        bool hasCardAll(card_ref_list_param refs) const;
 
 
         size_t tryGetNearestIndex(ut::vec2 const& mp) const;
@@ -55,11 +55,11 @@ namespace game::board
         // multi-ref container functions
         //
 
-        void addCardMulti(size_t idx, cardrefs_param refs);
+        void addCardMulti(size_t idx, card_ref_list_param refs);
         void removeCardMulti(card_indices_param indices);
-        cardrefs_t giveCardMulti(card_indices_param indices);
-        cardrefs_t getCardMulti(card_indices_param indices) const;
-        card_indices_t getCardIndices(cardrefs_param refs) const;
+        card_ref_list_t giveCardMulti(card_indices_param indices);
+        card_ref_list_t getCardMulti(card_indices_param indices) const;
+        card_indices_t getCardIndices(card_ref_list_param refs) const;
         void clear();
 
         //
@@ -85,7 +85,7 @@ namespace game::board
     protected:
         ut::rect            m_bounds;
         RowLayout           m_layout_row;
-        cardrefs_t          m_card_refs;
+        card_ref_list_t          m_card_refs;
 
         virtual void onContainerChanged()
         {

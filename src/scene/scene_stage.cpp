@@ -36,8 +36,8 @@ Stage::Stage(std::initializer_list<Scene*> const& scenes)
     : m_scenes{scenes}, m_selected{m_scenes.front()}
 { assert(!m_scenes.empty()); }
 
-void Stage::load  () { for (auto&& it : m_scenes) it->load(); }
-void Stage::unload() { for (auto&& it : m_scenes) it->unload(); }
+void Stage::load  () { m_selected->load(); }
+void Stage::unload() { m_selected->unload(); }
 void Stage::layout() { for (auto&& it : m_scenes) it->layout(); }
 void Stage::update(update_param u) { m_selected->update(u); }
 void Stage::draw() { m_selected->draw(); }
@@ -101,7 +101,13 @@ void Stage::drawDebugMenu()
         for (auto&& it : m_scenes)
         {
             if (MenuItem(it->name(), nullptr, m_selected == it))
+            {
+                check(m_selected != nullptr, "selected ptr was null");
+                m_selected->unload();
                 m_selected = it;
+                m_selected->load();
+            }
+
         }
 
 

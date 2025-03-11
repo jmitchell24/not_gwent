@@ -26,7 +26,7 @@ bool CardPicker::isOpen() const
     return m_open;
 }
 
-void CardPicker::open(cardrefs_param refs)
+void CardPicker::open(card_ref_list_param refs)
 {
     check(!m_open, "already open");
 

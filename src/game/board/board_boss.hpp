@@ -26,6 +26,6 @@ namespace game::board
         void update(update_param u);
 
     private:
-        cardrefs_t m_terminal_cards;
+        card_ref_list_t m_terminal_cards;
     };
 }

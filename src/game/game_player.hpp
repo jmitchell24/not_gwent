@@ -66,6 +66,18 @@ namespace game
 
     };
 
+    class Player3
+    {
+    public:
+        board::CardRefListHand hand;
+        board::CardRefListPile yard;
+        board::CardRefListPile deck;
 
+        board::CardRefListUnits melee;
+        board::CardRefListUnits ranged;
+        board::CardRefListUnits siege;
 
+    private:
+
+    };
 }

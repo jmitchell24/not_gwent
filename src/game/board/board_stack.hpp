@@ -5,6 +5,7 @@
 #pragma once
 
 #include "game/card_tank.hpp"
+#include "game/board/board_card_list.hpp"
 
 //
 // gfx
@@ -32,7 +33,7 @@ namespace game::board
 
         ng::Card popNgCard();
         void pushNgCard(ng::Card const& card);
-        cardrefs_t getUnitCards(CardLayer layer);
+        card_ref_list_t getUnitCards(CardLayer layer);
 
         void setTestCards(size_t n);
         void clearTestCards() { setTestCards(0); }
@@ -56,5 +57,30 @@ namespace game::board
         Texture2D       m_card_back;
 
         ng::cardlist_t  m_card_ngs;
+    };
+
+
+
+    // TODO: Add 'visibility' property to Cards.
+    //
+
+    class CardRefListPile : public CardRefList
+    {
+    public:
+        void layout(ut::rect const& b);
+        void update(float dt);
+
+        void drawUnderCards();
+        void drawAboveCards();
+        void drawDebug();
+
+    protected:
+        void onContainerChanged() override;
+
+    private:
+        ut::rect        m_bounds;
+        gfx::Spinner    m_spinner;
+
+
     };
 }

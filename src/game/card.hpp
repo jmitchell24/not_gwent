@@ -42,6 +42,8 @@ namespace game
     class Card;
     class CardTank;
 
+    using cardref_param = CardRef const&;
+
     using cardlist_t = std::vector<Card>;
     using cardlist_param = cardlist_t const&;
 

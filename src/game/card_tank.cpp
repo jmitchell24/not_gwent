@@ -66,11 +66,11 @@ Card& CardTank::addCard(Card card, CardLayer layer)
     return l.cards.back();
 }
 
-cardrefs_t CardTank::addCardMulti(cardlist_param cards, CardLayer layer)
+card_ref_list_t CardTank::addCardMulti(cardlist_param cards, CardLayer layer)
 {
     check((size_t)layer < NUM_CARD_LAYERS, "bad layer value");
 
-    cardrefs_t refs;
+    card_ref_list_t refs;
 
     auto& l = m_layers[layer];
     for (auto it : cards)
@@ -100,10 +100,10 @@ void CardTank::removeCard(CardID id)
     m_old_ids.push_back(id.value);
 }
 
-void CardTank::removeCardMulti(cardrefs_param refs)
-{
-    nopath_impl;
-}
+//void CardTank::removeCardMulti(card_refs_param refs)
+//{
+//    nopath_impl;
+//}
 
 void CardTank::elevateCard(CardID id)
 {
@@ -137,6 +137,12 @@ void CardTank::moveCard(CardID id, CardLayer layer)
 
     m_id_map[c.m_id.value] = { (size_t)layer, l_new.cards.size() };
     l_new.cards.push_back(c);
+}
+
+void CardTank::clear()
+{
+    m_id_map.clear();
+    m_old_ids.clear();
 }
 
 void CardTank::update(update_param u)
@@ -254,9 +260,9 @@ Card& CardTank::addTestCard(CardLayer layer)
     return addCard(card, layer);
 }
 
-cardrefs_t CardTank::addTestCards(size_t n, CardLayer layer)
+card_ref_list_t CardTank::addTestCards(size_t n, CardLayer layer)
 {
-    cardrefs_t list;
+    card_ref_list_t list;
     for (size_t i = 0; i < n; ++i)
         list.emplace_back(addTestCard(layer).ref());
     return list;

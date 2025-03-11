@@ -86,7 +86,7 @@ void BoardBoss::rowSwapRow(BoardRow& row_a, BoardRow& row_b, size_t idx_a, size_
 
 void BoardBoss::update(update_param)
 {
-    cardrefs_t tmp;
+    card_ref_list_t tmp;
     tmp.reserve(m_terminal_cards.size());
 
     for (auto&& it: m_terminal_cards)

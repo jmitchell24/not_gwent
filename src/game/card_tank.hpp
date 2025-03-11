@@ -9,12 +9,10 @@
 #include "game/card.hpp"
 #include "context.hpp"
 
-#include <functional>
-
 namespace game
 {
-    using cardrefs_t = std::vector<CardRef>;
-    using cardrefs_param = std::vector<CardRef> const&;
+    using card_ref_list_t = std::vector<CardRef>;
+    using card_ref_list_param = std::vector<CardRef> const&;
 
     class CardTank
     {
@@ -31,15 +29,16 @@ namespace game
         void removeCard(CardID id);
         void elevateCard(CardID id);
         void moveCard(CardID id, CardLayer layer);
+        void clear();
 
         //
         // multi-card container functions
         //
-        cardrefs_t addCardMulti(cardlist_param cards, CardLayer layer = CARD_LAYER_BOARD);
-        void removeCardMulti(cardrefs_param refs);
+        card_ref_list_t addCardMulti(cardlist_param cards, CardLayer layer = CARD_LAYER_BOARD);
+        void removeCardMulti(card_ref_list_param refs);
 
         Card&       addTestCard(CardLayer layer = CARD_LAYER_BOARD);
-        cardrefs_t  addTestCards(size_t n, CardLayer layer = CARD_LAYER_BOARD);
+        card_ref_list_t  addTestCards(size_t n, CardLayer layer = CARD_LAYER_BOARD);
 
         void update(update_param u);
         void draw(CardLayer layer = CARD_LAYER_BOARD);

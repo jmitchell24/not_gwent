@@ -14,6 +14,7 @@
 //
 #include "scene/scene_stage.hpp"
 #include "scene/scene_game.hpp"
+#include "scene/scene_tank_test.hpp"
 #include "scene/scene_card_test.hpp"
 #include "scene/scene_math_test.hpp"
 #include "scene/scene_proto_test.hpp"
@@ -65,6 +66,7 @@ size_t constexpr static SCREEN_HEIGHT   = 1080;
 
 #define EXPAND_SCENES(SCENE) \
     SCENE(SceneGameBoard2Test)  \
+    SCENE(SceneTankTest      )  \
     SCENE(SceneCardTest      )  \
     SCENE(SceneProtoTest     )  \
     SCENE(SceneMathTest      )  \

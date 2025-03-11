@@ -19,7 +19,7 @@ using namespace ut;
 // Helper Functions
 //
 
-inline static bool isNilAny(cardrefs_param refs)
+inline static bool isNilAny(card_ref_list_param refs)
 {
     for (auto&& it: refs)
         if (it.isNil())
@@ -48,7 +48,7 @@ size_t BoardRow::numCards() const
 bool BoardRow::hasCard(CardRef ref) const
 { return getIdx(ref) >= 0; }
 
-bool BoardRow::hasCardAny(cardrefs_param refs) const
+bool BoardRow::hasCardAny(card_ref_list_param refs) const
 {
     for (auto&& it: refs)
         if (hasCard(it))
@@ -56,7 +56,7 @@ bool BoardRow::hasCardAny(cardrefs_param refs) const
     return false;
 }
 
-bool BoardRow::hasCardAll(cardrefs_param refs) const
+bool BoardRow::hasCardAll(card_ref_list_param refs) const
 {
     for (auto &&it: refs)
         if (!hasCard(it))
@@ -134,7 +134,7 @@ CardRef BoardRow::getCard(size_t idx) const
 // CardRow2 -> multi-ref container functions
 //
 
-void BoardRow::addCardMulti(size_t idx, cardrefs_param refs)
+void BoardRow::addCardMulti(size_t idx, card_ref_list_param refs)
 {
     check(idx <= m_card_refs.size(), "invalid card index");
     check(!hasCardAny(refs), "card already in row");
@@ -154,7 +154,7 @@ void BoardRow::removeCardMulti(card_indices_param indices)
     for (auto&& it : indices)
         m_card_refs[it].reset();
 
-    cardrefs_t new_refs;
+    card_ref_list_t new_refs;
     for (auto&& it : m_card_refs)
     {
         if (!it.isNil())
@@ -164,15 +164,15 @@ void BoardRow::removeCardMulti(card_indices_param indices)
     onContainerChanged();
 }
 
-cardrefs_t BoardRow::giveCardMulti(card_indices_param indices)
+card_ref_list_t BoardRow::giveCardMulti(card_indices_param indices)
 {
     check(hasIdxAll(indices, m_card_refs.size()), "invalid card index");
 
     if (indices.empty())
         return {};
 
-    cardrefs_t new_refs;
-    cardrefs_t removed_refs;
+    card_ref_list_t new_refs;
+    card_ref_list_t removed_refs;
 
     for (auto&& it : indices)
     {
@@ -193,17 +193,17 @@ cardrefs_t BoardRow::giveCardMulti(card_indices_param indices)
     return removed_refs;
 }
 
-cardrefs_t BoardRow::getCardMulti(card_indices_param indices) const
+card_ref_list_t BoardRow::getCardMulti(card_indices_param indices) const
 {
     check(hasIdxAll(indices, m_card_refs.size()), "invalid card index");
 
-    cardrefs_t refs;
+    card_ref_list_t refs;
     for (auto&& it: indices)
         refs.push_back(m_card_refs[it]);
     return refs;
 }
 
-card_indices_t BoardRow::getCardIndices(cardrefs_param refs) const
+card_indices_t BoardRow::getCardIndices(card_ref_list_param refs) const
 {
     card_indices_t indices;
     for (auto&& it: m_card_refs)
