@@ -1,0 +1,11 @@
+show_row_add: false
+show_row_delete: false
+show_row_move: false
+show_row_rename: false
+show_row_weight: false
+show_row_type: false
+style_preset_default: {background: "#0f0f0ff0", border: "#6e6e8080"}
+style_preset_opaque: {background: "#0f0f0fff", border: "#6e6e8080"}
+style_preset_fade: {background: "#0f0f0f7f", border: "#ffffff7f"}
+style_preset_hide: {background: "#00000000", border: "#00000000"}
+style_index: 2
