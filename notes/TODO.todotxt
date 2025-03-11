@@ -1,0 +1,22 @@
+x 2023-09-26 2023-09-26 test alpha masking  @gfx
+x 2023-09-26 2023-09-26 fix card layout bug (bad aspect ratio calculation) 
+x 2023-09-26 2023-09-26 refactor Game2, split into Board* classes
+x 2023-09-26 2023-09-26 construct an initial game test state for both players (shuffled deck, starting hand, leader)  @game  @stepping-stone
+x 2023-12-11 2023-09-26 make commander horn and weather into modifiers for each row  @game
+2023-09-26 fix elevation rendering (no invalid elevation values, no more asserts)  @bugs  @gfx
+2023-09-26 add support for compact (game board) and full (zoom) card rendering  @gfx
+2023-09-26  add a gap between cards in row-layout (space permitting)  @layout  @gfx
+2023-09-26 add card zoom to layout (right-hand third)  @layout
+2023-09-26 fix / complete unit card stat rendering  @gfx  @bugs
+2023-09-26 move cards from hand to correct board location on click  @game  @stepping-stone
+x 2023-10-26 2023-10-08 create interface between layout editor and game code  @ledit
+2023-10-13 NanoSVG to NanoVG transpiler  @gfx
+x 2023-10-25 2023-10-18 visualize padding  @ledit
+x 2023-11-16 2023-10-25 start tracking changes to Box, make relevant operations lazy.  @ledit
+x 2023-12-11 2023-10-27 get rid of Virt2D  @gfx  @refactoring
+x 2023-11-02 2023-10-31 visualize box name / bind  @ledit
+x 2023-11-02 2023-11-02 implement box duplication  @ledit
+2023-11-16 set correct position for box properties popup  @bugs  @ledit
+x 2023-12-11 2023-11-23 add margin handling  @ledit
+2023-11-23 add auto-save feature  @ledit
+2023-12-11 add layout revert feature (store an unmodified copy of root, then replace current root on user action)  @ledit

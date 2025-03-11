@@ -1,0 +1,8 @@
+{
+  "defaultPriorityFilter": "Z",
+  "defaultOrganizeBy": "context",
+  "defaultTodotxt": "default",
+  "additionalExts": [],
+  "recurringTasks": false,
+  "preservePriority": true
+}
