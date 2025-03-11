@@ -1,0 +1,17 @@
+type: BOX_HBOX
+name: wood
+scl: {units: [391.608398, 560]}
+pos: {units: [444.195801, 80]}
+children:
+  - type: BOX_HBOX
+    name: primary
+  - type: BOX_HBOX
+    name: vast
+    pos: {anchor: ANCHOR_RC}
+  - type: BOX_HBOX
+    weight: 5
+    name: isolate
+  - type: BOX_HBOX
+    name: canyon
+  - type: BOX_HBOX
+    name: please
